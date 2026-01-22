@@ -31,14 +31,14 @@ const HomeBar: React.FC = () => {
                 <NavLink to="/main" className={linkClass} end>
                   홈
                 </NavLink>
-                <NavLink to="/tip" className={linkClass}>
-                  선배가 알려줘요
+                <NavLink to="/board" className={linkClass}>
+                  게시판
                 </NavLink>
-                <NavLink to="/qna" className={linkClass}>
-                  신입이 질문해요
+                <NavLink to="/calendar" className={linkClass}>
+                  캘린더
                 </NavLink>
-                <NavLink to="/free" className={linkClass}>
-                  다같이 얘기해요
+                <NavLink to="/treasury" className={linkClass}>
+                  회비함
                 </NavLink>
               </nav>
             </div>
