@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import HomeBar from '../../components/HomeBar'
 import MainFooter from '../../components/layouts/MainFooter'
 import api from '../../api/api'
-import PostCard from '../../components/posts/PostCard'
+import SectionList from '../../components/SectionList'
 import './MainPage.css'
 import PopularPostsSection from './PopularPostsSection'
 import OnboardingModal from '../../components/modals/OnboardingModal'
@@ -21,81 +21,47 @@ type BaseItem = {
   imageUrl?: string | null
   profileImageUrl?: string | null
 }
-type PageResponse<T> = {
-  content: T[]
-}
 
-const toTip = (x: any): BaseItem => ({
-  id: x.id,
+const toBase = (x: any): BaseItem => ({
+  id: x.id ?? x.postId,
   title: x.title,
   content: x.content ?? '',
   writer: x.writer ?? '',
   createdAt: x.createdAt,
   tags: x.tags ?? [],
   imageUrl: x.imageUrl ?? null,
-  profileImageUrl: x.profileImageUrl ?? null,
+  profileImageUrl: x.profileImageUrl ?? '/icons/mypage-icon.svg',
 })
-
-const toQna = (x: any): BaseItem => ({
-  id: x.postId,
-  title: x.title,
-  content: x.content ?? '',
-  writer: x.writer ?? '',
-  createdAt: x.createdAt,
-  tags: x.tags ?? [],
-  imageUrl: x.imageUrl ?? null,
-  profileImageUrl: x.profileImageUrl ?? null,
-})
-
-const toFree = (x: any): BaseItem => ({
-  id: x.id,
-  title: x.title,
-  content: x.content ?? '',
-  writer: x.writer ?? '',
-  createdAt: x.createdAt,
-  tags: x.tags ?? [],
-  imageUrl: x.imageUrl ?? null,
-  profileImageUrl: x.profileImageUrl ?? null,
-})
-
-async function fetchPosts(
-  url: string,
-  mapFn: (x: any) => BaseItem
-): Promise<BaseItem[]> {
-  try {
-    const { data } = await api.get<PageResponse<any>>(url)
-    return (data?.content ?? []).map(mapFn)
-  } catch {
-    return []
-  }
-}
 
 export default function MainPage() {
-  const [tips, setTips] = useState<BaseItem[]>([])
-  const [qnas, setQnas] = useState<BaseItem[]>([])
-  const [frees, setFrees] = useState<BaseItem[]>([])
+  const [notices, setNotices] = useState<{items: BaseItem[], total: number}>({ items: [], total: 1 })
+  const [noticePage, setNoticePage] = useState(1)
+
+  const [activities, setActivities] = useState<{items: BaseItem[], total: number}>({ items: [], total: 1 })
+  const [activityPage, setActivityPage] = useState(1)
+
+  // 2. 데이터 페칭 로직
+  const fetchSection = async (url: string, page: number, setter: any) => {
+    try {
+      // 백엔드가 0-base라면 page - 1 처리
+      const { data } = await api.get(`${url}?page=${page - 1}&size=3&sort=createdAt,desc`)
+      setter({
+        items: (data.content || []).map(toBase),
+        total: data.totalPages || 1
+      })
+    } catch {
+      setter({ items: [], total: 1 })
+    }
+  }
+
+  // 페이지 변경 시마다 호출
+  useEffect(() => { fetchSection('/api/notice-posts', noticePage, setNotices) }, [noticePage])
+  useEffect(() => { fetchSection('/api/activity-posts', activityPage, setActivities) }, [activityPage])
 
   const { state } = useLocation() as {
     state?: { showOnboarding?: boolean; fromLogin?: boolean }
   }
-
   const [openOnboarding, setOpenOnboarding] = useState(false)
-
-  useEffect(() => {
-    // TIP 최신 3개
-    fetchPosts('/api/tip-posts?page=0&size=3&sort=createdAt,desc', toTip).then(
-      setTips
-    )
-    // QNA 최신 3개
-    fetchPosts('/api/qna-posts?page=0&size=3&sort=createdAt,desc', toQna).then(
-      setQnas
-    )
-    // FREE 최신 3개
-    fetchPosts(
-      '/api/free-posts?page=0&size=3&sort=createdAt,desc',
-      toFree
-    ).then(setFrees)
-  }, [])
 
   useEffect(() => {
     const seen = localStorage.getItem(ONBOARD_KEY)
@@ -136,146 +102,36 @@ export default function MainPage() {
             <img src="/banners/home-banner.svg" alt="홈 배너" />
           </div>
 
-          {/* 인기 게시물 */}
-          <PopularPostsSection />
-
-          {/* 선배가 알려줘요 (TIP) */}
+          {/* 1. 공지사항 (운영진 권한 예시: true) */}
           <SectionList
-            sectionTitle={
-              <span className="flex items-center gap-2">
-                <img
-                  src="/icons/tip.svg"
-                  alt="tip게시판 아이콘"
-                  className="w-[40px] h-[40px]"
-                />
-                선배가 알려줘요
-              </span>
-            }
-            moreText="전체보기 >"
-            moreTo="/tip"
-            items={tips}
+            title="공지"
+            iconSrc="/icons/notice.svg"
+            items={notices.items}
+            currentPage={noticePage}
+            totalPages={notices.total}
+            onPageChange={setNoticePage}
+            moreTo="/notice"
+            showWriteButton={true} 
           />
 
-          {/* 신입이 질문해요 (QnA) */}
+          {/* 2. 활동일지 */}
           <SectionList
-            sectionTitle={
-              <span className="flex items-center gap-2">
-                <img
-                  src="/icons/qna.svg"
-                  alt="질문게시판 아이콘"
-                  className="w-[40px] h-[40px]"
-                />
-                신입이 질문해요
-              </span>
-            }
-            moreText="전체보기 >"
-            moreTo="/qna"
-            items={qnas}
+            title="활동일지"
+            iconSrc="/icons/activity.svg"
+            items={activities.items}
+            currentPage={activityPage}
+            totalPages={activities.total}
+            onPageChange={setActivityPage}
+            moreTo="/activity"
+            showWriteButton={true}
           />
 
-          {/* 자유게시판 (Free) */}
-          <SectionList
-            sectionTitle={
-              <span className="flex items-center gap-2">
-                <img
-                  src="/icons/free.svg"
-                  alt="자유게시판 아이콘"
-                  className="w-[40px] h-[40px]"
-                />
-                다같이 얘기해요
-              </span>
-            }
-            moreText="전체보기 >"
-            moreTo="/free"
-            items={frees}
-          />
         </div>
       </main>
 
       <MainFooter />
 
       {openOnboarding && <OnboardingModal onClose={dismiss} />}
-    </div>
-  )
-}
-
-function SectionList({
-  sectionTitle,
-  moreText,
-  moreTo,
-  items,
-}: {
-  sectionTitle: React.ReactNode
-  moreText: string
-  moreTo: string
-  items: BaseItem[]
-}) {
-  const sliced = items.slice(0, 3)
-
-  return (
-    <section className="mb-[60px]">
-      <div className="overflow-hidden bg-white rounded-xl">
-        {/* 제목 + 더보기 버튼 */}
-        <div className="flex items-center justify-between px-[28px] pt-6 mb-4">
-          <h3 className="text-title-1 text-label-normal">{sectionTitle}</h3>
-          <Link
-            to={moreTo}
-            className="text-body-2 text-label-neutral hover:underline"
-          >
-            {moreText}
-          </Link>
-        </div>
-
-        {/* 게시글 리스트 */}
-        <div className="px-[28px]">
-          {sliced.length === 0 ? (
-            <EmptyRow />
-          ) : (
-            sliced.map((p, index) => {
-              const isLast = index === sliced.length - 1
-              return (
-                <Link
-                  key={p.id}
-                  to={`${moreTo.replace(/\/$/, '')}/${p.id}`}
-                  className="block"
-                  style={{ textDecoration: 'none' }}
-                >
-                  <PostCard
-                    id={p.id}
-                    title={p.title}
-                    content={p.content}
-                    writer={p.writer}
-                    createdAt={p.createdAt}
-                    tags={p.tags ?? []}
-                    imageUrl={p.imageUrl ?? null}
-                    profileImageUrl={
-                      p.profileImageUrl ?? '/icons/mypage-icon.svg'
-                    }
-                    previewLines={1} // 홈은 본문 1줄만
-                    borderColor={isLast ? 'transparent' : 'var(--line-normal)'} // 마지막줄 보더 제거
-                    className="bg-white"
-                  />
-                </Link>
-              )
-            })
-          )}
-        </div>
-      </div>
-    </section>
-  )
-}
-
-function EmptyRow() {
-  return (
-    <div className="flex flex-col items-center justify-center min-h-[228px] py-10 rounded-xl">
-      <img
-        src="/icons/empty.svg"
-        alt="아직 게시글이 없어요!"
-        className="w-20 h-20 mb-4"
-      />
-      <p className="text-body-1sb text-label-normal">
-        아직 작성한 글이 없어요!
-      </p>
     </div>
   )
 }
