@@ -18,7 +18,6 @@ import {
   toastInfo,
 } from '../../utils/toast'
 import PostHeader from '../../components/posts/PostHeader'
-import MyInfo from '../MyPage/MyInfo'
 
 type BoardType = 'tip' | 'qna' | 'free'
 
@@ -200,29 +199,35 @@ function BoardDetail() {
 
   // 댓글 등록
   const handleCommentSubmit = async () => {
-    const userRole = (userInfo as any)?.role;
+  const trimmed = commentInput.trim();
+  if (!trimmed) return toastWarn('댓글을 입력해주세요.');
 
-    if (type === 'qna' && String(userRole).toUpperCase() === 'NEWBIE') {
-      return toastWarn('신입은 댓글 작성이 제한됩니다.')
+  try {
+    const payload: any = { content: trimmed };
+
+    if (type === 'tip') {
+      payload.tipPostId = String(postIdNumber); 
+    } else if (type === 'qna') {
+      payload.qnaPostId = postIdNumber; 
+    } else if (type === 'free') {
+      payload.freePostId = postIdNumber; 
     }
-    const trimmed = commentInput.trim()
-    if (!trimmed) return toastWarn('댓글을 입력해주세요.')
 
-    try {
-      const payload: any = { content: trimmed };
-      if (type === 'tip') payload.postId = postIdNumber;
-      else if (type === 'qna') payload.qnaPostId = postIdNumber;
-      else if (type === 'free') payload.freePostId = postIdNumber;
+    const res = await api.post(config.commentCreateApi!, payload);
 
-      const res = await api.post(config.commentCreateApi!, payload)
-      
-      const [normalized] = normalizeComments(res.data)
-      setComments(prev => [...prev, normalized])
-      setCommentInput('')
-    } catch {
-      toastError('댓글 등록에 실패했습니다.')
+    const rawData = res.data;
+    const [normalized] = normalizeComments(Array.isArray(rawData) ? rawData : [rawData]);
+
+    if (normalized) {
+      setComments(prev => [...prev, normalized]);
+      setCommentInput('');
+      toastSuccess('댓글이 등록되었습니다.');
     }
+  } catch (err) {
+    console.error('댓글 등록 에러:', err);
+    toastError('댓글 등록 중 서버 오류가 발생했습니다.');
   }
+};
 
   // 댓글 수정 핸들러
   const handleSaveEditComment = async ({ id, content }: { id: number; content: string }) => {
@@ -313,10 +318,21 @@ function BoardDetail() {
                 onBeginEdit={(id) => setEditCommentId(id)}
                 onCancelEdit={() => setEditCommentId(null)}
                 onDelete={async (cid) => {
-                  await api.delete(type === 'qna' ? `/api/qna-comment/${cid}` : `/api/free-comments/${cid}`)
-                  setComments(prev => prev.filter(c => c.id !== cid))
+                  if (!window.confirm('댓글을 삭제하시겠습니까?')) return;
+                  try {
+                    if (config.commentBaseUrl) {
+                      await api.delete(`${config.commentBaseUrl}/${cid}`);
+                      setComments(prev => prev.filter(c => c.id !== cid));
+                      toastSuccess('댓글이 삭제되었습니다.');
+                    }
+                  } catch {
+                    toastError('댓글 삭제에 실패했습니다.');
+                  }
                 }}
-                onReport={(cid) => { setReportingCommentId(cid); setShowCommentReportModal(true); }}
+                onReport={(cid) => { 
+                  setReportingCommentId(cid); 
+                  setShowCommentReportModal(true); 
+                }}
               />
               {!editCommentId && (
                 <CommentEditor value={commentInput} onChange={setCommentInput} onSubmit={handleCommentSubmit} isEditing={false} />
