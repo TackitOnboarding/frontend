@@ -174,12 +174,11 @@ function BoardEdit() {
   }
 
   const handleCancelClick = () => {
-  // 내용이 있을 때만 모달을 띄우고 싶다면 조건 추가 가능
-  if (title.trim() || content.trim()) {
-    setShowLeaveModal(true);
-  } else {
-    navigate(-1);
-  }
+    if (title.trim() || content.trim()) {
+      setShowLeaveModal(true);
+    } else {
+      navigate(-1);
+    }
 };
 
 

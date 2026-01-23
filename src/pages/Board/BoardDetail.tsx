@@ -54,7 +54,7 @@ const BOARD_CONFIG: Record<BoardType, BoardConfig> ={
     postApi: (id: string) => `/api/tip-posts/${id}`,
     commentApi: (id: string) => `/api/tip-comments/${id}`,
     commentBaseUrl: '/api/tip-comments',
-    commentCreateApi: '/api/tip-comments/create',
+    commentCreateApi: '/api/tip-comments',
     commentReportType: 'TIP_COMMENT',
     scrapApi: (id: string) => `/api/tip-posts/${id}/scrap`,
     reportType: 'TIP_POST',
@@ -209,8 +209,13 @@ function BoardDetail() {
     if (!trimmed) return toastWarn('댓글을 입력해주세요.')
 
     try {
-      const payload = type === 'qna' ? { qnaPostId: postIdNumber, content: trimmed } : { freePostId: postIdNumber, content: trimmed }
+      const payload: any = { content: trimmed };
+      if (type === 'tip') payload.postId = postIdNumber;
+      else if (type === 'qna') payload.qnaPostId = postIdNumber;
+      else if (type === 'free') payload.freePostId = postIdNumber;
+
       const res = await api.post(config.commentCreateApi!, payload)
+      
       const [normalized] = normalizeComments(res.data)
       setComments(prev => [...prev, normalized])
       setCommentInput('')
