@@ -7,6 +7,8 @@ import SignupPage from './pages/Signup/SignupPage'
 // 게시판 new
 import BoardList from './pages/Board/BoardList'
 import BoardWrite from './pages/Board/BoardWrite'
+import BoardEdit from './pages/Board/BoardEdit'
+import BoardDetail from './pages/Board/BoardDetail'
 
 import FreePostList from './pages/FreePost/FreePostList'
 import FreePostDetail from './pages/FreePost/FreePostDetail'
@@ -57,21 +59,22 @@ function App(): JSX.Element {
         {/* 게시판(new) */}
         <Route path="/board" element={<BoardList />} />
         <Route path="/write/:boardType" element={<BoardWrite />} />
-
+        <Route path="/edit/:boardType/:id" element={<BoardEdit />} />
+        <Route path="/:boardType/:id" element={<BoardDetail />} />
 
         {/* 게시판 */}
-        <Route path="/free" element={<FreePostList />} />
-        <Route path="/free/:id" element={<FreePostDetail />} />
+        {/* <Route path="/free" element={<FreePostList />} /> */}
+        {/* <Route path="/free/:id" element={<FreePostDetail />} /> */}
         {/* <Route path="/free/write" element={<FreePostWrite />} /> */}
-        <Route path="/free/edit/:id" element={<FreePostEdit />} />
-        <Route path="/qna" element={<QnaPostList />} />
-        <Route path="/qna/:postId" element={<QnaPostDetail />} />
+        {/* <Route path="/free/edit/:id" element={<FreePostEdit />} /> */}
+        {/* <Route path="/qna" element={<QnaPostList />} /> */}
+        {/* <Route path="/qna/:postId" element={<QnaPostDetail />} /> */}
         {/* <Route path="/qna/write" element={<QnaPostWrite />} /> */}
-        <Route path="/qna/edit/:postId" element={<QnaPostEdit />} />
-        <Route path="/tip" element={<TipPostList />} />
-        <Route path="/tip/:id" element={<TipPostDetail />} />
+        {/* <Route path="/qna/edit/:postId" element={<QnaPostEdit />} /> */}
+        {/* <Route path="/tip" element={<TipPostList />} /> */}
+        {/* <Route path="/tip/:id" element={<TipPostDetail />} /> */}
         {/* <Route path="/tip/write" element={<TipPostWrite />} /> */}
-        <Route path="/tip/edit/:id" element={<TipPostEdit />} />
+        {/* <Route path="/tip/edit/:id" element={<TipPostEdit />} /> */}
         {/* 마이페이지 */}
         <Route path="/mypage" element={<MyPage />} />
         <Route path="/mypage/posts" element={<MyPostList />} />
