@@ -36,6 +36,20 @@ const BOARD_CONFIG = {
     placeholder: '자유롭게 작성해 주세요.',
     dtoKey: 'dto', // Free 게시판은 dto 사용
   },
+  // 공지
+  notice: {
+    tagApi: '/api/notice-tags/list',
+    postApi: '/api/notice-posts',
+    placeholder: '공지사항을 입력해 주세요.',
+    dtoKey: 'dto',
+  },
+  // 활동일지
+  activity: {
+    tagApi: '/api/activity-tags/list',
+    postApi: '/api/activity-posts',
+    placeholder: '활동 내용을 기록해 주세요.',
+    dtoKey: 'dto',
+  }
 }
 
 function BoardWrite() {
@@ -103,9 +117,20 @@ function BoardWrite() {
   }, [pickedPreviewUrl])
 
   const isReadyToSubmit = useMemo(() => {
-    const textOnly = content.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim()
-    return title.trim().length > 0 && textOnly.length > 0 && selectedTagIds.length > 0
-  }, [title, content, selectedTagIds])
+    const textOnly = content.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+    const hasTitleAndContent = title.trim().length > 0 && textOnly.length > 0;
+    
+    // 분류가 존재하는 게시판 리스트
+    const needsTags = ['tip', 'qna', 'free'].includes(boardType || '');
+
+    if (needsTags) {
+      // 태그가 있는 게시판은 제목 + 내용 + 태그가 모두 있어야 함
+      return hasTitleAndContent && selectedTagIds.length > 0;
+    }
+    
+    // 공지, 활동일지는 제목과 내용만 있으면 됨
+    return hasTitleAndContent;
+  }, [title, content, selectedTagIds, boardType]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -175,31 +200,35 @@ function BoardWrite() {
           />
 
           {/* 분류(태그) */}
-          <p className="mt-4 write-label">
-            분류 <span className="text-system-red">*</span>
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {tagList.map((tag) => {
-              const selected = selectedTagIds.includes(tag.id)
-              return (
-                <Button
-                  key={tag.id}
-                  type="button"
-                  variant="outlined"
-                  size="outlinedS"
-                  aria-pressed={selected}
-                  onClick={() => handleTagToggle(tag.id)}
-                  className={clsx(
-                    selected
-                      ? '!border-line-active text-label-primary bg-background-blue'
-                      : 'border-line-normal text-label-normal'
-                  )}
-                >
-                  #{tag.tagName}
-                </Button>
-              )
-            })}
-          </div>
+          {['tip', 'qna', 'free'].includes(boardType || '') && (
+            <div>
+              <p className="mt-4 write-label">
+                분류 <span className="text-system-red">*</span>
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {tagList.map((tag) => {
+                  const selected = selectedTagIds.includes(tag.id)
+                  return (
+                    <Button
+                      key={tag.id}
+                      type="button"
+                      variant="outlined"
+                      size="outlinedS"
+                      aria-pressed={selected}
+                      onClick={() => handleTagToggle(tag.id)}
+                      className={clsx(
+                        selected
+                          ? '!border-line-active text-label-primary bg-background-blue'
+                          : 'border-line-normal text-label-normal'
+                      )}
+                    >
+                      #{tag.tagName}
+                    </Button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
 
           {/* 본문 */}
           <p className="mt-4 write-label">
