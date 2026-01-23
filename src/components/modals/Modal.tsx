@@ -84,7 +84,7 @@ export default function Modal({
         {children && <div className="mt-4">{children}</div>}
 
         {/* 버튼 영역 */}
-        <div className="flex items-center justify-between gap-2 mt-6">
+        <div className="flex items-center justify-between gap-2 mt-5">
           <ModalButton variant="ghost" size="m" onClick={onCancel}>
             {cancelText}
           </ModalButton>

@@ -12,6 +12,7 @@ import RichTextEditor, {
 import { toastWarn, toastError, toastSuccess } from '../../utils/toast'
 import { PostCreateReq, PostCreateRes } from '../../types/post'
 import { replaceFirstDataUrlImgWithToken } from '../../utils/coverToken'
+import LeaveModal from '../../components/modals/LeaveModal'
 
 type Tag = { id: number; tagName: string }
 
@@ -38,6 +39,9 @@ const BOARD_CONFIG = {
 }
 
 function BoardWrite() {
+  // 익명 상태 추가
+  const [isAnonymous, setIsAnonymous] = useState(false);
+
   // URL에서 어떤 게시판인지 받아옴 (예: /write/tip)
   const { boardType } = useParams<{ boardType: string }>();
 
@@ -54,6 +58,7 @@ function BoardWrite() {
   const [submitting, setSubmitting] = useState(false)
   const [pickedImage, setPickedImage] = useState<File | null>(null)
   const [pickedPreviewUrl, setPickedPreviewUrl] = useState<string | null>(null)
+  const [showLeaveModal, setShowLeaveModal] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -139,6 +144,15 @@ function BoardWrite() {
     }
   }
 
+  const handleCancelClick = () => {
+  // 내용이 있을 때만 모달을 띄우고 싶다면 조건 추가 가능
+  if (title.trim() || content.trim()) {
+    setShowLeaveModal(true);
+  } else {
+    navigate(-1);
+  }
+};
+
   return (
     <>
       <HomeBar />
@@ -202,23 +216,69 @@ function BoardWrite() {
           />
 
           {/* 등록 버튼 */}
-          <div className="flex justify-center mb-4">
-            <Button
-              type="submit"
-              variant="primary"
-              size="m"
-              disabled={submitting || loadingTags || !isReadyToSubmit}
-              className={clsx(
-                'w-[120px] h-11',
-                (!isReadyToSubmit || submitting || loadingTags) &&
-                  'opacity-50 cursor-not-allowed'
-              )}
-            >
-              {submitting ? '등록 중…' : '등록'}
-            </Button>
+          <div className="flex justify-between mb-4">
+            <div className="flex items-center">
+              <label className="flex items-center cursor-pointer select-none group">
+                <input
+                  type="checkbox"
+                  className="hidden"
+                  checked={isAnonymous}
+                  onChange={() => setIsAnonymous(!isAnonymous)}
+                />
+                {/* 체크박스 UI */}
+                <div
+                  className={clsx(
+                    "w-5 h-5 border-2 rounded-full flex items-center justify-center transition-all",
+                    isAnonymous 
+                      ? "border-line-active bg-background-blue" 
+                      : "border-line-normal bg-white" 
+                  )}
+                >
+                  {isAnonymous && (
+                    <div className="w-2.5 h-2.5 bg-label-primary rounded-full" />
+                  )}
+                </div>
+                {/* 텍스트 라벨 */}
+                <span className="ml-2 text-body-1 text-label-normal">
+                  익명으로 작성
+                </span>
+              </label>
+            </div>
+
+            <div className="flex gap-3">
+              <Button
+                type="button"
+                variant="outlined"
+                size="outlinedM"
+                onClick={handleCancelClick}
+                className="w-[120px] h-11"
+              >
+                취소
+              </Button>
+
+              <Button
+                type="submit"
+                variant="primary"
+                size="outlinedM"
+                disabled={submitting || loadingTags || !isReadyToSubmit}
+                className={clsx(
+                  'w-[120px] h-11',
+                  (!isReadyToSubmit || submitting || loadingTags) &&
+                    'opacity-50 cursor-not-allowed'
+                )}
+              >
+                {submitting ? '등록 중…' : '등록'}
+              </Button>
+            </div>
           </div>
         </form>
       </div>
+      {/* 나가기 모달 */}
+      <LeaveModal
+        isOpen={showLeaveModal}
+        onClose={() => setShowLeaveModal(false)} // '계속 작성하기' 클릭 시 동작
+        onLeave={() => navigate(-1)}             // '나가기' 클릭 시 동작
+      />
     </>
   )
 }

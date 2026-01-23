@@ -75,6 +75,7 @@ function App(): JSX.Element {
         {/* <Route path="/tip/:id" element={<TipPostDetail />} /> */}
         {/* <Route path="/tip/write" element={<TipPostWrite />} /> */}
         {/* <Route path="/tip/edit/:id" element={<TipPostEdit />} /> */}
+        
         {/* 마이페이지 */}
         <Route path="/mypage" element={<MyPage />} />
         <Route path="/mypage/posts" element={<MyPostList />} />
