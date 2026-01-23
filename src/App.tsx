@@ -3,6 +3,11 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 import { notificationSSE } from './services/notificationSSE'
 import LoginPage from './pages/Login/LoginPage'
 import SignupPage from './pages/Signup/SignupPage'
+
+// 게시판 new
+import BoardList from './pages/Board/BoardList'
+import BoardWrite from './pages/Board/BoardWrite'
+
 import FreePostList from './pages/FreePost/FreePostList'
 import FreePostDetail from './pages/FreePost/FreePostDetail'
 import FreePostWrite from './pages/FreePost/FreePostWrite'
@@ -48,18 +53,24 @@ function App(): JSX.Element {
         <Route path="/login/find-password" element={<FindPasswordPage />} />
         <Route path="/login/reset-password" element={<ResetPasswordPage />} />
         <Route path="/main" element={<MainPage />} />
+
+        {/* 게시판(new) */}
+        <Route path="/board" element={<BoardList />} />
+        <Route path="/write/:boardType" element={<BoardWrite />} />
+
+
         {/* 게시판 */}
         <Route path="/free" element={<FreePostList />} />
         <Route path="/free/:id" element={<FreePostDetail />} />
-        <Route path="/free/write" element={<FreePostWrite />} />
+        {/* <Route path="/free/write" element={<FreePostWrite />} /> */}
         <Route path="/free/edit/:id" element={<FreePostEdit />} />
         <Route path="/qna" element={<QnaPostList />} />
         <Route path="/qna/:postId" element={<QnaPostDetail />} />
-        <Route path="/qna/write" element={<QnaPostWrite />} />
+        {/* <Route path="/qna/write" element={<QnaPostWrite />} /> */}
         <Route path="/qna/edit/:postId" element={<QnaPostEdit />} />
         <Route path="/tip" element={<TipPostList />} />
         <Route path="/tip/:id" element={<TipPostDetail />} />
-        <Route path="/tip/write" element={<TipPostWrite />} />
+        {/* <Route path="/tip/write" element={<TipPostWrite />} /> */}
         <Route path="/tip/edit/:id" element={<TipPostEdit />} />
         {/* 마이페이지 */}
         <Route path="/mypage" element={<MyPage />} />

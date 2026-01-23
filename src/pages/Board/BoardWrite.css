@@ -1,0 +1,55 @@
+.board-write-container {
+  background-color: white;
+  width: 1100px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 48px 40px;
+  box-sizing: border-box;
+}
+
+/* 폼 전체 */
+.write-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ===== ReactQuill 영역 ===== */
+.write-editor {
+  border: 1px solid var(--line-normal);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+}
+
+/* 툴바 */
+.write-editor .ql-toolbar.ql-snow {
+  border: none;
+  border-bottom: 1px solid var(--line-normal);
+  background: #fff;
+}
+
+/* 컨테이너 */
+.write-editor .ql-container.ql-snow {
+  border: none;
+  background: #fff;
+}
+
+/* 본문 영역 */
+.write-editor .ql-editor {
+  min-height: 300px;
+  padding: 16px;
+  color: var(--label-assistive);
+  font-family: var(--font-sans);
+  font-style: normal !important;
+}
+
+.write-editor .ql-editor::before {
+  color: var(--label-assistive);
+  font-family: var(--font-sans);
+  font-size: var(--fs-body1-r);
+  line-height: var(--lh-body1-r);
+  letter-spacing: var(--ls-body1-r);
+  font-weight: var(--fw-body1-r);
+  opacity: 1;
+}
