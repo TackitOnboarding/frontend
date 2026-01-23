@@ -15,6 +15,7 @@ import {
   hydrateCoverToken,
   replaceFirstDataUrlImgWithToken,
 } from '../../utils/coverToken'
+import LeaveModal from '../../components/modals/LeaveModal'
 
 type BoardType = 'tip' | 'qna' | 'free'
 type Tag = { id: number; tagName: string }
@@ -42,6 +43,9 @@ const BOARD_CONFIG = {
 }
 
 function BoardEdit() {
+  // 익명 상태 추가
+  const [isAnonymous, setIsAnonymous] = useState(false);
+
   const { boardType, id } = useParams<{ boardType: string; id: string }>()
   const navigate = useNavigate()
 
@@ -58,6 +62,7 @@ function BoardEdit() {
   const [pickedImage, setPickedImage] = useState<File | null>(null)
   const [pickedPreviewUrl, setPickedPreviewUrl] = useState<string | null>(null)
   const [removeImage] = useState<boolean>(false)
+  const [showLeaveModal, setShowLeaveModal] = useState(false);
 
   const editorRef = useRef<RichTextEditorHandle | null>(null)
 
@@ -118,9 +123,21 @@ function BoardEdit() {
   }, [pickedPreviewUrl])
 
   const isReadyToSubmit = useMemo(() => {
-    const textOnly = content.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim()
-    return title.trim().length > 0 && textOnly.length > 0 && selectedTagIds.length > 0
-  }, [title, content, selectedTagIds])
+    const textOnly = content.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+    const hasTitleAndContent = title.trim().length > 0 && textOnly.length > 0;
+    
+    // 분류가 존재하는 게시판 리스트
+    const needsTags = ['tip', 'qna', 'free'].includes(boardType || '');
+
+    if (needsTags) {
+      // 태그가 있는 게시판은 제목 + 내용 + 태그가 모두 있어야 함
+      return hasTitleAndContent && selectedTagIds.length > 0;
+    }
+    
+    // 공지, 활동일지는 제목과 내용만 있으면 됨
+    return hasTitleAndContent;
+  }, [title, content, selectedTagIds, boardType]);
+
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -155,6 +172,16 @@ function BoardEdit() {
       setSaving(false)
     }
   }
+
+  const handleCancelClick = () => {
+  // 내용이 있을 때만 모달을 띄우고 싶다면 조건 추가 가능
+  if (title.trim() || content.trim()) {
+    setShowLeaveModal(true);
+  } else {
+    navigate(-1);
+  }
+};
+
 
   return (
     <>
@@ -222,24 +249,70 @@ function BoardEdit() {
             onPickImageFile={handlePickImageFile}
           />
 
-          {/* 하단 버튼 영역 */}
-          <div className="flex justify-center mb-4">
-            <Button
-              type="submit"
-              variant="primary"
-              size="m"
-              disabled={saving || loading || !isReadyToSubmit}
-              className={clsx(
-                'w-[120px] h-11',
-                (!isReadyToSubmit || saving || loading) &&
-                  'opacity-50 cursor-not-allowed'
-              )}
-            >
-              {saving ? '저장 중…' : '저장'}
-            </Button>
+          {/* 등록 버튼 */}
+          <div className="flex justify-between mb-4">
+            <div className="flex items-center">
+              <label className="flex items-center cursor-pointer select-none group">
+                <input
+                  type="checkbox"
+                  className="hidden"
+                  checked={isAnonymous}
+                  onChange={() => setIsAnonymous(!isAnonymous)}
+                />
+                {/* 체크박스 UI */}
+                <div
+                  className={clsx(
+                    "w-5 h-5 border-2 rounded-full flex items-center justify-center transition-all",
+                    isAnonymous 
+                      ? "border-line-active bg-background-blue" 
+                      : "border-line-normal bg-white" 
+                  )}
+                >
+                  {isAnonymous && (
+                    <div className="w-2.5 h-2.5 bg-label-primary rounded-full" />
+                  )}
+                </div>
+                {/* 텍스트 라벨 */}
+                <span className="ml-2 text-body-1 text-label-normal">
+                  익명으로 작성
+                </span>
+              </label>
+            </div>
+
+            <div className="flex gap-3">
+              <Button
+                type="button"
+                variant="outlined"
+                size="outlinedM"
+                onClick={handleCancelClick}
+                className="w-[120px] h-11"
+              >
+                취소
+              </Button>
+
+              <Button
+                type="submit"
+                variant="primary"
+                size="outlinedM"
+                disabled={saving || loading || !isReadyToSubmit}
+                className={clsx(
+                  'w-[120px] h-11',
+                  (!isReadyToSubmit || saving || loading) &&
+                    'opacity-50 cursor-not-allowed'
+                )}
+              >
+                {saving ? '등록 중…' : '등록'}
+              </Button>
+            </div>
           </div>
         </form>
       </div>
+      {/* 나가기 모달 */}
+      <LeaveModal
+        isOpen={showLeaveModal}
+        onClose={() => setShowLeaveModal(false)} // '계속 작성하기' 클릭 시 동작
+        onLeave={() => navigate(-1)}             // '나가기' 클릭 시 동작
+      />
     </>
   )
 }

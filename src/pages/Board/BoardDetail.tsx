@@ -52,10 +52,10 @@ const BOARD_CONFIG: Record<BoardType, BoardConfig> ={
   tip: {
     name: '선임자의 TIP',
     postApi: (id: string) => `/api/tip-posts/${id}`,
-    commentApi: null, // Tip은 댓글 없음
-    commentBaseUrl: null,
-    commentCreateApi: null,
-    commentReportType: null,
+    commentApi: (id: string) => `/api/tip-comments/${id}`,
+    commentBaseUrl: '/api/tip-comments',
+    commentCreateApi: '/api/tip-comments/create',
+    commentReportType: 'TIP_COMMENT',
     scrapApi: (id: string) => `/api/tip-posts/${id}/scrap`,
     reportType: 'TIP_POST',
     reportApi: (id: string) => `/api/tip-posts/${id}/report`,
