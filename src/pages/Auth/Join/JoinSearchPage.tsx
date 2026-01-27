@@ -10,8 +10,23 @@ type JoinType = 'CAMPUS' | 'CLUB'
 
 interface SearchResult {
   id: number;
+  school?: string; // CAMPUS일 때만 존재
   name: string;
 }
+
+// 작업 확인용 목데이터
+const MOCK_DATA = {
+  CAMPUS: [
+    { id: 1, school: "숙명여자대학교", name: "DACOS" },
+    { id: 2, school: "숙명여자대학교", name: "SOLUX" },
+    { id: 3, school: "숙명여자대학교", name: "APPS" },
+    { id: 4, school: "숙명여자대학교", name: "FORZA" },
+  ],
+  CLUB: [
+    { id: 101, name: "아침 러닝" },
+    { id: 102, name: "경도" },
+  ]
+};
 
 export default function JoinSearchPage() {
   const location = useLocation()
@@ -50,12 +65,28 @@ export default function JoinSearchPage() {
     const value = e.target.value
     setSearchTerm(value)
 
-    if (value.trim().length > 1) {
-      const mockData = isCampus && subStep === 1 
-        ? [{ id: 1, name: '서울대학교' }, { id: 2, name: '연합' }]
-        : [{ id: 101, name: '데브코스 5기' }, { id: 102, name: '알고리즘 스터디' }];
+    if (value.trim().length > 0) {
+      let data: SearchResult[] = [];
       
-      setSearchResults(mockData.filter(item => item.name.includes(value)));
+      if (isCampus) {
+        if (subStep === 1) {
+          // 1단계: 학교 중복 제거하여 검색 결과 생성
+          const schools = MOCK_DATA.CAMPUS
+            .filter(item => item.school.includes(value))
+            .map(item => item.school);
+          data = Array.from(new Set(schools)).map((name, id) => ({ id, name }));
+        } else {
+          // 2단계: 선택된 학교 내 동아리 검색
+          data = MOCK_DATA.CAMPUS.filter(item => 
+            item.school === selectedSchool?.name && item.name.includes(value)
+          );
+        }
+      } else {
+        // 소모임 검색
+        data = MOCK_DATA.CLUB.filter(item => item.name.includes(value));
+      }
+      setSearchResults(data);
+      
       // try {
       //   const res = await api.get(`${header.apiEndpoint}?q=${value}`)
       //   setSearchResults(res.data || [])
