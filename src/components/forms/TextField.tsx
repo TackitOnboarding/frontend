@@ -15,6 +15,7 @@ type Props = {
   required?: boolean
   type?: 'text' | 'email' | 'password'
   value: string
+  uppermessage?: string
   placeholder?: string
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void
@@ -47,6 +48,7 @@ export default function TextField({
   required,
   type = 'text',
   value,
+  uppermessage,
   placeholder = '',
   onChange,
   onBlur,
@@ -160,6 +162,12 @@ export default function TextField({
           <span className="text-label-normal">{label}</span>{' '}
           {required && <span className="text-system-red">*</span>}
         </label>
+      )}
+      {/* 상단 설명 */}
+      {uppermessage && (
+        <div className=" mb-2 text-caption 'text-label-neutral">
+          {uppermessage}
+        </div>
       )}
       <div className="relative">
         <input

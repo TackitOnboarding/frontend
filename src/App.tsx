@@ -5,6 +5,7 @@ import { notificationSSE } from './services/notificationSSE'
 import ProfileSelectPage from './pages/Auth/Profiles/ProfileSelectPage'
 import JoinTypePage from './pages/Auth/Join/JoinTypePage'
 import JoinSearchPage from './pages/Auth/Join/JoinSearchPage'
+import JoinFormPage from './pages/Auth/Join/JoinFormPage'
 
 import LoginPage from './pages/Auth/Login/LoginPage'
 import SignupPage from './pages/Auth/Signup/SignupPage'
@@ -44,6 +45,7 @@ function App(): JSX.Element {
         <Route path="/auth/profiles" element={<ProfileSelectPage />} />
         <Route path="/auth/join/type" element={<JoinTypePage />} />
         <Route path="/auth/join/search" element={<JoinSearchPage />} />
+        <Route path="/auth/join/form" element={<JoinFormPage />} />
 
         <Route path="/" element={<LoginPage />} />
         <Route path="/login" element={<LoginPage />} />
