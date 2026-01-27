@@ -1,8 +1,8 @@
 import { useEffect } from 'react'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 import { notificationSSE } from './services/notificationSSE'
-import LoginPage from './pages/Login/LoginPage'
-import SignupPage from './pages/Signup/SignupPage'
+import LoginPage from './pages/Auth/Login/LoginPage'
+import SignupPage from './pages/Auth/Signup/SignupPage'
 
 // 게시판 new
 import BoardList from './pages/Board/BoardList'
@@ -32,9 +32,9 @@ import AdminDashboardPage from './pages/AdminPage/AdminDashboardPage'
 import AdminUsersPage from './pages/AdminPage/AdminUsersPage'
 import AdminReportsPage from './pages/AdminPage/ReportListPage'
 import ReportReasonDetailPage from './pages/AdminPage/ReportDetailPage'
-import FindEmailPage from './pages/Login/FindEmail'
-import FindPasswordPage from './pages/Login/FindPassword'
-import ResetPasswordPage from './pages/Login/ResetPassword'
+import FindEmailPage from './pages/Auth/Login/FindEmail'
+import FindPasswordPage from './pages/Auth/Login/FindPassword'
+import ResetPasswordPage from './pages/Auth/Login/ResetPassword'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 

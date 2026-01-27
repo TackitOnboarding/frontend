@@ -1,11 +1,11 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import AuthLayout from '../../components/layouts/AuthLayout'
-import { AuthCard } from '../../components/ui/AuthCard'
-import { Button } from '../../components/ui/Button'
-import api from '../../api/api'
-import TextField from '../../components/forms/TextField'
-import AuthResultCard from '../../components/ui/AuthResultCard'
+import AuthLayout from '../../../components/layouts/AuthLayout'
+import { AuthCard } from '../../../components/ui/AuthCard'
+import { Button } from '../../../components/ui/Button'
+import api from '../../../api/api'
+import TextField from '../../../components/forms/TextField'
+import AuthResultCard from '../../../components/ui/AuthResultCard'
 
 type ViewStatus = 'form' | 'fail'
 

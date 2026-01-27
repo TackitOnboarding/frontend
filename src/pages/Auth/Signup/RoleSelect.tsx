@@ -5,7 +5,7 @@
  */
 
 import * as React from 'react'
-import { Button } from '../../components/ui/Button'
+import { Button } from '../../../components/ui/Button'
 
 export type Role = 'NEWBIE' | 'SENIOR'
 type Props = {

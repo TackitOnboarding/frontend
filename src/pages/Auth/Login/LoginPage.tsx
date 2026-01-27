@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Eye, EyeOff } from 'lucide-react'
-import api from '../../api/api'
-import AuthLayout from '../../components/layouts/AuthLayout'
-import { AuthCard } from '../../components/ui/AuthCard'
-import { Button } from '../../components/ui/Button'
+import api from '../../../api/api'
+import AuthLayout from '../../../components/layouts/AuthLayout'
+import { AuthCard } from '../../../components/ui/AuthCard'
+import { Button } from '../../../components/ui/Button'
 
 type AuthResponse = {
   accessToken: string
