@@ -9,13 +9,13 @@ import TextField from '../../components/forms/TextField'
 import RoleSelect, { type Role } from './RoleSelect'
 import { useUserForm } from '../../hooks/useUserForm'
 
-const JOIN_START_YEAR = 2015
+// const JOIN_START_YEAR = 2015
 const CALENDAR_ICON_PATH = '/icons/calendar.svg'
 
-type Step = 1 | 2
+// type Step = 1 | 2
 
 export default function SignupPage() {
-  const [step, setStep] = useState<Step>(1)
+  // const [step, setStep] = useState<Step>(1)
 
   const [passwordVisible, setPasswordVisible] = useState(false)
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false)
@@ -23,33 +23,33 @@ export default function SignupPage() {
   const [realNameTouched, setRealNameTouched] = useState(false)
 
   // 드롭다운 옵션 (입사년도)
-  const yearOptions = useMemo(() => {
-    const endYear = new Date().getFullYear()
-    return Array.from(
-      { length: endYear - JOIN_START_YEAR + 1 },
-      (_, i) => endYear - i
-    )
-  }, [])
+  // const yearOptions = useMemo(() => {
+  //   const endYear = new Date().getFullYear()
+  //   return Array.from(
+  //     { length: endYear - JOIN_START_YEAR + 1 },
+  //     (_, i) => endYear - i
+  //   )
+  // }, [])
 
-  const [joinedYear, setJoinedYear] = useState<number | ''>('')
-  const [joinedYearTouched, setJoinedYearTouched] = useState(false)
+  // const [joinedYear, setJoinedYear] = useState<number | ''>('')
+  // const [joinedYearTouched, setJoinedYearTouched] = useState(false)
   const [submitted, setSubmitted] = useState(false)
 
-  const joinedYearEmpty = joinedYear === ''
-  const joinedYearOutOfRange =
-    !joinedYearEmpty && !yearOptions.includes(Number(joinedYear))
+  // const joinedYearEmpty = joinedYear === ''
+  // const joinedYearOutOfRange =
+  //   !joinedYearEmpty && !yearOptions.includes(Number(joinedYear))
 
-  const joinedYearInvalidUi =
-    (joinedYearTouched && !joinedYearEmpty && joinedYearOutOfRange) ||
-    (submitted && (joinedYearEmpty || joinedYearOutOfRange))
+  // const joinedYearInvalidUi =
+  //   (joinedYearTouched && !joinedYearEmpty && joinedYearOutOfRange) ||
+  //   (submitted && (joinedYearEmpty || joinedYearOutOfRange))
 
-  const joinedYearActuallyInvalid = joinedYearEmpty || joinedYearOutOfRange
+  // const joinedYearActuallyInvalid = joinedYearEmpty || joinedYearOutOfRange
 
-  const joinedYearMessage = joinedYearInvalidUi
-    ? joinedYearEmpty
-      ? '입사연도를 선택해 주세요.'
-      : '유효한 연도를 선택해 주세요.'
-    : undefined
+  // const joinedYearMessage = joinedYearInvalidUi
+  //   ? joinedYearEmpty
+  //     ? '입사연도를 선택해 주세요.'
+  //     : '유효한 연도를 선택해 주세요.'
+  //   : undefined
 
   const nameInvalid =
     (realNameTouched && realName.trim() === '') ||
@@ -59,25 +59,25 @@ export default function SignupPage() {
     email,
     password,
     confirmPassword,
-    nickname,
-    organization,
-    role,
+    // nickname,
+    // organization,
+    // role,
     setEmail,
     setPassword,
     setConfirmPassword,
-    setNickname,
-    setOrganization,
-    setRole,
+    // setNickname,
+    // setOrganization,
+    // setRole,
     pwInvalid,
     confirmInvalid,
-    orgInvalid,
+    // orgInvalid,
     emailHasError,
     emailMessage,
-    nickHasError,
-    nickMessage,
+    // nickHasError,
+    // nickMessage,
     isFormValid,
     checkEmailDuplicate,
-    checkNicknameDuplicate,
+    // checkNicknameDuplicate,
   } = useUserForm('')
 
   const navigate = useNavigate()

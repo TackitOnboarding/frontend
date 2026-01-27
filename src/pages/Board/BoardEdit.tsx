@@ -40,6 +40,11 @@ const BOARD_CONFIG = {
     placeholder: '자유롭게 이야기를 나눠주세요.',
     dtoKey: 'req',
   },
+  notice: {
+    postApi: (id: string) => `/api/notice-posts/${id}`,
+    placeholder: '공지할 내용을 작성해 주세요.',
+    dtoKey: 'dto',
+  },
 }
 
 function BoardEdit() {
@@ -200,7 +205,7 @@ function BoardEdit() {
           </p>
           <input
             type="text"
-            placeholder="제목을 입력해 주세요."
+            placeholder="내용을 대표할 수 있는 제목을 입력해 주세요."
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             className="w-full px-4 py-3 bg-white border outline-none border-line-normal rounded-xl text-label-normal text-body-1"
@@ -208,32 +213,36 @@ function BoardEdit() {
           />
 
           {/* 분류(태그) */}
-          <p className="mt-4 text-label-normal text-body-1sb">
-            분류 <span className="text-system-red">*</span>
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {tagList.map((tag) => {
-              const selected = selectedTagIds.includes(tag.id)
-              return (
-                <Button
-                  key={tag.id}
-                  type="button"
-                  variant="outlined"
-                  size="outlinedS"
-                  aria-pressed={selected}
-                  onClick={() => handleTagToggle(tag.id)}
-                  className={clsx(
-                    selected
-                      ? '!border-line-active text-label-primary bg-background-blue'
-                      : 'border-line-normal text-label-normal'
-                  )}
-                  disabled={loading}
-                >
-                  #{tag.tagName}
-                </Button>
-              )
-            })}
+          {['tip', 'qna', 'free'].includes(boardType || '') && (
+            <div>
+              <p className="mt-4 text-label-normal text-body-1sb">
+                분류 <span className="text-system-red">*</span>
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {tagList.map((tag) => {
+                  const selected = selectedTagIds.includes(tag.id)
+                  return (
+                    <Button
+                      key={tag.id}
+                      type="button"
+                      variant="outlined"
+                      size="outlinedS"
+                      aria-pressed={selected}
+                      onClick={() => handleTagToggle(tag.id)}
+                      className={clsx(
+                        selected
+                          ? '!border-line-active text-label-primary bg-background-blue'
+                          : 'border-line-normal text-label-normal'
+                      )}
+                      disabled={loading}
+                    >
+                      #{tag.tagName}
+                    </Button>
+                  )
+                })}
+            </div>
           </div>
+          )}
 
           {/* 내용 */}
           <p className="mt-6 text-label-normal text-body-1sb">

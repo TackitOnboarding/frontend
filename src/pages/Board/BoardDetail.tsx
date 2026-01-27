@@ -19,7 +19,7 @@ import {
 } from '../../utils/toast'
 import PostHeader from '../../components/posts/PostHeader'
 
-type BoardType = 'tip' | 'qna' | 'free'
+type BoardType = 'tip' | 'qna' | 'free' | 'notice'
 
 type Post = {
   id: number
@@ -80,6 +80,17 @@ const BOARD_CONFIG: Record<BoardType, BoardConfig> ={
     scrapApi: (id: string) => `/api/free-posts/${id}/scrap`,
     reportType: 'FREE_POST',
     reportApi: (id: string) => `/api/free-posts/${id}/report`,
+  },
+  notice: {
+    name: '공지 게시판',
+    postApi: (id: string) => `/api/notice-posts/${id}`,
+    commentApi: (id: string) => `/api/notice-comments/${id}`,
+    commentBaseUrl: '/api/notice-comments',
+    commentCreateApi: '/api/notice-comments',
+    commentReportType: 'NOTICE_COMMENT',
+    scrapApi: (id: string) => `/api/notice-posts/${id}/scrap`,
+    reportType: 'NOTICE_POST',
+    reportApi: (id: string) => `/api/notice-posts/${id}/report`,
   },
 }
 
@@ -211,6 +222,8 @@ function BoardDetail() {
       payload.qnaPostId = postIdNumber; 
     } else if (type === 'free') {
       payload.freePostId = postIdNumber; 
+    } else if (type === 'notice') {
+      payload.noticePostId = String(postIdNumber); 
     }
 
     const res = await api.post(config.commentCreateApi!, payload);
