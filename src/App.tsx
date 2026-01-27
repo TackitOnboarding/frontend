@@ -1,6 +1,11 @@
 import { useEffect } from 'react'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 import { notificationSSE } from './services/notificationSSE'
+
+import ProfileSelectPage from './pages/Auth/Profiles/ProfileSelectPage'
+import JoinTypePage from './pages/Auth/Join/JoinTypePage'
+import JoinSearchPage from './pages/Auth/Join/JoinSearchPage'
+
 import LoginPage from './pages/Auth/Login/LoginPage'
 import SignupPage from './pages/Auth/Signup/SignupPage'
 
@@ -10,18 +15,6 @@ import BoardWrite from './pages/Board/BoardWrite'
 import BoardEdit from './pages/Board/BoardEdit'
 import BoardDetail from './pages/Board/BoardDetail'
 
-import FreePostList from './pages/FreePost/FreePostList'
-import FreePostDetail from './pages/FreePost/FreePostDetail'
-import FreePostWrite from './pages/FreePost/FreePostWrite'
-import FreePostEdit from './pages/FreePost/FreePostEdit'
-import QnaPostList from './pages/QnaPost/QnaPostList'
-import QnaPostDetail from './pages/QnaPost/QnaPostDetail'
-import QnaPostWrite from './pages/QnaPost/QnaPostWrite'
-import QnaPostEdit from './pages/QnaPost/QnaPostEdit'
-import TipPostList from './pages/TipPost/TipPostList'
-import TipPostDetail from './pages/TipPost/TipPostDetail'
-import TipPostWrite from './pages/TipPost/TipPostWrite'
-import TipPostEdit from './pages/TipPost/TipPostEdit'
 import MainPage from './pages/Main/MainPage'
 import MyPage from './pages/MyPage/MyPage'
 import EditInfoPage from './pages/MyPage/EditInfoPage'
@@ -48,6 +41,10 @@ function App(): JSX.Element {
   return (
     <Router>
       <Routes>
+        <Route path="/auth/profiles" element={<ProfileSelectPage />} />
+        <Route path="/auth/join/type" element={<JoinTypePage />} />
+        <Route path="/auth/join/search" element={<JoinSearchPage />} />
+
         <Route path="/" element={<LoginPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />

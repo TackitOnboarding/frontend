@@ -2,12 +2,12 @@
 module.exports = {
   content: ['./index.html', './src/**/*.{js,jsx,ts,tsx}'],
   theme: {
-    screens: {
-      mobile: '375px', // mobile 기준
-      tablet: '768px',
-      desktop: '1440px',
-    },
     extend: {
+      screens: {
+        mobile: '375px', // mobile 기준
+        tablet: '768px',
+        desktop: '1440px',
+      },
       colors: {
         // primitive
         primary: {

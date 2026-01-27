@@ -46,16 +46,21 @@ export default function ProfileSelectPage() {
 
   return (
     <AuthLayout showCornerLogo={true}>
-      <div className="flex flex-col items-center justify-center gap-25 min-h-[400px]">
+      <div className="flex flex-col items-center justify-center gap-[100px] min-h-[400px]">
         <div className="flex flex-col items-center justify-center gap-12">
           {/* 헤더 텍스트 */}
           <h1 className="text-center text-title1-bold text-label-normal">
-            {profiles.length > 0
-              ? '참여할 모임을 선택해 주세요.'
-              : '아직 참여 중인 모임이 없어요.</br>새 모임을 만들거나, 참여해보세요!'}
+            {profiles.length > 0 ? (
+              '참여할 모임을 선택해 주세요.'
+            ) : (
+              <>
+                아직 참여 중인 모임이 없어요.<br />
+                새 모임을 만들거나, 참여해보세요!
+              </>
+            )}
           </h1>
 
-          <div className="flex flex-wrap justify-center gap-15">
+          <div className="flex flex-wrap justify-center gap-[60px]">
             {/* 이미 가입된 프로필 리스트(default) */}
             {profiles.map((profile) => {
               const badge = getBadgeInfo(profile.memberRole, profile.memberType);
@@ -65,13 +70,13 @@ export default function ProfileSelectPage() {
                   className="flex flex-col items-center cursor-pointer group gap-6"
                   onClick={() => navigate(`/main/${profile.id}`)}
                 >
-                  <div className="w-30 h-30 rounded-full flex items-center justify-center">
-                    <img src="/icons/profile-default.svg" alt="organization" className="w-30 h-30" />
+                  <div className="w-[30px] h-[30px] rounded-full flex items-center justify-center">
+                    <img src="/icons/profile-default.svg" alt="organization" className="w-[30px] h-[30px]" />
                   </div>
 
                   <div className="flex flex-col items-center justify-center gap-1">
                     <span className="text-title-2m text-label-normal">{profile.organization}</span>
-                    <div className="flex gap-0.5 items-center justify-center">
+                    <div className="flex gap-[2px] items-center justify-center">
                       <p className="text-body-1 text-label-neutral">{profile.nickname}</p>
                       {/* 배지 아이콘 렌더링 */}
                       {badge && (
@@ -93,8 +98,8 @@ export default function ProfileSelectPage() {
               className=" flex flex-col items-center cursor-pointer group gap-6"
               onClick={() => navigate('/auth/join/type')}
             >
-              <div className="w-30 h-30 gap-[10px]">
-                <img src="/icons/create.svg" alt="모임 참여하기" className="w-14 h-16"/>
+              <div className="w-[30px] h-[30px] gap-[10px]">
+                <img src="/icons/create.svg" alt="모임 참여하기" className="w-14 h-14"/>
               </div>
               <span className="text-title-2m text-label-normal">모임 참여하기</span>
             </div>
@@ -104,7 +109,7 @@ export default function ProfileSelectPage() {
           <p className="text-body-2 text-label-normal">운영진이신가요?</p>
           <button
            onClick={() => navigate('/auth/create/type')}
-           className="text-body-1sb text-primary-normal"
+           className="text-body-1sb text-label-primary"
           >
             새로운 모임 등록하기
           </button>
