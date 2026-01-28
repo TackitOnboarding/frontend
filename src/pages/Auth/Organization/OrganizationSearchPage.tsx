@@ -6,7 +6,7 @@ import { Button } from '../../../components/ui/Button'
 import api from '../../../api/api'
 
 
-type JoinType = 'CAMPUS' | 'CLUB'
+type OrganizationType = 'CAMPUS' | 'CLUB'
 
 interface SearchResult {
   id: number;
@@ -28,11 +28,13 @@ const MOCK_DATA = {
   ]
 };
 
-export default function JoinSearchPage() {
+export default function OrganizationSearchPage() {
   const location = useLocation()
   const navigate = useNavigate()
 
-  const joinType = location.state?.type as JoinType;
+  const { type: organizationType, mode = 'JOIN' } = location.state || {};
+  const isCreate = mode === 'CREATE'
+  const isCampus = organizationType === 'CAMPUS'
 
   // 교내 동아리 서브 스텝
   const [subStep, setSubStep] = useState(1); 
@@ -43,19 +45,19 @@ export default function JoinSearchPage() {
   const [searchResults, setSearchResults] = useState<SearchResult[]>([])
 
 
-  const isCampus = joinType === 'CAMPUS'
   // 상단 바 개수 설정 (이미지 반영)
-  const totalSteps = isCampus ? 3 : 2;
+  const totalSteps = (!isCreate && isCampus) ? 3 : 2;
   const currentProgress = subStep;
 
   // UI 문구 분기
   const getHeaderInfo = () => {
+    const titleAction = isCreate ? '등록하기' : '참여하기';
     if (isCampus) {
       return subStep === 1 
-        ? { title: '동아리 참여하기', desc: `연합 동아리일 경우 '연합'을 선택해주세요.`, placeholder: '학교 이름을 입력해 주세요.' }
-        : { title: '동아리 참여하기', desc: null, placeholder: '모임 이름을 입력해 주세요.' };
+        ? { title: `동아리 ${titleAction}`, desc: `연합 동아리일 경우 '연합'을 선택해주세요.`, placeholder: '학교 이름을 입력해 주세요.' }
+        : { title: `동아리 ${titleAction}`, desc: null, placeholder: '모임 이름을 입력해 주세요.' };
     }
-    return { title: '소모임 참여하기', desc: '', placeholder: '모임 이름을 입력해 주세요.' };
+    return { title: `소모임 ${titleAction}`, desc: null, placeholder: '모임 이름을 입력해 주세요.' };
   };
 
   const header = getHeaderInfo();
@@ -167,11 +169,18 @@ export default function JoinSearchPage() {
             disabled={isCampus &&subStep === 1 ? !selectedSchool : !selectedOrganization}
             onClick={() => {
               if (isCampus && subStep === 1) {
+                if (isCreate) {
+                  navigate('/auth/organization/create', {
+                    state: {type: organizationType, mode, school: selectedSchool }
+                  })
+                } else {
                 setSubStep(2);
                 setSearchTerm('');
                 setSearchResults([]);
+                }
               } else {
-                navigate('/auth/join/form', { state: { type: joinType, school: selectedSchool, organization: selectedOrganization } });
+                navigate('/auth/organization/form', {
+                  state: { type: organizationType, mode, school: selectedSchool, organization: selectedOrganization } });
               }
             }}
           >

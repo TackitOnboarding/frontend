@@ -23,7 +23,7 @@ const TYPE_MESSAGES: Record<MemberType, string> = {
 const JOIN_START_YEAR = 2015
 const CALENDAR_ICON_PATH = '/icons/calendar.svg'
 
-export default function JoinFormPage() {
+export default function OrganizationFormPage() {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -76,9 +76,10 @@ export default function JoinFormPage() {
   const handleComplete = () => {
     setSubmitted(true);
     if (!canSubmit) return;
-    
-    // 최종 제출 로직
-    navigate('/auth/join/complete');
+
+    navigate('/auth/organization/complete', { 
+      state: { type: type } 
+    });
   };
 
   const roleOptions: [SelectOption<MemberRole>, SelectOption<MemberRole>] = [
@@ -95,7 +96,7 @@ export default function JoinFormPage() {
     <AuthLayout icons={['/assets/auth/auth-icon.svg']} iconOffset={80}>
       <AuthCard className="flex flex-col items-center justify-center w-full gap-8 max-w-[440px] translate-y-12 md:translate-y-20 lg:translate-y-28">
         {/* 스테퍼 (마지막 단계) */}
-        <div className="w-[392px] h-2 gap-2 flex ">
+        <div className="w-[392px] h-2 gap-2 flex">
           {Array.from({ length: isCampus ? 3 : 2}).map((_, i) => (
             <div key={i} className=" h-2 flex-1 rounded-full bg-interaction-normal"/>
           ))}
@@ -103,7 +104,7 @@ export default function JoinFormPage() {
 
         <h1 className="text-title1-bold text-label-normal">{isCampus ? '동아리 참여하기' : '소모임 참여하기'}</h1>
 
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 w-[392px]">
 
           {/* 닉네임 */}
           <TextField

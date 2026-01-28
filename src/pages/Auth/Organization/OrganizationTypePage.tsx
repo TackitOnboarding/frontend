@@ -1,11 +1,11 @@
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import AuthLayout from '../../../components/layouts/AuthLayout'
 import { AuthCard } from '../../../components/ui/AuthCard'
 import { Button } from '../../../components/ui/Button'
 import clsx from 'clsx'
 
-type JoinType = 'CAMPUS' | 'CLUB'
+type OrganizationType = 'CAMPUS' | 'CLUB'
 
 const ICONS = {
   CAMPUS: {
@@ -18,15 +18,27 @@ const ICONS = {
   }
 }
 
-export default function JoinTypePage() {
-  const [selectedType, setSelectedType] = useState<JoinType | null>(null)
+export default function OrganizationTypePage() {
+  const [selectedType, setSelectedType] = useState<OrganizationType | null>(null)
+  const location = useLocation();
   const navigate = useNavigate()
 
+  const { mode = 'JOIN' } = location.state || {};
+
   const handleNext = () => {
-    if (!selectedType) return
-    // 선택한 타입에 따라 검색 페이지로 이동 (state로 타입 전달)
-    navigate('/auth/join/search', { state: { type: selectedType } })
-  }
+    if (!selectedType) return;
+
+    if (mode === 'CREATE' && selectedType === 'CLUB') {
+      navigate('/auth/organization/create', {
+        state: {type: selectedType, mode }
+      })
+    }
+    else {
+      navigate('/auth/organization/search', { 
+        state: { type: selectedType, mode }
+    });
+    }
+  };
 
   return (
     <AuthLayout icons={['/assets/auth/auth-icon.svg']} iconOffset={80}>

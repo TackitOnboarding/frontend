@@ -3,9 +3,11 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 import { notificationSSE } from './services/notificationSSE'
 
 import ProfileSelectPage from './pages/Auth/Profiles/ProfileSelectPage'
-import JoinTypePage from './pages/Auth/Join/JoinTypePage'
-import JoinSearchPage from './pages/Auth/Join/JoinSearchPage'
-import JoinFormPage from './pages/Auth/Join/JoinFormPage'
+import OrganizationTypePage from './pages/Auth/Organization/OrganizationTypePage'
+import OrganizationSearchPage from './pages/Auth/Organization/OrganizationSearchPage'
+import OrganizationFormPage from './pages/Auth/Organization/OrganizationFormPage'
+import OrganizationCreatePage from './pages/Auth/Organization/OrganizationCreatePage'
+import OrganizationCompletePage from './pages/Auth/Organization/OrganizationCompletePage'
 
 import LoginPage from './pages/Auth/Login/LoginPage'
 import SignupPage from './pages/Auth/Signup/SignupPage'
@@ -43,9 +45,11 @@ function App(): JSX.Element {
     <Router>
       <Routes>
         <Route path="/auth/profiles" element={<ProfileSelectPage />} />
-        <Route path="/auth/join/type" element={<JoinTypePage />} />
-        <Route path="/auth/join/search" element={<JoinSearchPage />} />
-        <Route path="/auth/join/form" element={<JoinFormPage />} />
+        <Route path="/auth/organization/type" element={<OrganizationTypePage />} />
+        <Route path="/auth/organization/search" element={<OrganizationSearchPage />} />
+        <Route path="/auth/organization/form" element={<OrganizationFormPage />} />
+        <Route path="/auth/organization/create" element={<OrganizationCreatePage />} />
+        <Route path="/auth/organization/complete" element={<OrganizationCompletePage />} />
 
         <Route path="/" element={<LoginPage />} />
         <Route path="/login" element={<LoginPage />} />

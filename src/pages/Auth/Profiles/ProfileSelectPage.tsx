@@ -30,6 +30,18 @@ export default function ProfileSelectPage() {
   const [loading, setLoading] = useState<boolean>(true)
   const navigate = useNavigate()
 
+  const handleJoinOrganization = () => {
+    navigate('/auth/organization/type', {
+      state: {mode: 'JOIN'}
+    })
+  }
+
+  const handleCreateOrganization = () => {
+    navigate('/auth/organization/type', {
+      state: {mode: 'CREATE'}
+    })
+  }
+
   useEffect(() => {
     const fetchProfiles = async () => {
       try {
@@ -96,7 +108,7 @@ export default function ProfileSelectPage() {
             {/* 모임 참여하기 버튼 */}
             <div
               className=" flex flex-col items-center cursor-pointer group gap-6"
-              onClick={() => navigate('/auth/join/type')}
+              onClick={handleJoinOrganization}
             >
               <div className="w-[30px] h-[30px] gap-[10px]">
                 <img src="/icons/create.svg" alt="모임 참여하기" className="w-14 h-14"/>
@@ -108,7 +120,7 @@ export default function ProfileSelectPage() {
         <div className="flex items-center justify-center gap-2">
           <p className="text-body-2 text-label-normal">운영진이신가요?</p>
           <button
-           onClick={() => navigate('/auth/create/type')}
+           onClick={handleCreateOrganization}
            className="text-body-1sb text-label-primary"
           >
             새로운 모임 등록하기

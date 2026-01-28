@@ -21,6 +21,11 @@ export function useUserForm(initialRole = '') {
   const [organization, setOrganization] = useState('')
   const [role, setRole] = useState(initialRole)
 
+  // 모임 생성하기의 Form
+  const [organizationName, setOrganizationName] = useState(''); // 모임 이름 상태 추가
+  const [orgNameServerError, setOrgNameServerError] = useState(''); // 서버 중복 에러 상태
+  const [orgNameCheckMessage, setOrgNameCheckMessage] = useState(''); // 성공 메시지 상태
+
   const [emailCheckMessage, setEmailCheckMessage] = useState('')
   const [nicknameCheckMessage, setNicknameCheckMessage] = useState('')
   const [emailServerError, setEmailServerError] = useState('')
@@ -32,6 +37,7 @@ export function useUserForm(initialRole = '') {
   const confirmInvalid = !!confirmPassword && confirmPassword !== password
   const nickInvalid = !!nickname && nickname.length > 10
   const orgInvalid = !!organization && organization.trim().length === 0
+  const orgNameInvalid = !!organizationName && organizationName.length > 20;
 
   const emailHasError = (!!email && emailInvalid) || !!emailServerError
   const emailMessage = emailInvalid
@@ -42,6 +48,11 @@ export function useUserForm(initialRole = '') {
   const nickMessage = nickInvalid
     ? '닉네임은 10자 이내로 입력해 주세요.'
     : nickServerError || nicknameCheckMessage
+
+  const orgNameHasError = (!!organizationName && orgNameInvalid) || !!orgNameServerError;
+  const orgNameMessage = orgNameInvalid 
+    ? '모임 이름은 20자 이내로 입력해 주세요.' 
+    : orgNameServerError || orgNameCheckMessage;
 
   const isFormValid = Boolean(
     email &&
@@ -101,6 +112,29 @@ export function useUserForm(initialRole = '') {
     }
   }
 
+  // 모임 이름 중복 체크 API (나중에 엔드포인트만 수정하세요)
+  const checkOrganizationNameDuplicate = async (schoolName?: string) => {
+    setOrgNameServerError('');
+    setOrgNameCheckMessage('');
+
+    if (!organizationName || orgNameInvalid) return;
+
+    try {
+      // 실제 API 예시 (학교명이 있으면 같이 보냄)
+      // const encoded = encodeURIComponent(organizationName);
+      // await api.get(`/auth/check-org-name?name=${encoded}&school=${schoolName}`);
+      
+      // ✅ 테스트용 목데이터 로직 (DACOS 입력 시 에러 발생)
+      if (["DACOS", "SOLUX", "tackit"].includes(organizationName)) {
+        setOrgNameServerError('이미 등록된 모임입니다.');
+      } else {
+        setOrgNameCheckMessage('사용 가능한 이름입니다.');
+      }
+    } catch (e: unknown) {
+      setOrgNameServerError('중복 확인 중 오류 발생');
+    }
+  };
+
   return {
     // 상태
     email,
@@ -115,6 +149,8 @@ export function useUserForm(initialRole = '') {
     setNickname,
     setOrganization,
     setRole,
+    organizationName,
+    setOrganizationName,
 
     // 유효성
     emailInvalid,
@@ -127,9 +163,12 @@ export function useUserForm(initialRole = '') {
     nickHasError,
     nickMessage,
     isFormValid,
+    orgNameHasError,
+    orgNameMessage,
 
     // API
     checkEmailDuplicate,
     checkNicknameDuplicate,
+    checkOrganizationNameDuplicate,
   }
 }
