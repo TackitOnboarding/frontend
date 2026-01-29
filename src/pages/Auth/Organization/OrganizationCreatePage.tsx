@@ -23,25 +23,19 @@ export default function OrganizationCreatePage() {
     checkOrganizationNameDuplicate,
   } = useUserForm();
 
-  const [isNameUnique, setIsNameUnique] = useState(false);
   const [description, setDescription] = useState('');
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setOrganizationName(e.target.value);
-    setIsNameUnique(false); 
+    // setIsNameUnique(false);  
   };
 
   const handleCheckDuplicate = async () => {
+    if (!organizationName) return;
     await checkOrganizationNameDuplicate(school?.name);
-    
-    // 훅의 로직 결과에 따라 성공 여부 결정
-    // 에러가 없고 값이 있을 때만 true
-    if (organizationName && !orgNameHasError) {
-      setIsNameUnique(true);
-    }
   };
 
-  const canSubmit = organizationName && !orgNameHasError && isNameUnique;
+  const canSubmit = organizationName.trim() !== "" && !orgNameHasError && orgNameMessage === "사용 가능한 이름입니다.";
 
   const handleComplete = () => {
     if (!canSubmit) return;
@@ -56,11 +50,12 @@ export default function OrganizationCreatePage() {
     <AuthLayout icons={['/assets/auth/auth-icon.svg']} iconOffset={80}>
       <AuthCard className="flex flex-col items-center justify-center w-full gap-8 max-w-[440px] translate-y-12 md:translate-y-20 lg:translate-y-28">
         {/* 스테퍼 (마지막 단계) */}
-        <div className="w-[392px] h-2 gap-2 flex">
-          {Array.from({ length: isCampus ? 3 : 2}).map((_, i) => (
-            <div key={i} className=" h-2 flex-1 rounded-full bg-interaction-normal"/>
-          ))}
-        </div>
+        {isCampus && (
+          <div className="w-[392px] h-2 gap-2 flex">
+            <div className="h-2 flex-1 rounded-full bg-interaction-normal" />
+            <div className="h-2 flex-1 rounded-full bg-interaction-normal" />
+          </div>
+        )}
 
         <h1 className="text-title1-bold text-label-normal">{isCampus ? '동아리 등록하기' : '소모임 등록하기'}</h1>
 
