@@ -18,6 +18,9 @@ import BoardWrite from './pages/Board/BoardWrite'
 import BoardEdit from './pages/Board/BoardEdit'
 import BoardDetail from './pages/Board/BoardDetail'
 
+// 캘린더
+import CalendarPage from './pages/Calendar/CalendarPage'
+
 import MainPage from './pages/Main/MainPage'
 import MyPage from './pages/MyPage/MyPage'
 import EditInfoPage from './pages/MyPage/EditInfoPage'
@@ -64,6 +67,9 @@ function App(): JSX.Element {
         <Route path="/write/:boardType" element={<BoardWrite />} />
         <Route path="/edit/:boardType/:id" element={<BoardEdit />} />
         <Route path="/:boardType/:id" element={<BoardDetail />} />
+
+        {/* 캘린더 */}
+        <Route path="auth/calendar" element={<CalendarPage />} />
 
         {/* 게시판 */}
         {/* <Route path="/free" element={<FreePostList />} /> */}
