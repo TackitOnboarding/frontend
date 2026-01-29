@@ -1,4 +1,47 @@
 import { useState } from "react"
+import { CalendarUtils } from "../../types/calendar";
+import { CalendarChip } from "../../components/CalendarChip";
+
+const mockSchedules = [
+  {
+    schedule_id: 1,
+    title: "1주차 전체 회의",
+    starts_at: "2026-01-28T10:00:00",
+    ends_at: "2026-01-28T12:00:00",
+    color_chip: "blue",
+  },
+  {
+    schedule_id: 2,
+    title: "동아리 워크샵",
+    starts_at: "2026-01-29T09:00:00",
+    ends_at: "2026-01-31T18:00:00",
+    color_chip: "pink",
+  },
+  {
+    schedule_id: 3,
+    title: "줄바꿈 테스트",
+    starts_at: "2026-01-17T09:00:00",
+    ends_at: "2026-01-19T18:00:00",
+    color_chip: "green",
+  },
+  {
+    schedule_id: 4,
+    title: "겹침 테스트",
+    starts_at: "2026-01-30T09:00:00",
+    ends_at: "2026-01-31T18:00:00",
+    color_chip: "green",
+  },
+];
+
+const mockVotes = [
+  {
+    vote_id: 1,
+    title: "회식 메뉴 투표",
+    starts_at: "2026-01-30T09:00:00",
+    ends_at: "2026-02-01T23:59:59",
+    color_chip: "gray",
+  }
+];
 
 // 달력 날짜 계산 로직
 const getCalendarDays = (year: number, month: number) => {
@@ -41,6 +84,14 @@ const getCalendarDays = (year: number, month: number) => {
   return days;
 };
 
+const getRemainingDays = (dateStr: string, endsAt: string) => {
+  const start = new Date(dateStr).setHours(0, 0, 0, 0);
+  const end = new Date(endsAt.split('T')[0]).setHours(0, 0, 0, 0);
+  
+  // 밀리초 단위를 일 단위로 변환: (1000ms * 60s * 60m * 24h)
+  const diffTime = end - start;
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+};
 
 export default function MonthlyCalendar() {
   // 화면에 보여줄 기준 날짜 상태(기본값: 오늘
@@ -52,12 +103,34 @@ export default function MonthlyCalendar() {
   const handlePrevMonth = () => setViewDate(new Date(year, month - 1, 1));
   const handleNextMonth = () => setViewDate(new Date(year, month + 1, 1));
 
-  // const handleToday = () => setViewDate(new Date()); 
-
   const calendarDays = getCalendarDays(year, month);
 
+  // 현재 날짜 칸에서 렌더링해야 할 아이템들의 순서를 계산하는 함수
+  const getRenderItems = (dateStr: string, index: number) => {
+    // 1. 해당 날짜에 "걸쳐 있는" 모든 데이터 (줄 번호 고정용)
+    const allOngoing = [
+      ...mockSchedules.filter(s => CalendarUtils.isDateInRange(dateStr, s.starts_at, s.ends_at)),
+      ...mockVotes.filter(v => CalendarUtils.isDateInRange(dateStr, v.starts_at, v.ends_at))
+    ].sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime());
+
+    return allOngoing.map((item) => {
+      // 2. 이 아이템이 전체 목록에서 몇 번째 줄(Row)인지 확인
+      const rowIdx = allOngoing.findIndex(i => 
+        ('schedule_id' in i && 'schedule_id' in item && i.schedule_id === item.schedule_id) ||
+        ('vote_id' in i && 'vote_id' in item && i.vote_id === item.vote_id)
+      );
+
+      // 3. 실제로 이 칸에서 "그려야 하는지" 여부 (시작일이거나 일요일인 경우)
+      const isSunday = index % 7 === 0;
+      const isStartDay = item.starts_at.startsWith(dateStr);
+      const shouldRender = isStartDay || (isSunday && !isStartDay);
+
+      return { item, rowIdx, shouldRender };
+    });
+  };
+
   return (
-    <div className="flex flex-col w-full h-full pt-6 pb-10 px-9 gap-4">
+    <div className="flex flex-col w-full h-[800px] pt-6 pb-10 px-9 gap-4">
       {/* 상단 제어바 */}
       <div className="flex w-full justify-between">
         <div className="flex gap-3 items-center">
@@ -86,6 +159,10 @@ export default function MonthlyCalendar() {
         <div className="grid grid-cols-7 border-t border-l border-line-normal">
           {calendarDays.map((dateObj, index) => {
             const isToday = new Date().toDateString() === new Date(dateObj.year, dateObj.month, dateObj.day).toDateString();
+            // 현재 칸의 날짜 (YYYY-MM-DD)
+            const dateStr = CalendarUtils.formatDate(new Date(dateObj.year, dateObj.month, dateObj.day));
+            const renderItems = getRenderItems(dateStr, index);
+
             return (
               <div key={index} className="w-[140px] h-[140px] border-r border-b border-line-normal relative hover:bg-background-alternative transition-colors">
                 {/* 날짜 표시 */}
@@ -95,6 +172,7 @@ export default function MonthlyCalendar() {
                   {isToday && dateObj.isCurrentMonth && (
                     <div className="absolute top-1 w-7 h-7 bg-interaction-normal rounded-full -z-0" />
                   )}
+
                   {/* 날짜 숫자 */}
                   <span className={`
                     text-body-2 relative p-2 z-10
@@ -112,9 +190,33 @@ export default function MonthlyCalendar() {
                 </div>
 
                 {/* 일정 및 투표 칩 영역 */}
-                <div className="">
-                  {/* 칩 */}
+                <div className="relative px-2 mt-1">
+                  {renderItems.map(({ item, rowIdx, shouldRender }) => {
+                    if (!shouldRender) return null;
+
+                    const daysLeftInWeek = 7 - (index % 7);
+                    const remainingDays = getRemainingDays(dateStr, item.ends_at);
+                    const displayDays = Math.min(daysLeftInWeek, remainingDays);
+
+                    return (
+                      <CalendarChip
+                       key={'schedule_id' in item ? `s-${item.schedule_id}` : `v-${item.vote_id}`}
+                        title={item.title}
+                        color={item.color_chip as any}
+                        type={'schedule_id' in item ? 'schedule' : 'vote'}
+                        isStart={item.starts_at.startsWith(dateStr)}
+                        isEnd={remainingDays <= daysLeftInWeek}
+                        style={{
+                          width: `${CalendarUtils.calculateWidth(displayDays)}px`,
+                          position: 'absolute',
+                          top: `${rowIdx * 32}px`,
+                          zIndex: 20,
+                        }}
+                      />
+                    );
+                  })}
                 </div>
+                
               </div>
             )
           })}

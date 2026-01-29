@@ -2,10 +2,14 @@ import VoteNoticeSection from "./VoteNoticeSection"
 import VoteListSection from "./VoteListSection"
 import ScheduleListSection from "./ScheduleListSection"
 import MonthlyCalendar from "./MonthlyCalendar"
+import MainFooter from "../../components/layouts/MainFooter"
+import HomeBar from "../../components/HomeBar"
 
 export default function CalendarPage () {
   return (
-    <div className="flex w-full min-h-screen">
+    <>
+    {/* <HomeBar /> */}
+    <div className="flex w-full">
       <aside className="">
         <VoteNoticeSection />
         <ScheduleListSection />
@@ -15,5 +19,7 @@ export default function CalendarPage () {
         <MonthlyCalendar />
       </main>
     </div>
+    <MainFooter />
+    </>
   )
 }

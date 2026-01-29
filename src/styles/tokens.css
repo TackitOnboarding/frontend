@@ -84,6 +84,12 @@
   --common-white: #ffffff;
   --common-black: #000000;
 
+  --chip-blue-400: #7192ff;
+  --chip-gray-400: #6d7882;
+  --chip-pink-400: #ED5583;
+  --chip-orange-400: #FF942A;
+  --chip-green-400: #5CC5BE;
+
   /* Semantic Colors */
   --interaction-normal: var(--color-primary-500);
   --interaction-hover: var(--color-primary-600);
@@ -114,4 +120,10 @@
   --system-white: var(--common-white);
   --system-black: var(--common-black);
   --system-dimmer: rgba(0, 0, 0, 0.3);
+
+  --chip-blue: var(--chip-blue-400);
+  --chip-gray: var(--chip-gray-400);
+  --chip-pink: var(--chip-pink-400);
+  --chip-orange: var(--chip-orange-400);
+  --chip-green: var(--chip-green-400);
 }

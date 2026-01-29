@@ -59,10 +59,18 @@ module.exports = {
         system: {
           red: 'var(--system-red)',
         },
+        
         background: {
           blue: 'var(--background-blue)',
           neutral: 'var(--background-neutral)',
           active: 'var(--background-active)',
+        },
+        chip: {
+          blue: 'var(--chip-blue)',
+          gray: 'var(--chip-gray)',
+          pink: 'var(--chip-pink)',
+          orange: 'var(--chip-orange)',
+          green: 'var(--chip-green)',
         },
       },
 
