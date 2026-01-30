@@ -5,13 +5,13 @@ import { AuthCard } from '../../../components/ui/AuthCard'
 import api from '../../../api/api'
 
 const BADGE_ICONS = {
-  ADMIN: '/icons/admin.svg',   // 운영진
+  EXECUTIVE: '/icons/executive.svg',   // 운영진
   SENIOR: '/icons/senior.svg', // 선배
   NEWBIE: '/icons/newbie.svg', // 신입
 } as const;
 
 const getBadgeInfo = (role: string, type: string) => {
-  if (role === 'ADMIN') return { src: BADGE_ICONS.ADMIN, label: '운영진' };
+  if (role === 'EXECUTIVE') return { src: BADGE_ICONS.EXECUTIVE, label: '운영진' };
   if (type === 'SENIOR') return { src: BADGE_ICONS.SENIOR, label: '선배' };
   if (type === 'NEWBIE') return { src: BADGE_ICONS.NEWBIE, label: '신입' };
   return null;

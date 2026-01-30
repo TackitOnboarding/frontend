@@ -5,21 +5,21 @@ import { AuthCard } from '../../../components/ui/AuthCard'
 import { Button } from '../../../components/ui/Button'
 import clsx from 'clsx'
 
-type OrganizationType = 'CAMPUS' | 'CLUB'
+type OrgType = 'CLUB' | 'COMMUNITY'
 
 const ICONS = {
-  CAMPUS: {
-    default: '/icons/campus.svg',
-    active: '/icons/selected-campus.svg'
-  },
   CLUB: {
     default: '/icons/club.svg',
     active: '/icons/selected-club.svg'
+  },
+  COMMUNITY: {
+    default: '/icons/community.svg',
+    active: '/icons/selected-community.svg'
   }
 }
 
 export default function OrganizationTypePage() {
-  const [selectedType, setSelectedType] = useState<OrganizationType | null>(null)
+  const [selectedType, setSelectedType] = useState<OrgType | null>(null)
   const location = useLocation();
   const navigate = useNavigate()
 
@@ -28,7 +28,7 @@ export default function OrganizationTypePage() {
   const handleNext = () => {
     if (!selectedType) return;
 
-    if (mode === 'CREATE' && selectedType === 'CLUB') {
+    if (mode === 'CREATE' && selectedType === 'COMMUNITY') {
       navigate('/auth/organization/create', {
         state: {type: selectedType, mode }
       })
@@ -50,30 +50,6 @@ export default function OrganizationTypePage() {
           {/* 교내, 연합 동아리 */}
           <button
             type="button"
-            onClick={() => setSelectedType('CAMPUS')}
-            className={clsx(
-              "flex flex-col w-[188px] h-[172px] items-center justify-center gap-4 p-4 rounded-lg border transition-all",
-              selectedType === 'CAMPUS'
-                ? 'border-line-active '
-                : 'border-line-normal'
-            )}
-          >
-            <img 
-              src={selectedType === 'CAMPUS' ? ICONS.CAMPUS.active : ICONS.CAMPUS.default}
-              alt="campus" 
-              className="w-15 h-15"
-            />
-            <span className={clsx(
-              "text-body-1sb",
-              selectedType === 'CAMPUS' ? 'text-label-primary' : 'text-label-normal'
-            )}>
-              교내 · 연합 동아리
-            </span>
-          </button>
-
-          {/* 소모임 */}
-          <button
-            type="button"
             onClick={() => setSelectedType('CLUB')}
             className={clsx(
               "flex flex-col w-[188px] h-[172px] items-center justify-center gap-4 p-4 rounded-lg border transition-all",
@@ -84,12 +60,36 @@ export default function OrganizationTypePage() {
           >
             <img 
               src={selectedType === 'CLUB' ? ICONS.CLUB.active : ICONS.CLUB.default}
-              alt="club"
+              alt="club" 
               className="w-15 h-15"
             />
             <span className={clsx(
               "text-body-1sb",
               selectedType === 'CLUB' ? 'text-label-primary' : 'text-label-normal'
+            )}>
+              교내 · 연합 동아리
+            </span>
+          </button>
+
+          {/* 소모임 */}
+          <button
+            type="button"
+            onClick={() => setSelectedType('COMMUNITY')}
+            className={clsx(
+              "flex flex-col w-[188px] h-[172px] items-center justify-center gap-4 p-4 rounded-lg border transition-all",
+              selectedType === 'COMMUNITY'
+                ? 'border-line-active '
+                : 'border-line-normal'
+            )}
+          >
+            <img 
+              src={selectedType === 'COMMUNITY' ? ICONS.COMMUNITY.active : ICONS.COMMUNITY.default}
+              alt="community"
+              className="w-15 h-15"
+            />
+            <span className={clsx(
+              "text-body-1sb",
+              selectedType === 'COMMUNITY' ? 'text-label-primary' : 'text-label-normal'
             )}>
               소모임
             </span>

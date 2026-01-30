@@ -9,8 +9,11 @@ export default function OrganizationCompletePage() {
   const navigate = useNavigate();
 
   const { type, mode = 'JOIN' } = location.state || {};
-  const isCampus = type === 'CAMPUS';
+  const isClub = type === 'CLUB';
   const isCreate = mode === 'CREATE';
+
+  const categoryText = isClub ? '동아리' : '소모임';
+  const actionText = isCreate ? '등록이 완료됐어요' : '가입 신청이 완료됐어요';
 
   return (
     <AuthLayout icons={['/assets/auth/auth-icon.svg']} iconOffset={80}>
@@ -19,7 +22,7 @@ export default function OrganizationCompletePage() {
           <img src="/icons/circle-check.svg" alt="check icon" className="w-7 h-7"/>
           <div className="flex flex-col items-center justify-center w-[392px] gap-1">
             <h2 className="text-title-2b text-label-normal">
-              {isCampus ? '동아리' : '소모임'} {isCreate ? '등록이 완료됐어요' : '가입 신청이 완료됐어요'}
+              {categoryText} {actionText}
             </h2>
             <div className="flex flex-col text-center text-body-2 text-label-neutral">
               {isCreate ? (

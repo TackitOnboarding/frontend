@@ -7,7 +7,7 @@ import SegmentedSelect, { SelectOption } from '../../../components/forms/Segment
 import TextField from '../../../components/forms/TextField';
 import { useUserForm } from '../../../hooks/useUserForm';
 
-type MemberRole = 'ADMIN' | 'USER';
+type MemberRole = 'EXECUTIVE' | 'GENERAL';
 type MemberType = 'NEWBIE' | 'SENIOR';
 
 const TYPE_ICONS: Record<MemberType, { src: string; alt: string }> = {
@@ -28,7 +28,7 @@ export default function OrganizationFormPage() {
   const navigate = useNavigate();
 
   const { type } = location.state || {};
-  const isCampus = type === 'CAMPUS';
+  const isClub = type === 'CLUB';
 
   // 드롭다운 옵션 (입사년도)
   const yearOptions = useMemo(() => {
@@ -83,8 +83,8 @@ export default function OrganizationFormPage() {
   };
 
   const roleOptions: [SelectOption<MemberRole>, SelectOption<MemberRole>] = [
-    { value: 'ADMIN', label: '운영진' },
-    { value: 'USER', label: '일반회원' },
+    { value: 'EXECUTIVE', label: '운영진' },
+    { value: 'GENERAL', label: '일반회원' },
   ];
 
   const typeOptions: [SelectOption<MemberType>, SelectOption<MemberType>] = [
@@ -97,12 +97,12 @@ export default function OrganizationFormPage() {
       <AuthCard className="flex flex-col items-center justify-center w-full gap-8 max-w-[440px] translate-y-12 md:translate-y-20 lg:translate-y-28">
         {/* 스테퍼 (마지막 단계) */}
         <div className="w-[392px] h-2 gap-2 flex">
-          {Array.from({ length: isCampus ? 3 : 2}).map((_, i) => (
+          {Array.from({ length: isClub ? 3 : 2}).map((_, i) => (
             <div key={i} className=" h-2 flex-1 rounded-full bg-interaction-normal"/>
           ))}
         </div>
 
-        <h1 className="text-title1-bold text-label-normal">{isCampus ? '동아리 참여하기' : '소모임 참여하기'}</h1>
+        <h1 className="text-title1-bold text-label-normal">{isClub ? '동아리 참여하기' : '소모임 참여하기'}</h1>
 
         <div className="flex flex-col gap-4 w-[392px]">
 

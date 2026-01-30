@@ -12,7 +12,7 @@ export default function OrganizationCreatePage() {
   const navigate = useNavigate();
 
   const { type, mode, school } = location.state || {};
-  const isCampus = type === 'CAMPUS';
+  const isClub = type === 'CLUB';
 
   //  모임 이름 중복 테스트를 위해 useUserForm 활용
   const {
@@ -41,7 +41,7 @@ export default function OrganizationCreatePage() {
     if (!canSubmit) return;
 
     navigate('/auth/organization/complete', { 
-      state: { type: mode } 
+      state: { type, mode } 
     });
   };
 
@@ -50,14 +50,14 @@ export default function OrganizationCreatePage() {
     <AuthLayout icons={['/assets/auth/auth-icon.svg']} iconOffset={80}>
       <AuthCard className="flex flex-col items-center justify-center w-full gap-8 max-w-[440px] translate-y-12 md:translate-y-20 lg:translate-y-28">
         {/* 스테퍼 (마지막 단계) */}
-        {isCampus && (
+        {isClub && (
           <div className="w-[392px] h-2 gap-2 flex">
             <div className="h-2 flex-1 rounded-full bg-interaction-normal" />
             <div className="h-2 flex-1 rounded-full bg-interaction-normal" />
           </div>
         )}
 
-        <h1 className="text-title1-bold text-label-normal">{isCampus ? '동아리 등록하기' : '소모임 등록하기'}</h1>
+        <h1 className="text-title1-bold text-label-normal">{isClub ? '동아리 등록하기' : '소모임 등록하기'}</h1>
 
         <div className="flex flex-col gap-4 w-[392px]">
 
