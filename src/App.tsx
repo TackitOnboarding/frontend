@@ -21,6 +21,9 @@ import BoardDetail from './pages/Board/BoardDetail'
 // 캘린더
 import CalendarPage from './pages/Calendar/CalendarPage'
 
+// 운영진 페이지
+import ExecutivePage from './pages/Executive/ExecutivePage'
+
 import MainPage from './pages/Main/MainPage'
 import MyPage from './pages/MyPage/MyPage'
 import EditInfoPage from './pages/MyPage/EditInfoPage'
@@ -70,6 +73,8 @@ function App(): JSX.Element {
 
         {/* 캘린더 */}
         <Route path="auth/calendar" element={<CalendarPage />} />
+
+        <Route path="/executive" element={<ExecutivePage />} />
 
         {/* 게시판 */}
         {/* <Route path="/free" element={<FreePostList />} /> */}
