@@ -19,7 +19,7 @@ export default function OrganizationCompletePage() {
     <AuthLayout icons={['/assets/auth/auth-icon.svg']} iconOffset={80}>
       <AuthCard className="flex flex-col items-center justify-center w-full gap-8 max-w-[440px] translate-y-12 md:translate-y-20 lg:translate-y-28">
         <div className="flex flex-col items-center justify-center w-[392px] gap-3">
-          <img src="/icons/circle-check.svg" alt="check icon" className="w-7 h-7"/>
+          <img src="/icons/check-circle.svg" alt="check icon" className="w-7 h-7"/>
           <div className="flex flex-col items-center justify-center w-[392px] gap-1">
             <h2 className="text-title-2b text-label-normal">
               {categoryText} {actionText}

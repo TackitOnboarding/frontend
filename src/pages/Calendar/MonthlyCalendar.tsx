@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { CalendarUtils } from "../../types/calendar";
-import { CalendarChip } from "../../components/CalendarChip";
+import { CalendarChip } from "../../components/calendar/CalendarChip";
 
 const mockSchedules = [
   {

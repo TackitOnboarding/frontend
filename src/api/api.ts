@@ -66,7 +66,7 @@ const reissueAccessToken = async (): Promise<string> => {
       accessToken,
       refreshToken: newRefreshToken,
       accessTokenExpiresIn,
-    } = response.data || {}
+    } = response.data.token || {}
 
     if (!accessToken || !newRefreshToken) {
       throw Object.assign(new Error('Invalid reissue payload'), { status: 500 })

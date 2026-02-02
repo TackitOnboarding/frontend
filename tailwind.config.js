@@ -64,6 +64,7 @@ module.exports = {
           blue: 'var(--background-blue)',
           neutral: 'var(--background-neutral)',
           active: 'var(--background-active)',
+          red: 'var(--background-red)',
         },
         chip: {
           blue: 'var(--chip-blue)',

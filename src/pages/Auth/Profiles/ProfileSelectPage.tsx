@@ -1,8 +1,17 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AuthLayout from '../../../components/layouts/AuthLayout'
-import { AuthCard } from '../../../components/ui/AuthCard'
 import api from '../../../api/api'
+
+interface Profile {
+  memberOrgId: number
+  orgName: string
+  orgType: string
+  nickname: string
+  profileImage: string | null
+  memberType: string
+  memberRole: string
+}
 
 const BADGE_ICONS = {
   EXECUTIVE: '/icons/executive.svg',   // 운영진
@@ -17,18 +26,21 @@ const getBadgeInfo = (role: string, type: string) => {
   return null;
 };
 
-interface Profile {
-  id: number
-  organization: string
-  nickname: string
-  memberRole: string
-  memberType: string
-}
 
 export default function ProfileSelectPage() {
   const [profiles, setProfiles] = useState<Profile[]>([])
-  const [loading, setLoading] = useState<boolean>(true)
   const navigate = useNavigate()
+
+  useEffect(() => {
+    const stored = localStorage.getItem('userProfiles');
+    if (stored) {
+      try {
+        setProfiles(JSON.parse(stored));
+      } catch(e) {
+        console.error("프로필 데이터 파싱 에러", e);
+      }
+    }
+  }, [])
 
   const handleJoinOrganization = () => {
     navigate('/auth/organization/type', {
@@ -42,19 +54,19 @@ export default function ProfileSelectPage() {
     })
   }
 
-  useEffect(() => {
-    const fetchProfiles = async () => {
-      try {
-        const res = await api.get('/auth/profiles') // 명세서 보고 수정
-        setProfiles(res.data || [])
-      } catch (error) {
-        console.error('프로필 불러오기 실패:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchProfiles()
-  }, [])
+  // useEffect(() => {
+  //   const fetchProfiles = async () => {
+  //     try {
+  //       const res = await api.get('/profiles') // 명세서 보고 수정
+  //       setProfiles(res.data || [])
+  //     } catch (error) {
+  //       console.error('프로필 불러오기 실패:', error)
+  //     } finally {
+  //       setLoading(false)
+  //     }
+  //   }
+  //   fetchProfiles()
+  // }, [])
 
   return (
     <AuthLayout showCornerLogo={true}>
@@ -78,16 +90,16 @@ export default function ProfileSelectPage() {
               const badge = getBadgeInfo(profile.memberRole, profile.memberType);
               return (
                 <div
-                  key={profile.id}
+                  key={profile.memberOrgId}
                   className="flex flex-col items-center cursor-pointer group gap-6"
-                  onClick={() => navigate(`/main/${profile.id}`)}
+                  onClick={() => navigate(`/main/${profile.memberOrgId}`)}
                 >
                   <div className="w-[30px] h-[30px] rounded-full flex items-center justify-center">
                     <img src="/icons/profile-default.svg" alt="organization" className="w-[30px] h-[30px]" />
                   </div>
 
                   <div className="flex flex-col items-center justify-center gap-1">
-                    <span className="text-title-2m text-label-normal">{profile.organization}</span>
+                    <span className="text-title-2m text-label-normal">{profile.orgName}</span>
                     <div className="flex gap-[2px] items-center justify-center">
                       <p className="text-body-1 text-label-neutral">{profile.nickname}</p>
                       {/* 배지 아이콘 렌더링 */}

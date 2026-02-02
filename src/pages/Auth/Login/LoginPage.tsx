@@ -6,12 +6,23 @@ import AuthLayout from '../../../components/layouts/AuthLayout'
 import { AuthCard } from '../../../components/ui/AuthCard'
 import { Button } from '../../../components/ui/Button'
 
+type Profile = {
+  memberOrgId: number
+  orgName: string
+  orgType: string
+  nickname: string
+  profileImage: string | null
+  memberType: string
+  memberRole: string
+}
 type AuthResponse = {
-  accessToken: string
-  refreshToken: string
-  accessTokenExpiresIn: number | string
-  grantType: string
-  role: 'ADMIN' | 'USER' | string
+  token: {
+    accessToken: string
+    refreshToken: string
+    accessTokenExpiresIn: number | string
+    grantType: string
+  }
+  profiles: Profile[];
 }
 
 export default function LoginPage(): JSX.Element {
@@ -76,27 +87,24 @@ export default function LoginPage(): JSX.Element {
         email,
         password,
       })
+      const { token, profiles } = res.data;
       const {
         accessToken,
         refreshToken,
         accessTokenExpiresIn,
         grantType,
-        role,
-      } = res.data
+      } = token;
 
       localStorage.setItem('accessToken', accessToken)
       localStorage.setItem('refreshToken', refreshToken)
       localStorage.setItem('accessTokenExpiresIn', String(accessTokenExpiresIn))
       localStorage.setItem('grantType', grantType)
-      localStorage.setItem('role', role)
 
-      if (role === 'ADMIN') {
-        navigate('/admin')
-      } else {
-        navigate('/main', {
-          state: { fromLogin: true },
-        })
-      }
+      // 2. 프로필 리스트 전체 저장 (넷플릭스 프로필 선택창 같은 곳에서 쓰기 위함)
+      localStorage.setItem('userProfiles', JSON.stringify(profiles));
+      
+      navigate('/auth/profiles');
+
     } catch (err: any) {
       if (err.response?.status === 401) {
         setError(
