@@ -1,0 +1,263 @@
+import { useState, useEffect } from 'react';
+import { CalendarModal } from "../modals/CalendarModal";
+import { CalendarColorType } from '@/types/calendar';
+import { Button } from '../ui/Button';
+import { ColorPicker } from './ColorPicker';
+
+interface OrgMember {
+  orgMemberId: number;
+  profileImage: string;
+  nickname: string;
+}
+
+export const ScheduleRegisterModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
+  const [members, setMembers] = useState<OrgMember[]>([])
+  const [isMemberOpen, setIsMemberOpen] = useState(false)
+  const [isAllDay, setIsAllDay] = useState(false); // "하루종일" 상태
+  const [openDropdown, setOpenDropdown] = useState<'startDay' | 'startTime' | 'endDay' | 'endTime' | null>(null);
+
+  // 초기 시간 설정 로직
+  const getInitialTime = () => {
+    const now = new Date();
+    const start = new Date(now.setMinutes(0)); // 정시로 맞춤
+    const end = new Date(start.getTime() + (60 * 60 * 1000)); // 1시간 뒤
+    return {
+      startsAt: start.toISOString().slice(0, 16), // "YYYY-MM-DDTHH:mm" 포맷
+      endsAt: end.toISOString().slice(0, 16)
+    };
+  };
+
+  const initialTimes = getInitialTime();
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const days = ['일', '월', '화', '수', '목', '금', '토'];
+    return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일 (${days[date.getDay()]})`;
+  };
+
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
+    let hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? '오후' : '오전';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // 0시는 12시로 표시
+    const minutesStr = minutes < 10 ? `0${minutes}` : minutes;
+    return `${ampm} ${hours}:${minutesStr}`;
+  };
+
+  const [formData, setFormData] = useState({
+    orgId: "",
+    title: "",
+    startsAt: initialTimes.startsAt, // 초기 시간으로 설정
+    endsAt: initialTimes.endsAt, // 초기 시간으로 설정
+    description: "",
+    eventScope: "PARTIAL" as "PARTIAL" | "ALL",
+    participants: [] as number[],
+    colorChip: "blue" as CalendarColorType,
+  });
+
+  // 2. 모달이 열리거나 닫힐 때 실행되는 초기화 로직
+  useEffect(() => {
+    if (!isOpen) {
+      // 모달이 닫힐 때 데이터 초기화
+      const newTimes = getInitialTime();
+      setFormData({
+        orgId: "",
+        title: "",
+        startsAt: newTimes.startsAt,
+        endsAt: newTimes.endsAt,
+        description: "",
+        eventScope: "PARTIAL",
+        participants: [],
+        colorChip: "blue",
+      });
+      setIsMemberOpen(false);
+      setIsAllDay(false);
+      setOpenDropdown(null);
+    }
+  }, [isOpen]);
+
+  // 3. 등록 버튼 클릭 시 실행될 핸들러
+  const handleRegister = () => {
+    if (formData.title.trim().length === 0) return;
+
+    // TODO: 실제 API 호출 로직 (axios.post 등)
+    console.log("등록 전송 데이터:", formData);
+
+    // 성공적으로 전송되었다고 가정하고 모달 닫기
+    onClose();
+  };
+
+  // 멤버 데이터 로드 (API 연결 시점)
+  // useEffect(() => {
+  //   if (isOpen) {
+  //     // 실제 API: /api/orgs/{orgId}/members 호출
+  //     setMembers(Array.from({ length: 11 }, (_, i) => ({
+  //       orgMemberId: i + 1,
+  //       profileImageUrl: "",
+  //       nickname: `닉네임${i + 1}`
+  //     })));
+  //   }
+  // }, [isOpen]);
+
+  const toggleParticipant = (id: number) => {
+    setFormData(prev => ({
+      ...prev,
+      participants: prev.participants.includes(id)
+        ? prev.participants.filter(pId => pId !== id)
+        : [...prev.participants, id]
+    }));
+  };
+
+  // 등록 버튼 활성화 조건 (제목이 공백이 아닐 때)
+  const isFormValid = formData.title.trim().length > 0
+
+  return (
+    <CalendarModal isOpen={isOpen} onClose={onClose}>
+      <div className="flex flex-col gap-8 px-6">
+        <div className="flex flex-col gap-6">
+          
+          {/* 제목 & 색상 피커 */}
+          <div className="flex gap-3 items-center justify-start">
+            <ColorPicker
+              selectedColor={formData.colorChip}
+              onSelect={(color) => setFormData({ ... formData, colorChip: color})}
+            />
+            <input
+              className="flex-1 text-title-2b outline-none placeholder:text-label-disabled border-b pb-2 border-line-normal"
+              placeholder="일정 제목"
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+            />
+          </div>
+
+          {/* 날짜 시간 선택 */}
+          <div className="flex flex-col gap-3">
+            {[formData.startsAt, formData.endsAt].map((dateVal, idx) => (
+              <div key={idx} className="flex items-center gap-4">
+                {idx === 0 ? <img src="/icons/Clock.svg" alt="startsAt" className="w-6 h-6"/> : <div className="w-6" />}
+                <div className="flex items-center gap-3">
+                  <button
+                    className="flex bg-white border border-line-normal rounded-xl px-4 py-3 w-[195px] cursor-pointer"
+                    onClick={() => setOpenDropdown(idx === 0 ? 'startDay' : 'endDay')}
+                  >
+                    {formatDate(dateVal)}
+                  </button>
+                  {!isAllDay && (
+                    <button
+                    className="flex bg-white border border-line-normal rounded-xl px-4 py-3 w-[145px] cursor-pointer"
+                    onClick={() => setOpenDropdown(idx === 0 ? 'startTime' : 'endTime')}
+                    >
+                      {formatTime(dateVal)}
+                    </button>  
+                  )}
+                </div>
+              </div>
+            ))}
+
+            {/* <div className="flex items-center gap-4">
+              <div className="w-6"/>
+              <div className="flex items-center gap-3">
+                <button
+                  className="flex bg-white border border-line-normal rounded-xl px-4 py-3 w-[195px] cursor-pointer"
+                  onClick={() => setOpenDropdown('endDay')}
+                >
+                  {formatDate(formData.endsAt)}
+                </button>
+                {!isAllDay && (
+                  <button
+                  className="flex bg-white border border-line-normal rounded-xl px-4 py-3 w-[145px] cursor-pointer"
+                  onClick={() => setOpenDropdown('endTime')}
+                  >
+                    {formatTime(formData.endsAt)}
+                  </button>  
+                )}
+              </div>
+            </div> */}
+
+            {/* 하루종일 토글 */}
+            <div className="flex items-center gap-2 cursor-pointer w-fit">
+              <div className="w-8"/>
+              <button
+                type="button"
+                onClick={() => setIsAllDay(!isAllDay)}
+                className="focus:outline-none cursor-pointer"
+              >
+                {isAllDay ? (
+                  /* 체크된 상태: 파란색 원 안에 체크 아이콘 */
+                  <img src="/icons/check-circle.svg" alt="checked" className="w-6 h-6" />
+                ) : (
+                  /* 체크 안 된 상태: 회색 테두리 원 */
+                  <div className="w-6 h-6 rounded-full border-2 border-line-normal bg-white transition-colors group-hover:border-interaction-normal" />
+                )}
+              </button>
+              <span className="text-label-normal text-body-1">하루종일</span>
+            </div>
+          </div>
+
+          {/* 설명 */}
+          <div className="flex items-center gap-4">
+            <img src="/icons/List.svg" alt="description" className="w-6 h-6"/>
+            <input
+              className="flex bg-white border border-line-normal outline-none rounded-xl px-4 py-3 w-[352px]"
+              placeholder="설명 입력"
+              value={formData.description}
+              onChange={(e) => setFormData({ ... formData, description: e.target.value })}
+            />
+          </div>
+
+          {/* 참석 인원 선택 */}
+          <div className="flex items-center gap-4">
+            <img src="/icons/Person.svg" alt="participants" className="w-6 h-6" />
+            <button
+              onClick={() => setIsMemberOpen(!isMemberOpen)}
+              className="flex items-center gap-2 text-body-1 text-label-neutral cursor-pointer"
+            >
+              참석 인원 <span className="text-label-normal text-body-1sb">{formData.participants.length}명</span>
+              <img src="/icons/trailingIcon.svg" alt="dropdown" className={`w-4 h-4 transition-transform ${isMemberOpen ? 'rotate-180' : ''}`} />
+            </button>
+          </div>
+          {isMemberOpen && (
+            <div className="ml-10 mt-4 max-h-[240px] overflow-y-auto custom-sidebar-scroll pr-2">
+              <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                {members.map((member) => {
+                  const isSelected = formData.participants.includes(member.orgMemberId);
+                  return (
+                    <div 
+                    key={member.orgMemberId}
+                    className="flex items-center justify-between group gap-3"
+                    onClick={() => toggleParticipant(member.orgMemberId)}
+                    >
+                      {/* 프포필 + 닉네임 + 뱃지 */}
+                    <div className="flex items-center gap-2">
+                      <img src="/icons/profile-gray.svg" alt="profile" className="w-8 h-8"/>
+                      <span className="text-body-1sb text-label-normal">{member.nickname}</span>
+                      <img src="icons/.svg" alt="type" className="w-5 h-5" />
+                    </div>
+                    
+                    {/* 체크 표시 */}
+                    <img 
+                      src={isSelected ?"/icons/blue-check.svg" : "/icons/white-check.svg"}
+                      alt="select" 
+                      className="w-6 h-6"
+                    />
+                  </div>
+                  )                  
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <Button
+          variant="primary"
+          size="m"
+          className="w-full mt-4"
+          disabled={!isFormValid}
+          onClick={handleRegister}
+        >등록</Button>
+      </div>
+    </CalendarModal>
+  )
+}

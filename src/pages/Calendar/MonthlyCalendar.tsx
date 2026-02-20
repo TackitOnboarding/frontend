@@ -1,34 +1,35 @@
 import { useState } from "react"
 import { CalendarUtils } from "../../types/calendar";
 import { CalendarChip } from "../../components/calendar/CalendarChip";
+import { ScheduleRegisterModal } from "../../components/calendar/ScheduleRegisterModal";
 
 const mockSchedules = [
-  {
+    {
     schedule_id: 1,
     title: "1주차 전체 회의",
-    starts_at: "2026-01-28T10:00:00",
-    ends_at: "2026-01-28T12:00:00",
+    starts_at: "2026-02-02T10:00:00",
+    ends_at: "2026-02-02T12:00:00",
     color_chip: "blue",
   },
   {
     schedule_id: 2,
     title: "동아리 워크샵",
-    starts_at: "2026-01-29T09:00:00",
-    ends_at: "2026-01-31T18:00:00",
+    starts_at: "2026-02-03T09:00:00",
+    ends_at: "2026-02-05T18:00:00",
     color_chip: "pink",
   },
   {
     schedule_id: 3,
     title: "줄바꿈 테스트",
-    starts_at: "2026-01-17T09:00:00",
-    ends_at: "2026-01-19T18:00:00",
+    starts_at: "2026-02-02T09:00:00",
+    ends_at: "2026-02-04T18:00:00",
     color_chip: "green",
   },
   {
     schedule_id: 4,
     title: "겹침 테스트",
-    starts_at: "2026-01-30T09:00:00",
-    ends_at: "2026-01-31T18:00:00",
+    starts_at: "2026-02-07T09:00:00",
+    ends_at: "2026-02-09T18:00:00",
     color_chip: "green",
   },
 ];
@@ -37,10 +38,24 @@ const mockVotes = [
   {
     vote_id: 1,
     title: "회식 메뉴 투표",
-    starts_at: "2026-01-30T09:00:00",
-    ends_at: "2026-02-01T23:59:59",
+    starts_at: "2026-02-01T09:00:00",
+    ends_at: "2026-02-03T23:59:59",
     color_chip: "gray",
-  }
+  },
+  {
+    vote_id: 2,
+    title: "투표 테스트",
+    starts_at: "2026-02-08T09:00:00",
+    ends_at: "2026-02-09T23:59:59",
+    color_chip: "gray",
+  },
+  {
+    vote_id: 3,
+    title: "투표",
+    starts_at: "2026-02-17T09:00:00",
+    ends_at: "2026-02-17T23:59:59",
+    color_chip: "gray",
+  },
 ];
 
 // 달력 날짜 계산 로직
@@ -97,6 +112,10 @@ export default function MonthlyCalendar() {
   // 화면에 보여줄 기준 날짜 상태(기본값: 오늘
   const [viewDate, setViewDate] = useState(new Date());
 
+  // 모달 상태 관리 State
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [isVoteModalOpen, setIsVoteModalOpen] = useState(false);
+
   const year = viewDate.getFullYear();
   const month = viewDate.getMonth();
 
@@ -139,7 +158,7 @@ export default function MonthlyCalendar() {
           <button onClick={handleNextMonth} className="rounded-[10px] border border-line-normal"><img src="/icons/next-btn.svg" alt="nextMonth" className="w-8 h-8"/></button>
         </div>
         <div className="flex rounded-lg">
-          <button className="w-[122px] h-12 rounded-l-xl rounded-r-none border border-line-normal border-r-0">+ 일정 등록</button>
+          <button className="w-[122px] h-12 rounded-l-xl rounded-r-none border border-line-normal border-r-0" onClick={() => setIsScheduleModalOpen(true)}>+ 일정 등록</button>
           <button className="w-[122px] h-12 rounded-r-xl rounded-l-none border border-line-normal">+ 투표 등록</button>
         </div>
       </div>
@@ -215,6 +234,12 @@ export default function MonthlyCalendar() {
                       />
                     );
                   })}
+
+                  {/* 3. 모달 컴포넌트 배치 */}
+                  <ScheduleRegisterModal 
+                    isOpen={isScheduleModalOpen} 
+                    onClose={() => setIsScheduleModalOpen(false)} 
+                  />
                 </div>
                 
               </div>

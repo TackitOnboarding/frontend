@@ -55,7 +55,7 @@ export default function VoteListSection() {
     })
     .sort((a, b) => new Date(a.ends_at).getTime() - new Date(b.ends_at).getTime());
   return (
-      <div className="flex flex-col items-start w-[282px] h-[290px] bg-background-neutral border border-line-normal gap-3 py-6 pl-6">
+      <div className="flex flex-col items-start w-[282px] h-[290px] bg-background-neutral border border-line-normal border-t-0 gap-3 py-6 pl-6">
         <h2 className="text-body-1 text-label-normal">투표</h2>
   
         <div className="w-full flex-1 custom-sidebar-scroll">

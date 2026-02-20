@@ -57,3 +57,13 @@ export const CalendarUtils = {
     return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}(${weekDays[date.getDay()]}) ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
   }
 };
+
+export const CALENDAR_COLORS = [
+  { id: 'blue', class: 'bg-chip-blue' },
+  { id: 'gray', class: 'bg-chip-gray' },
+  { id: 'pink', class: 'bg-chip-pink' },
+  { id: 'orange', class: 'bg-chip-orange' },
+  { id: 'green', class: 'bg-chip-green' },
+] as const;
+
+export type CalendarColorType = typeof CALENDAR_COLORS[number]['id'];
