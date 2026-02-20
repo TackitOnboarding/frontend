@@ -3,6 +3,7 @@ import { CalendarModal } from "../modals/CalendarModal";
 import { CalendarColorType } from '@/types/calendar';
 import { Button } from '../ui/Button';
 import { ColorPicker } from './ColorPicker';
+import { MiniCalendar } from './MiniCalendar';
 
 interface OrgMember {
   orgMemberId: number;
@@ -16,57 +17,60 @@ export const ScheduleRegisterModal = ({ isOpen, onClose }: { isOpen: boolean, on
   const [isAllDay, setIsAllDay] = useState(false); // "하루종일" 상태
   const [openDropdown, setOpenDropdown] = useState<'startDay' | 'startTime' | 'endDay' | 'endTime' | null>(null);
 
-  // 초기 시간 설정 로직
+  // 한국 기준 시간 변환 함수
+  const formatKSTISO = (date: Date) => {
+    const offset = date.getTimezoneOffset() * 60000;
+    const kstDate = new Date(date.getTime() - offset);
+    return kstDate.toISOString().slice(0, 16);
+  };
+
+  // 초기 시간 설정
   const getInitialTime = () => {
     const now = new Date();
-    const start = new Date(now.setMinutes(0)); // 정시로 맞춤
-    const end = new Date(start.getTime() + (60 * 60 * 1000)); // 1시간 뒤
-    return {
-      startsAt: start.toISOString().slice(0, 16), // "YYYY-MM-DDTHH:mm" 포맷
-      endsAt: end.toISOString().slice(0, 16)
-    };
-  };
-
-  const initialTimes = getInitialTime();
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const days = ['일', '월', '화', '수', '목', '금', '토'];
-    return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일 (${days[date.getDay()]})`;
-  };
-
-  const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
-    let hours = date.getHours();
-    const minutes = date.getMinutes();
-    const ampm = hours >= 12 ? '오후' : '오전';
-    hours = hours % 12;
-    hours = hours ? hours : 12; // 0시는 12시로 표시
-    const minutesStr = minutes < 10 ? `0${minutes}` : minutes;
-    return `${ampm} ${hours}:${minutesStr}`;
+    now.setMinutes(0, 0, 0); // 정시로 맞춤
+    const formatted = formatKSTISO(now);
+    return { startsAt: formatted, endsAt: formatted };
   };
 
   const [formData, setFormData] = useState({
     orgId: "",
     title: "",
-    startsAt: initialTimes.startsAt, // 초기 시간으로 설정
-    endsAt: initialTimes.endsAt, // 초기 시간으로 설정
+    startsAt: getInitialTime().startsAt, // 초기 시간으로 설정
+    endsAt: getInitialTime().endsAt, // 초기 시간으로 설정
     description: "",
     eventScope: "PARTIAL" as "PARTIAL" | "ALL",
     participants: [] as number[],
     colorChip: "blue" as CalendarColorType,
   });
 
-  // 2. 모달이 열리거나 닫힐 때 실행되는 초기화 로직
+  const handleDateSelect = (type: 'start' | 'end', selectedDate: Date) => {
+    setFormData(prev => {
+      const field = type === 'start' ? 'startsAt' : 'endsAt';
+      // 기존 저장된 시간(HH:mm)을 유지하기 위해 Date 객체 생성
+      const currentFullDate = new Date(prev[field]);
+      
+      // 선택된 날짜 정보만 업데이트
+      currentFullDate.setFullYear(selectedDate.getFullYear());
+      currentFullDate.setMonth(selectedDate.getMonth());
+      currentFullDate.setDate(selectedDate.getDate());
+
+      return {
+        ...prev,
+        [field]: formatKSTISO(currentFullDate)
+      };
+    });
+    setOpenDropdown(null); // 드롭다운 닫기
+  };
+
   useEffect(() => {
     if (!isOpen) {
       // 모달이 닫힐 때 데이터 초기화
-      const newTimes = getInitialTime();
+      const resetTimes = getInitialTime();
       setFormData({
         orgId: "",
         title: "",
-        startsAt: newTimes.startsAt,
-        endsAt: newTimes.endsAt,
+        startsAt: resetTimes.startsAt,
+        endsAt: resetTimes.endsAt,
         description: "",
         eventScope: "PARTIAL",
         participants: [],
@@ -87,6 +91,23 @@ export const ScheduleRegisterModal = ({ isOpen, onClose }: { isOpen: boolean, on
 
     // 성공적으로 전송되었다고 가정하고 모달 닫기
     onClose();
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const days = ['일', '월', '화', '수', '목', '금', '토'];
+    return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일 (${days[date.getDay()]})`;
+  };
+
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
+    let hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? '오후' : '오전';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // 0시는 12시로 표시
+    const minutesStr = minutes < 10 ? `0${minutes}` : minutes;
+    return `${ampm} ${hours}:${minutesStr}`;
   };
 
   // 멤버 데이터 로드 (API 연결 시점)
@@ -137,13 +158,21 @@ export const ScheduleRegisterModal = ({ isOpen, onClose }: { isOpen: boolean, on
             {[formData.startsAt, formData.endsAt].map((dateVal, idx) => (
               <div key={idx} className="flex items-center gap-4">
                 {idx === 0 ? <img src="/icons/Clock.svg" alt="startsAt" className="w-6 h-6"/> : <div className="w-6" />}
-                <div className="flex items-center gap-3">
+                <div className=" relative flex items-center gap-3">
                   <button
                     className="flex bg-white border border-line-normal rounded-xl px-4 py-3 w-[195px] cursor-pointer"
-                    onClick={() => setOpenDropdown(idx === 0 ? 'startDay' : 'endDay')}
+                    onClick={() => setOpenDropdown(openDropdown === (idx === 0 ? 'startDay' : 'endDay') ? null : (idx === 0 ? 'startDay' : 'endDay'))}
                   >
                     {formatDate(dateVal)}
                   </button>
+                  {openDropdown === (idx === 0 ? 'startDay' : 'endDay') && (
+                    <div className="absolute top-full mt-2 z-10">
+                      <MiniCalendar
+                        currentDate={dateVal}
+                        onSelect={(date) => handleDateSelect(idx === 0 ? 'start' : 'end', date)}
+                      />
+                    </div>
+                  )}
                   {!isAllDay && (
                     <button
                     className="flex bg-white border border-line-normal rounded-xl px-4 py-3 w-[145px] cursor-pointer"
@@ -155,26 +184,6 @@ export const ScheduleRegisterModal = ({ isOpen, onClose }: { isOpen: boolean, on
                 </div>
               </div>
             ))}
-
-            {/* <div className="flex items-center gap-4">
-              <div className="w-6"/>
-              <div className="flex items-center gap-3">
-                <button
-                  className="flex bg-white border border-line-normal rounded-xl px-4 py-3 w-[195px] cursor-pointer"
-                  onClick={() => setOpenDropdown('endDay')}
-                >
-                  {formatDate(formData.endsAt)}
-                </button>
-                {!isAllDay && (
-                  <button
-                  className="flex bg-white border border-line-normal rounded-xl px-4 py-3 w-[145px] cursor-pointer"
-                  onClick={() => setOpenDropdown('endTime')}
-                  >
-                    {formatTime(formData.endsAt)}
-                  </button>  
-                )}
-              </div>
-            </div> */}
 
             {/* 하루종일 토글 */}
             <div className="flex items-center gap-2 cursor-pointer w-fit">
