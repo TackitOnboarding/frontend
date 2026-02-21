@@ -25,11 +25,19 @@ export const VoteRegisterModal = ({ isOpen, onClose }: { isOpen: boolean, onClos
     const offset = date.getTimezoneOffset() * 60000;
     return new Date(date.getTime() - offset).toISOString().slice(0, 16);
   };
+  
+  // 초기 시간 설정
+  const getInitialTime = () => {
+    const now = new Date();
+    now.setMinutes(0, 0, 0); // 정시로 맞춤
+    const formatted = formatKSTISO(now);
+    return { startsAt: formatted, endsAt: formatted };
+  };
 
   const [formData, setFormData] = useState({
     orgId: 10, // 예시값, 실제론 props 등으로 받아와야 함
     title: "",
-    endsAt: formatKSTISO(new Date()),
+    endsAt: getInitialTime().endsAt,
     optionType: "TEXT" as VoteType,
     options: ["", "", ""],
     isMulti: false,
@@ -46,7 +54,7 @@ export const VoteRegisterModal = ({ isOpen, onClose }: { isOpen: boolean, onClos
       setFormData({
         orgId: 10,
         title: "",
-        endsAt: formatKSTISO(new Date()),
+        endsAt: getInitialTime().endsAt,
         optionType: "TEXT",
         options: ["", "", ""],
         isMulti: false,
