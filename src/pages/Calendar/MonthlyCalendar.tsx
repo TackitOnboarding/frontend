@@ -2,6 +2,7 @@ import { useState } from "react"
 import { CalendarUtils } from "../../types/calendar";
 import { CalendarChip } from "../../components/calendar/CalendarChip";
 import { ScheduleRegisterModal } from "../../components/calendar/ScheduleRegisterModal";
+import { VoteRegisterModal } from "../../components/calendar/VoteRegisterModal";
 
 const mockSchedules = [
     {
@@ -159,7 +160,7 @@ export default function MonthlyCalendar() {
         </div>
         <div className="flex rounded-lg">
           <button className="w-[122px] h-12 rounded-l-xl rounded-r-none border border-line-normal border-r-0" onClick={() => setIsScheduleModalOpen(true)}>+ 일정 등록</button>
-          <button className="w-[122px] h-12 rounded-r-xl rounded-l-none border border-line-normal">+ 투표 등록</button>
+          <button className="w-[122px] h-12 rounded-r-xl rounded-l-none border border-line-normal" onClick={() => setIsVoteModalOpen(true)}>+ 투표 등록</button>
         </div>
       </div>
 
@@ -239,6 +240,10 @@ export default function MonthlyCalendar() {
                   <ScheduleRegisterModal 
                     isOpen={isScheduleModalOpen} 
                     onClose={() => setIsScheduleModalOpen(false)} 
+                  />
+                  <VoteRegisterModal
+                    isOpen={isVoteModalOpen} 
+                    onClose={() => setIsVoteModalOpen(false)}
                   />
                 </div>
                 
