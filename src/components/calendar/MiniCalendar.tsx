@@ -39,22 +39,22 @@ export const MiniCalendar = ({ currentDate, onSelect }: MiniCalendarProps) => {
   };
 
   return (
-    <div className="w-[300px] bg-white rounded-2xl p-5 border border-line-normal animate-in fade-in slide-in-from-top-2">
+    <div className="bg-white rounded-xl border border-line-normal p-5">
       {/* 헤더 */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center px-3 mb-6">
         <button onClick={() => handleMonthChange(-1)} className="p-1 hover:bg-background-secondary rounded-full transition-colors">
-          <img src="/icons/prev-btn.svg" className="w-5 h-5" alt="이전달" />
+          <img src="/icons/prev-btn.svg" className="w-6 h-6" alt="이전달" />
         </button>
-        <span className="text-body-1sb">{year}년 {month + 1}월</span>
+        <span className="text-body-2sb text-label-normal">{year}년 {month + 1}월</span>
         <button onClick={() => handleMonthChange(1)} className="p-1 hover:bg-background-secondary rounded-full transition-colors">
-          <img src="/icons/next-btn.svg" className="w-5 h-5" alt="다음달" />
+          <img src="/icons/next-btn.svg" className="w-6 h-6" alt="다음달" />
         </button>
       </div>
 
       {/* 요일 */}
       <div className="grid grid-cols-7 mb-2">
         {['일', '월', '화', '수', '목', '금', '토'].map((d) => (
-          <span key={d} className="text-center text-label-disable text-[12px]">{d}</span>
+          <span key={d} className="text-center text-label-disable text-caption-regular">{d}</span>
         ))}
       </div>
 
@@ -74,7 +74,7 @@ export const MiniCalendar = ({ currentDate, onSelect }: MiniCalendarProps) => {
             <div
               key={idx}
               className={`
-                flex items-center justify-center w-9 h-9 cursor-pointer rounded-full text-body-2 transition-all
+                flex items-center justify-center w-9 h-9 cursor-pointer rounded-full text-caption-regular transition-all
                 ${!item.currentMonth ? 'text-label-disable' : 'text-label-normal'}
                 ${isSelected 
                   ? 'bg-interaction-normal text-white font-bold' 

@@ -4,6 +4,7 @@ import { CalendarColorType } from '@/types/calendar';
 import { Button } from '../ui/Button';
 import { ColorPicker } from './ColorPicker';
 import { MiniCalendar } from './MiniCalendar';
+import { TimePicker } from './TimePicker';
 
 interface OrgMember {
   orgMemberId: number;
@@ -15,7 +16,7 @@ export const ScheduleRegisterModal = ({ isOpen, onClose }: { isOpen: boolean, on
   const [members, setMembers] = useState<OrgMember[]>([])
   const [isMemberOpen, setIsMemberOpen] = useState(false)
   const [isAllDay, setIsAllDay] = useState(false); // "하루종일" 상태
-  const [openDropdown, setOpenDropdown] = useState<'startDay' | 'startTime' | 'endDay' | 'endTime' | null>(null);
+  const [openDropdown, setOpenDropdown] = useState<'startDay' | 'startAMPM' |'startHour' | 'endDay' | 'endAMPM' |'endHour' | null>(null);
 
   // 한국 기준 시간 변환 함수
   const formatKSTISO = (date: Date) => {
@@ -60,6 +61,29 @@ export const ScheduleRegisterModal = ({ isOpen, onClose }: { isOpen: boolean, on
       };
     });
     setOpenDropdown(null); // 드롭다운 닫기
+  };
+
+  const handleTimeSelect = (type: 'start' | 'end', timeValue: string) => {
+    setFormData(prev => {
+      const field = type === 'start' ? 'startsAt' : 'endsAt';
+      const currentDate = new Date(prev[field]);
+      let hours = currentDate.getHours();
+      const minutes = currentDate.getMinutes();
+
+      if (timeValue === '오전' || timeValue === '오후') {
+        // 오전/오후 변경 로직
+        if (timeValue === '오후' && hours < 12) hours += 12;
+        if (timeValue === '오전' && hours >= 12) hours -= 12;
+      } else {
+        // 시간(01:00~12:00) 변경 로직
+        const [newHour] = timeValue.split(':').map(Number);
+        const isPM = hours >= 12;
+        hours = isPM ? (newHour === 12 ? 12 : newHour + 12) : (newHour === 12 ? 0 : newHour);
+      }
+
+      currentDate.setHours(hours, minutes);
+      return { ...prev, [field]: formatKSTISO(currentDate) };
+    });
   };
 
   useEffect(() => {
@@ -174,13 +198,47 @@ export const ScheduleRegisterModal = ({ isOpen, onClose }: { isOpen: boolean, on
                     </div>
                   )}
                   {!isAllDay && (
-                    <button
-                    className="flex bg-white border border-line-normal rounded-xl px-4 py-3 w-[145px] cursor-pointer"
-                    onClick={() => setOpenDropdown(idx === 0 ? 'startTime' : 'endTime')}
-                    >
-                      {formatTime(dateVal)}
-                    </button>  
+                    <div className="flex items-center">
+                      <div className="relative">
+                        <button
+                        className="flex bg-white border border-line-normal border-r-0 rounded-l-xl pl-4 py-3 w-[50px] cursor-pointer justify-center"
+                        onClick={() => setOpenDropdown(openDropdown === (idx === 0 ? 'startAMPM' : 'endAMPM') ? null : (idx === 0 ? 'startAMPM' : 'endAMPM'))}
+                        >
+                          {formatTime(dateVal).split(' ')[0]}
+                        </button>
+                        {openDropdown === (idx === 0 ? 'startAMPM' : 'endAMPM') && (
+                          <div className="flex gap-1 absolute top-full left-0 z-[130]">
+                            <TimePicker 
+                              type="ampm" 
+                            onSelect={(val) => handleTimeSelect(idx === 0 ? 'start' : 'end', val)} 
+                            onClose={() => setOpenDropdown(null)}
+                            />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* 2. 시:분 버튼 (오른쪽) */}
+                      <div className="relative">
+                        <button
+                          type="button"
+                          className="flex bg-white border border-line-normal border-l-0 rounded-r-xl pl-1 py-3 w-[95px] cursor-pointer"
+                          onClick={() => setOpenDropdown(openDropdown === (idx === 0 ? 'startHour' : 'endHour') ? null : (idx === 0 ? 'startHour' : 'endHour'))}
+                        >
+                          {formatTime(dateVal).split(' ')[1]}
+                        </button>
+
+                        {openDropdown === (idx === 0 ? 'startHour' : 'endHour') && (
+                          <TimePicker 
+                            type="hour" 
+                            onSelect={(val) => handleTimeSelect(idx === 0 ? 'start' : 'end', val)} 
+                            onClose={() => setOpenDropdown(null)} 
+                          />
+                        )}
+                      </div>
+                    </div>
                   )}
+
+
                 </div>
               </div>
             ))}
