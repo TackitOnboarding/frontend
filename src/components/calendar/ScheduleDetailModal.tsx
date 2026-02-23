@@ -1,4 +1,4 @@
-import { CalendarModal } from "../modals/CalendarModal";
+import { RegisterModal } from "../modals/RegisterModal";
 import { Button } from "../ui/Button";
 import { CALENDAR_COLORS } from "../../types/calendar"
 
@@ -62,7 +62,7 @@ export const ScheduleDetailModal = ({
   };
 
   return (
-    <CalendarModal isOpen={isOpen} onClose={onClose}>
+    <RegisterModal isOpen={isOpen} onClose={onClose}>
       <div className="flex flex-col px-6 gap-8">
         {/* 상단: 제목 및 컬러 칩 */}
         <div className="flex flex-col gap-6">
@@ -142,6 +142,6 @@ export const ScheduleDetailModal = ({
           </Button>
         </div>
       </div>
-    </CalendarModal>
+    </RegisterModal>
   );
 };

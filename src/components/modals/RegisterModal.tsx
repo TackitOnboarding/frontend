@@ -1,10 +1,10 @@
-interface CalendarModalProps {
+interface RegisterModalProps {
   isOpen: boolean
   onClose: () => void
   children?: React.ReactNode
 }
 
-export const CalendarModal = ({ isOpen, onClose, children }: CalendarModalProps) => {
+export const RegisterModal = ({ isOpen, onClose, children }: RegisterModalProps) => {
   if (!isOpen) return null
 
   return (

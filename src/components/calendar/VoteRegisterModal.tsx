@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { CalendarModal } from "../modals/CalendarModal";
+import { RegisterModal } from "../modals/RegisterModal";
 import { Button } from '../ui/Button';
 import { MiniCalendar } from './MiniCalendar';
 import { TimePicker } from './TimePicker';
@@ -169,7 +169,7 @@ export const VoteRegisterModal = ({ isOpen, onClose, inEdit, initialData }: Vote
   const isFormValid = formData.title.trim() !== '' && formData.options.filter(i => i !== '').length >= 2;
 
   return (
-    <CalendarModal isOpen={isOpen} onClose={onClose}>
+    <RegisterModal isOpen={isOpen} onClose={onClose}>
       <div className="flex flex-col gap-6 px-6">
         {/* 투표 제목 */}
         <input
@@ -367,6 +367,6 @@ export const VoteRegisterModal = ({ isOpen, onClose, inEdit, initialData }: Vote
           onClick={handleRegister}
         >{inEdit ? "수정 완료" : "등록"}</Button>
       </div>
-    </CalendarModal>
+    </RegisterModal>
   );
 };

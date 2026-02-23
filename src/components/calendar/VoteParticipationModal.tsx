@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { CalendarModal } from "../modals/CalendarModal";
+import { RegisterModal } from "../modals/RegisterModal";
 import { Button } from '../ui/Button';
 
 export const VoteParticipationModal = ({ isOpen, onClose, data, onEdit }: any) => {
@@ -48,7 +48,7 @@ export const VoteParticipationModal = ({ isOpen, onClose, data, onEdit }: any) =
   };
 
   return (
-    <CalendarModal isOpen={isOpen} onClose={onClose}>
+    <RegisterModal isOpen={isOpen} onClose={onClose}>
       <div className="flex flex-col gap-8 px-6">
         {/* 상단 알림 배너 */}
         {banner && (
@@ -152,6 +152,6 @@ export const VoteParticipationModal = ({ isOpen, onClose, data, onEdit }: any) =
           )}
         </div>
       </div>
-    </CalendarModal>
+    </RegisterModal>
   );
 };

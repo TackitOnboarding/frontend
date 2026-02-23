@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { CalendarModal } from "../modals/CalendarModal";
+import { RegisterModal } from "../modals/RegisterModal";
 import { CalendarColorType } from '@/types/calendar';
 import { Button } from '../ui/Button';
 import { ColorPicker } from './ColorPicker';
@@ -189,7 +189,7 @@ export const ScheduleRegisterModal = ({ isOpen, onClose, initialData, inEdit = f
   // }, [isOpen]);
 
   return (
-    <CalendarModal isOpen={isOpen} onClose={onClose}>
+    <RegisterModal isOpen={isOpen} onClose={onClose}>
       <div className="flex flex-col gap-8 px-6">
         <div className="flex flex-col gap-6">
           
@@ -355,6 +355,6 @@ export const ScheduleRegisterModal = ({ isOpen, onClose, initialData, inEdit = f
           onClick={handleAction}
         >{inEdit ? "수정 완료" : "등록"}</Button>
       </div>
-    </CalendarModal>
+    </RegisterModal>
   )
 }
