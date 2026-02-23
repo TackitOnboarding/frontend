@@ -4,6 +4,7 @@ import { CalendarChip } from "../../components/calendar/CalendarChip";
 import { ScheduleRegisterModal } from "../../components/calendar/ScheduleRegisterModal";
 import { VoteRegisterModal } from "../../components/calendar/VoteRegisterModal";
 import { ScheduleDetailModal } from "../../components/calendar/ScheduleDetailModal";
+import { VoteParticipationModal } from "../../components/calendar/VoteParticipationModal";
 import Modal from "../../components/modals/Modal";
 
 const mockSchedules = [
@@ -117,13 +118,19 @@ export default function MonthlyCalendar() {
 
   // 모달 상태 관리 State
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
-  const [isVoteModalOpen, setIsVoteModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
+  const [isVoteModalOpen, setIsVoteModalOpen] = useState(false);
+  const [isVoteDetailOpen, setIsVoteDetailOpen] = useState(false);
+
+
   // 데이터 및 모드 관리
-   const [selectedSchedule, setSelectedSchedule] = useState<any>(null);
+  const [selectedSchedule, setSelectedSchedule] = useState<any>(null);
   const [isEditMode, setIsEditMode] = useState(false);
+
+  const [selectedVote, setSelectedVote] = useState<any>(null);
+  const [isVoteEditMode, setIsVoteEditMode] = useState(false);
 
   const year = viewDate.getFullYear();
   const month = viewDate.getMonth();
@@ -147,6 +154,20 @@ export default function MonthlyCalendar() {
     setIsScheduleModalOpen(true); 
   };
 
+  // Vote POST
+  const handleNewVoteClick = () => {
+    setIsVoteEditMode(false);   // 수정 모드 해제
+    setSelectedVote(null);      // 선택된 투표 데이터 초기화
+    setIsVoteModalOpen(true);   // 등록 모달 열기
+  };
+
+  // Vote PATCH
+  const handleVoteEdit = () => {
+    setIsVoteDetailOpen(false); // 상세창 닫기
+    setIsVoteEditMode(true);    // 수정 모드 활성화
+    setIsVoteModalOpen(true);   // 등록 모달 열기
+  };
+
   // 칩 클릭 핸들러
   const handleChipClick = (item: any) => {
     if ('schedule_id' in item) {
@@ -160,6 +181,15 @@ export default function MonthlyCalendar() {
         participants: item.participants || [] // 백엔드 상세 조회 API 연동 시 데이터
       });
       setIsDetailModalOpen(true);
+    } else if ('vote_id' in item) {
+        setSelectedVote({
+        pollId: item.vote_id,
+        title: item.title,
+        endsAt: item.ends_at,
+        // API에서 받아올 추가 필드들 (초기값 세팅)
+        ...item 
+      });
+      setIsVoteDetailOpen(true);
     }
   };
 
@@ -214,7 +244,7 @@ export default function MonthlyCalendar() {
         </div>
         <div className="flex rounded-lg">
           <button className="w-[122px] h-12 rounded-l-xl rounded-r-none border border-line-normal border-r-0" onClick={handleNewScheduleClick}>+ 일정 등록</button>
-          <button className="w-[122px] h-12 rounded-r-xl rounded-l-none border border-line-normal" onClick={() => setIsVoteModalOpen(true)}>+ 투표 등록</button>
+          <button className="w-[122px] h-12 rounded-r-xl rounded-l-none border border-line-normal" onClick={handleNewVoteClick}>+ 투표 등록</button>
         </div>
       </div>
 
@@ -307,8 +337,13 @@ export default function MonthlyCalendar() {
         initialData={selectedSchedule}
       />
       <VoteRegisterModal
-        isOpen={isVoteModalOpen} 
-        onClose={() => setIsVoteModalOpen(false)}
+        isOpen={isVoteModalOpen}
+        onClose={() => {
+          setIsVoteModalOpen(false);
+          setIsVoteEditMode(false);
+        }}
+        inEdit={isVoteEditMode}
+        initialData={selectedVote}
       />
       <ScheduleDetailModal
         isOpen={isDetailModalOpen}
@@ -317,6 +352,13 @@ export default function MonthlyCalendar() {
         onDelete={() => setIsDeleteModalOpen(true)}
         onEdit={handleEditClick}
       />
+
+      <VoteParticipationModal 
+      isOpen={isVoteDetailOpen}
+      onClose={() => setIsVoteDetailOpen(false)}
+      data={selectedVote}
+      onEdit={handleVoteEdit} 
+    />
 
       {/* 삭제 확인 모달 */}
       <Modal

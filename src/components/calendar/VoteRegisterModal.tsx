@@ -12,7 +12,14 @@ interface OrgMember {
   nickname: string;
 }
 
-export const VoteRegisterModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
+interface VoteRegisterModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  inEdit?: boolean;      // 수정 모드 여부
+  initialData?: any;     // 수정 시 전달받을 데이터
+}
+
+export const VoteRegisterModal = ({ isOpen, onClose, inEdit, initialData }: VoteRegisterModalProps) => {
   const [members, setMembers] = useState<OrgMember[]>([]);
   const [isMemberOpen, setIsMemberOpen] = useState(false);
 
@@ -48,25 +55,22 @@ export const VoteRegisterModal = ({ isOpen, onClose }: { isOpen: boolean, onClos
 
   const [hasDeadline, setHasDeadline] = useState(false);
 
-  // 초기화
   useEffect(() => {
-    if (!isOpen) {
+    if (isOpen && inEdit && initialData) {
       setFormData({
-        orgId: 10,
-        title: "",
-        endsAt: getInitialTime().endsAt,
-        optionType: "TEXT",
-        options: ["", "", ""],
-        isMulti: false,
-        isAnonymous: false,
-        voteScope: "PARTIAL",
-        participants: [],
+        orgId: initialData.orgId || 10,
+        title: initialData.title || "",
+        endsAt: initialData.endsAt ? initialData.endsAt.slice(0, 16) : getInitialTime().endsAt,
+        optionType: initialData.optionType || "TEXT",
+        options: initialData.options?.map((opt: any) => opt.content) || ["", "", ""],
+        isMulti: initialData.isMulti || false,
+        isAnonymous: initialData.isAnonymous || false,
+        voteScope: initialData.voteScope || "PARTIAL",
+        participants: initialData.participants || [],
       });
-      setHasDeadline(false);
-      setIsMemberOpen(false);
-      setOpenDropdown(null);
+      setHasDeadline(!!initialData.endsAt);
     }
-  }, [isOpen]);
+  }, [isOpen, inEdit, initialData]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -104,14 +108,53 @@ export const VoteRegisterModal = ({ isOpen, onClose }: { isOpen: boolean, onClos
     setFormData({ ...formData, endsAt: formatKSTISO(current) });
   };
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     if (formData.title.trim().length === 0) return;
 
-    // TODO: 실제 API 호출 로직 (axios.post 등)
-    console.log("등록 전송 데이터:", formData);
+    // 1. 공통 데이터 가공 (KST 기준 ISO 형식)
+    const commonData = {
+      title: formData.title,
+      endsAt: formData.endsAt + ":00", // 초 단위 포함
+      isMulti: formData.isMulti,
+    };
 
-    // 성공적으로 전송되었다고 가정하고 모달 닫기
-    onClose();
+    try {
+      if (inEdit && initialData) {
+        // 2. 투표 수정 (PUT) - 명세서에 따라 NULL 허용되는 필드들 위주로 구성
+        const updatePayload = {
+          ...commonData,
+          isAnonymous: formData.isAnonymous,
+          // 논의가 필요한 필드들은 필요 시 포함 (options, voteScope 등)
+        };
+
+        console.log(`투표 수정 요청 [PUT] /api/polls/${initialData.pollId}`, updatePayload);
+        // await axios.put(`/api/polls/${initialData.pollId}`, updatePayload);
+        
+      } else {
+        // 3. 투표 생성 (POST)
+        const createPayload = {
+          ...commonData,
+          orgId: 10, // 현재 조직 ID
+          optionType: formData.optionType,
+          options: formData.options, //
+          isAnonymous: formData.isAnonymous,
+          voteScope: formData.voteScope,
+          participants: formData.participants,
+        };
+
+        console.log("투표 생성 요청 [POST]:", createPayload);
+        // await axios.post(`/api/polls`, createPayload);
+      }
+      
+      onClose();
+    } catch (error: any) {
+      // 4. 에러 처리 (운영자 권한 403 등)
+      if (error.response?.status === 403) {
+        alert(error.response.data.status.message); // "해당 조직의 운영자가 아닙니다."
+      } else if (error.response?.status === 404) {
+        alert("존재하지 않는 투표입니다.");
+      }
+    }
   };
 
   const toggleParticipant = (id: number) => {
@@ -322,7 +365,7 @@ export const VoteRegisterModal = ({ isOpen, onClose }: { isOpen: boolean, onClos
           className="w-full mt-2"
           disabled={!isFormValid}
           onClick={handleRegister}
-        >등록</Button>
+        >{inEdit ? "수정 완료" : "등록"}</Button>
       </div>
     </CalendarModal>
   );
