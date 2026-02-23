@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import AuthLayout from '../../../components/layouts/AuthLayout'
 import { AuthCard } from '../../../components/ui/AuthCard'
 import { Button } from '../../../components/ui/Button'
-import api from '../../../api/api'
+// import api from '../../../api/api'
 
 
-type OrgType = 'CLUB' | 'COMMUNITY'
+// type OrgType = 'CLUB' | 'COMMUNITY'
 
 interface SearchSchoolResult {
   id: number;

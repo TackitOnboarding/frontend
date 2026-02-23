@@ -9,7 +9,7 @@ import 'react-toastify/dist/ReactToastify.css'
 import RichTextEditor, {
   type RichTextEditorHandle,
 } from '../../components/editor/RichTextEditor'
-import { toastWarn, toastError, toastSuccess } from '../../utils/toast'
+import { toastError, toastSuccess } from '../../utils/toast'
 import { PostCreateReq, PostCreateRes } from '../../types/post'
 import { replaceFirstDataUrlImgWithToken } from '../../utils/coverToken'
 import LeaveModal from '../../components/modals/LeaveModal'

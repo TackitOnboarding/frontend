@@ -3,7 +3,7 @@ import VoteListSection from "./VoteListSection"
 import ScheduleListSection from "./ScheduleListSection"
 import MonthlyCalendar from "./MonthlyCalendar"
 import MainFooter from "../../components/layouts/MainFooter"
-import HomeBar from "../../components/HomeBar"
+// import HomeBar from "../../components/HomeBar"
 
 export default function CalendarPage () {
   return (

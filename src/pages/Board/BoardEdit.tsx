@@ -9,8 +9,8 @@ import clsx from 'clsx'
 import RichTextEditor, {
   RichTextEditorHandle,
 } from '../../components/editor/RichTextEditor'
-import { toastSuccess, toastWarn, toastError } from '../../utils/toast'
-import { PostUpdateReq, PostCreateRes } from '../../types/post'
+import { toastSuccess, toastError } from '../../utils/toast'
+// import { PostUpdateReq, PostCreateRes } from '../../types/post'
 import {
   hydrateCoverToken,
   replaceFirstDataUrlImgWithToken,

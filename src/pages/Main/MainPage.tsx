@@ -5,7 +5,7 @@ import MainFooter from '../../components/layouts/MainFooter'
 import api from '../../api/api'
 import SectionList from '../../components/SectionList'
 import './MainPage.css'
-import PopularPostsSection from './PopularPostsSection'
+// import PopularPostsSection from './PopularPostsSection'
 import OnboardingModal from '../../components/modals/OnboardingModal'
 
 const ONBOARD_KEY = 'onboard.seen.v1'
