@@ -12,7 +12,15 @@ interface OrgMember {
   nickname: string;
 }
 
-export const ScheduleRegisterModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
+interface ScheduleRegisterModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  initialData?: any; // 수정 시 전달받을 데이터
+  inEdit?: boolean; // 수정 모드인지 여부
+  orgId?: number;
+}
+
+export const ScheduleRegisterModal = ({ isOpen, onClose, initialData, inEdit = false, orgId = 10 }: ScheduleRegisterModalProps) => {
   const [members, setMembers] = useState<OrgMember[]>([])
   const [isMemberOpen, setIsMemberOpen] = useState(false)
   const [isAllDay, setIsAllDay] = useState(false); // "하루종일" 상태
@@ -34,31 +42,51 @@ export const ScheduleRegisterModal = ({ isOpen, onClose }: { isOpen: boolean, on
   };
 
   const [formData, setFormData] = useState({
-    orgId: "",
     title: "",
     startsAt: getInitialTime().startsAt, // 초기 시간으로 설정
     endsAt: getInitialTime().endsAt, // 초기 시간으로 설정
     description: "",
-    eventScope: "PARTIAL" as "PARTIAL" | "ALL",
     participants: [] as number[],
     colorChip: "blue" as CalendarColorType,
+    scope: "PARTIAL" as "PARTIAL" | "ALL" | "SELECT"
   });
+
+  // 수정 모드일 경우 데이터 채워넣기
+  useEffect(() => {
+    if (isOpen && inEdit && initialData) {
+      setFormData({
+        title: initialData.title || "",
+        startsAt: initialData.startsAt ? initialData.startsAt.slice(0, 16) : getInitialTime().startsAt,
+        endsAt: initialData.endsAt ? initialData.endsAt.slice(0, 16) : getInitialTime().endsAt,
+        description: initialData.description || "",
+        colorChip: (initialData.colorChip as CalendarColorType) || "blue",
+        participants: initialData.participants?.map((p: any) => p.orgMemberId) || [],
+        scope: initialData.targetType === "SELECT" ? "PARTIAL" : (initialData.targetType || "PARTIAL")
+      });
+    } else if (!isOpen) {
+      // 닫힐 때 초기화
+      const reset = getInitialTime();
+      setFormData({
+        title: "",
+        startsAt: reset.startsAt,
+        endsAt: reset.endsAt,
+        description: "",
+        participants: [],
+        colorChip: "blue",
+        scope: "PARTIAL"
+      });
+      setIsMemberOpen(false);
+      setIsAllDay(false);
+    }
+  }, [isOpen, inEdit, initialData]);
 
   const handleDateSelect = (type: 'start' | 'end', selectedDate: Date) => {
     setFormData(prev => {
       const field = type === 'start' ? 'startsAt' : 'endsAt';
       // 기존 저장된 시간(HH:mm)을 유지하기 위해 Date 객체 생성
       const currentFullDate = new Date(prev[field]);
-      
-      // 선택된 날짜 정보만 업데이트
-      currentFullDate.setFullYear(selectedDate.getFullYear());
-      currentFullDate.setMonth(selectedDate.getMonth());
-      currentFullDate.setDate(selectedDate.getDate());
-
-      return {
-        ...prev,
-        [field]: formatKSTISO(currentFullDate)
-      };
+      currentFullDate.setFullYear(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
+      return { ...prev, [field]: formatKSTISO(currentFullDate)};
     });
     setOpenDropdown(null); // 드롭다운 닫기
   };
@@ -86,35 +114,46 @@ export const ScheduleRegisterModal = ({ isOpen, onClose }: { isOpen: boolean, on
     });
   };
 
-  useEffect(() => {
-    if (!isOpen) {
-      // 모달이 닫힐 때 데이터 초기화
-      const resetTimes = getInitialTime();
-      setFormData({
-        orgId: "",
-        title: "",
-        startsAt: resetTimes.startsAt,
-        endsAt: resetTimes.endsAt,
-        description: "",
-        eventScope: "PARTIAL",
-        participants: [],
-        colorChip: "blue",
-      });
-      setIsMemberOpen(false);
-      setIsAllDay(false);
-      setOpenDropdown(null);
-    }
-  }, [isOpen]);
-
-  // 3. 등록 버튼 클릭 시 실행될 핸들러
-  const handleRegister = () => {
+  // 전송 핸들러 (POST / PATCH 분기)
+  const handleAction = async () => {
     if (formData.title.trim().length === 0) return;
 
-    // TODO: 실제 API 호출 로직 (axios.post 등)
-    console.log("등록 전송 데이터:", formData);
+    // 초 단위(:00)를 포함한 최종 데이터 가공
+    const basePayload = {
+      title: formData.title,
+      startsAt: formData.startsAt + ":00",
+      endsAt: formData.endsAt + ":00",
+      description: formData.description,
+      participants: formData.participants,
+      colorChip: formData.colorChip,
+    };
 
-    // 성공적으로 전송되었다고 가정하고 모달 닫기
+    if (inEdit) {
+      // 수정(PUT) Request Body
+      const updateReq = {
+        ...basePayload,
+        targetType: formData.scope === "PARTIAL" ? "SELECT" : "ALL"
+      };
+      console.log("수정 API 호출 [PUT]:", updateReq);
+    } else {
+      // 생성(POST) Request Body
+      const createReq = {
+        ...basePayload,
+        orgId: orgId,
+        eventScope: formData.scope === "SELECT" ? "PARTIAL" : formData.scope
+      };
+      console.log("생성 API 호출 [POST]:", createReq);
+    }
     onClose();
+  };
+
+  const toggleParticipant = (id: number) => {
+    setFormData(prev => ({
+      ...prev,
+      participants: prev.participants.includes(id)
+        ? prev.participants.filter(pId => pId !== id)
+        : [...prev.participants, id]
+    }));
   };
 
   const formatDate = (dateString: string) => {
@@ -134,6 +173,9 @@ export const ScheduleRegisterModal = ({ isOpen, onClose }: { isOpen: boolean, on
     return `${ampm} ${hours}:${minutesStr}`;
   };
 
+  // 등록 버튼 활성화 조건 (제목이 공백이 아닐 때)
+  const isFormValid = formData.title.trim().length > 0
+
   // 멤버 데이터 로드 (API 연결 시점)
   // useEffect(() => {
   //   if (isOpen) {
@@ -146,18 +188,6 @@ export const ScheduleRegisterModal = ({ isOpen, onClose }: { isOpen: boolean, on
   //   }
   // }, [isOpen]);
 
-  const toggleParticipant = (id: number) => {
-    setFormData(prev => ({
-      ...prev,
-      participants: prev.participants.includes(id)
-        ? prev.participants.filter(pId => pId !== id)
-        : [...prev.participants, id]
-    }));
-  };
-
-  // 등록 버튼 활성화 조건 (제목이 공백이 아닐 때)
-  const isFormValid = formData.title.trim().length > 0
-
   return (
     <CalendarModal isOpen={isOpen} onClose={onClose}>
       <div className="flex flex-col gap-8 px-6">
@@ -167,7 +197,7 @@ export const ScheduleRegisterModal = ({ isOpen, onClose }: { isOpen: boolean, on
           <div className="flex gap-3 items-center justify-start">
             <ColorPicker
               selectedColor={formData.colorChip}
-              onSelect={(color) => setFormData({ ... formData, colorChip: color})}
+              onSelect={(color) => setFormData({ ...formData, colorChip: color})}
             />
             <input
               className="flex-1 text-title-2b outline-none placeholder:text-label-disabled border-b pb-2 border-line-normal"
@@ -322,8 +352,8 @@ export const ScheduleRegisterModal = ({ isOpen, onClose }: { isOpen: boolean, on
           size="m"
           className="w-full mt-4"
           disabled={!isFormValid}
-          onClick={handleRegister}
-        >등록</Button>
+          onClick={handleAction}
+        >{inEdit ? "수정 완료" : "등록"}</Button>
       </div>
     </CalendarModal>
   )

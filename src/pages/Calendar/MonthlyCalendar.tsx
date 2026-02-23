@@ -3,6 +3,8 @@ import { CalendarUtils } from "../../types/calendar";
 import { CalendarChip } from "../../components/calendar/CalendarChip";
 import { ScheduleRegisterModal } from "../../components/calendar/ScheduleRegisterModal";
 import { VoteRegisterModal } from "../../components/calendar/VoteRegisterModal";
+import { ScheduleDetailModal } from "../../components/calendar/ScheduleDetailModal";
+import Modal from "../../components/modals/Modal";
 
 const mockSchedules = [
     {
@@ -116,6 +118,12 @@ export default function MonthlyCalendar() {
   // 모달 상태 관리 State
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [isVoteModalOpen, setIsVoteModalOpen] = useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  // 데이터 및 모드 관리
+   const [selectedSchedule, setSelectedSchedule] = useState<any>(null);
+  const [isEditMode, setIsEditMode] = useState(false);
 
   const year = viewDate.getFullYear();
   const month = viewDate.getMonth();
@@ -124,6 +132,52 @@ export default function MonthlyCalendar() {
   const handleNextMonth = () => setViewDate(new Date(year, month + 1, 1));
 
   const calendarDays = getCalendarDays(year, month);
+
+  // Schedule POST
+  const handleNewScheduleClick = () => {
+    setIsEditMode(false);
+    setSelectedSchedule(null);
+    setIsScheduleModalOpen(true);
+  };
+
+  // Schedule PATCH
+  const handleEditClick = (id: number) => {
+    setIsDetailModalOpen(false); 
+    setIsEditMode(true);         
+    setIsScheduleModalOpen(true); 
+  };
+
+  // 칩 클릭 핸들러
+  const handleChipClick = (item: any) => {
+    if ('schedule_id' in item) {
+      setSelectedSchedule({
+        eventId: item.schedule_id,
+        title: item.title,
+        startsAt: item.starts_at,
+        endsAt: item.ends_at,
+        description: item.description || "설명이 없습니다.",
+        colorChip: item.color_chip,
+        participants: item.participants || [] // 백엔드 상세 조회 API 연동 시 데이터
+      });
+      setIsDetailModalOpen(true);
+    }
+  };
+
+  // 삭제 확인 함수
+  const handleDeleteConfirm = async () => {
+    try {
+      const eventId = selectedSchedule?.eventId;
+      console.log(`API 호출: [DELETE] /api/events/${eventId}`);
+      // await axios.delete(`/api/events/${eventId}`);
+      
+      // 성공 시 처리
+      setIsDeleteModalOpen(false);
+      setIsDetailModalOpen(false);
+      // 데이터 새로고침 로직 필요 (예: fetchSchedules())
+    } catch (error) {
+      console.error("삭제 실패", error);
+    }
+  };
 
   // 현재 날짜 칸에서 렌더링해야 할 아이템들의 순서를 계산하는 함수
   const getRenderItems = (dateStr: string, index: number) => {
@@ -159,7 +213,7 @@ export default function MonthlyCalendar() {
           <button onClick={handleNextMonth} className="rounded-[10px] border border-line-normal"><img src="/icons/next-btn.svg" alt="nextMonth" className="w-8 h-8"/></button>
         </div>
         <div className="flex rounded-lg">
-          <button className="w-[122px] h-12 rounded-l-xl rounded-r-none border border-line-normal border-r-0" onClick={() => setIsScheduleModalOpen(true)}>+ 일정 등록</button>
+          <button className="w-[122px] h-12 rounded-l-xl rounded-r-none border border-line-normal border-r-0" onClick={handleNewScheduleClick}>+ 일정 등록</button>
           <button className="w-[122px] h-12 rounded-r-xl rounded-l-none border border-line-normal" onClick={() => setIsVoteModalOpen(true)}>+ 투표 등록</button>
         </div>
       </div>
@@ -232,26 +286,48 @@ export default function MonthlyCalendar() {
                           top: `${rowIdx * 32}px`,
                           zIndex: 20,
                         }}
+                        onClick={() => handleChipClick(item)}
                       />
                     );
                   })}
-
-                  {/* 3. 모달 컴포넌트 배치 */}
-                  <ScheduleRegisterModal 
-                    isOpen={isScheduleModalOpen} 
-                    onClose={() => setIsScheduleModalOpen(false)} 
-                  />
-                  <VoteRegisterModal
-                    isOpen={isVoteModalOpen} 
-                    onClose={() => setIsVoteModalOpen(false)}
-                  />
-                </div>
-                
+                </div>          
               </div>
             )
           })}
         </div>
       </div>
+      {/* 3. 모달 컴포넌트 배치 */}
+      <ScheduleRegisterModal 
+        isOpen={isScheduleModalOpen} 
+        onClose={() => {
+            setIsScheduleModalOpen(false);
+            setIsEditMode(false);
+        }}
+        inEdit={isEditMode}
+        initialData={selectedSchedule}
+      />
+      <VoteRegisterModal
+        isOpen={isVoteModalOpen} 
+        onClose={() => setIsVoteModalOpen(false)}
+      />
+      <ScheduleDetailModal
+        isOpen={isDetailModalOpen}
+        onClose={() => setIsDetailModalOpen(false)}
+        data={selectedSchedule}
+        onDelete={() => setIsDeleteModalOpen(true)}
+        onEdit={handleEditClick}
+      />
+
+      {/* 삭제 확인 모달 */}
+      <Modal
+        open={isDeleteModalOpen}
+        title="일정을 삭제하시겠습니까?"
+        description="일정을 삭제하면 캘린더에서 사라져요."
+        cancelText="유지하기"
+        confirmText="삭제하기"
+        onCancel={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDeleteConfirm}
+      />
     </div>
   )
 }

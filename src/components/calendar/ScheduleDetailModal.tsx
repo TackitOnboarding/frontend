@@ -1,5 +1,6 @@
 import { CalendarModal } from "../modals/CalendarModal";
 import { Button } from "../ui/Button";
+import { CALENDAR_COLORS } from "../../types/calendar"
 
 // 백엔드 API 응답 구조에 맞춘 인터페이스
 interface Participant {
@@ -35,6 +36,8 @@ export const ScheduleDetailModal = ({
 }: ScheduleDetailModalProps) => {
   if (!data) return null;
 
+  const activeColor = CALENDAR_COLORS.find(c => c.id === data.colorChip) || CALENDAR_COLORS[0];
+
   // 날짜 및 시간 포맷팅 (예: 1월 10일 (토) 11:00 ~ 11:30)
   const formatDateTime = (start: string, end: string) => {
     const startDate = new Date(start);
@@ -65,8 +68,7 @@ export const ScheduleDetailModal = ({
         <div className="flex flex-col gap-6">
           <div className="flex items-center gap-5 justify-start">
             <div 
-              className="w-5 h-5 rounded-full" 
-              style={{ backgroundColor: data.colorChip }} 
+              className={`w-5 h-5 rounded-full ${activeColor.class}`} 
             />
             <h2 className="text-title-2b text-label-normal">{data.title}</h2>
           </div>
