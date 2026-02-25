@@ -25,7 +25,7 @@ export default function ExecutivePage() {
             <button
               key={type}
               onClick={() => setActiveTab(type)}
-              className={`pb-3 transition-all text-title-1b ${
+              className={`pb-3 transition-all text-title1-bold ${
                 activeTab === type 
                   ? 'text-label-normal ' // 활성 상태
                   : 'text-label-disable ' // 비활성 상태

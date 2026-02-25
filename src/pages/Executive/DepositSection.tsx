@@ -25,9 +25,9 @@ export default function DepositSection({ data, transactions }: any) {
       {/* 월별 / 등록버튼 */}
       <div className="flex justify-between items-center w-full">
         <div className="flex gap-3 items-center">
-          <button onClick={handlePrevMonth} className="rounded-[10px] border border-line-normal"><img src="/icons/prev-btn.svg" alt="prevMonth" className="w-8 h-8"/></button>
+          <button onClick={handlePrevMonth} className="bg-white rounded-[10px] border border-line-normal"><img src="/icons/prev-btn.svg" alt="prevMonth" className="w-8 h-8"/></button>
           <h1 className="text-title1-bold text-label-normal">{year}년 {month + 1}월</h1>
-          <button onClick={handleNextMonth} className="rounded-[10px] border border-line-normal"><img src="/icons/next-btn.svg" alt="nextMonth" className="w-8 h-8"/></button>
+          <button onClick={handleNextMonth} className="bg-white rounded-[10px] border border-line-normal"><img src="/icons/next-btn.svg" alt="nextMonth" className="w-8 h-8"/></button>
         </div>
 
         <button
@@ -48,7 +48,7 @@ export default function DepositSection({ data, transactions }: any) {
             <h2 className="text-title-2b text-label-normal">전체 현황</h2>
             <div className="flex flex-col justify-between w-[540px] h-[268px]">
               {/* 총 자산 & 총 지출 */}
-              <div className="flex gap-5 items-center justify-center">
+              <div className="flex gap-5 items-center justify-between">
                 <SummaryCard
                   title="총 자산"
                   amount={data?.totalIncome || 0}

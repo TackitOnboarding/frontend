@@ -8,7 +8,7 @@ interface SummaryCardProps {
 
 export default function SummaryCard({ title, amount, icon, bg, isBalance = false }: SummaryCardProps) {
   return (
-    <div className="flex gap-6 p-6 rounded-xl bg-white min-w-[256px] h-[118px]">
+    <div className="flex gap-6 p-6 rounded-xl bg-white min-w-[256px] h-[118px] items-center">
       <div className={`flex items-center justify-center rounded-xl ${bg} w-16 h-16`}>
         <img src={icon} alt={title} className="w-6 h-6" />
       </div>
