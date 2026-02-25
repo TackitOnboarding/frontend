@@ -1,16 +1,28 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect,  useRef } from 'react';
 import { RegisterModal } from "../modals/RegisterModal";
 import { Button } from '../ui/Button';
 
-export const VoteParticipationModal = ({ isOpen, onClose, data, onEdit }: any) => {
+export const VoteParticipationModal = ({ isOpen, onClose, data, onEdit, onDelete }: any) => {
   // 내가 투표한 옵션 아이디들을 초기값으로 설정
   const [selectedOptionIds, setSelectedOptionIds] = useState<number[]>([]);
+  const [isMenuOpen, setIsMenuOpen] = useState(false); // 수정/삭제 드롭다운 상태
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isOpen && data) {
       setSelectedOptionIds(data.myVoteOptionIds || []);
     }
   }, [isOpen, data]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   if (!isOpen || !data || !data.options) return null;
 
@@ -62,7 +74,33 @@ export const VoteParticipationModal = ({ isOpen, onClose, data, onEdit }: any) =
         )}
 
         <div className="flex flex-col gap-3">
-          <h2 className="text-title-2b text-label-normal border border-b border-line-normal">{data.title}</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-title-2b text-label-normal border border-b border-line-normal">{data.title}</h2>
+            <div className="relative" ref={menuRef}>
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+              >
+                <img src="/icons/More.svg" alt="more" className="w-6 h-6" />
+              </button>
+              {isMenuOpen && (
+                <div className="absolute right-0 top-8 z-10 w-[65px] bg-white border border-line-normal rounded-lg px-5 py-2 gap-1">
+                  <button 
+                    onClick={() => { onEdit(); setIsMenuOpen(false); }}
+                    className="w-full px-4 py-2 text-left text-body-2 text-label-normal hover:bg-background-secondary border-b border-line-normal"
+                  >
+                    수정
+                  </button>
+                  <button 
+                    onClick={() => { onDelete(); setIsMenuOpen(false); }}
+                    className="w-full px-4 py-2 text-left text-body-2 text-status-error hover:bg-background-secondary"
+                  >
+                    삭제
+                  </button>
+                </div>
+              )}
+            </div>
+          </div> 
+          
           <div className="flex gap-3 text-body-1 text-label-neutral">
             <span>{data.isMulti ? '복수 선택' : '단일 선택'}</span>
             <span>|</span>

@@ -123,6 +123,7 @@ export default function MonthlyCalendar() {
 
   const [isVoteModalOpen, setIsVoteModalOpen] = useState(false);
   const [isVoteDetailOpen, setIsVoteDetailOpen] = useState(false);
+  const [isVoteDeleteModalOpen, setIsVoteDeleteModalOpen] = useState(false);
 
 
   // 데이터 및 모드 관리
@@ -208,6 +209,20 @@ export default function MonthlyCalendar() {
       console.error("삭제 실패", error);
     }
   };
+
+  const handleVoteDeleteConfirm = async () => {
+  try {
+    const pollId = selectedVote?.pollId;
+    console.log(`투표 삭제 API 호출: [DELETE] /api/polls/${pollId}`);
+    // await axios.delete(`/api/polls/${pollId}`);
+    
+    setIsVoteDeleteModalOpen(false);
+    setIsVoteDetailOpen(false);
+    // 리스트 새로고침 로직
+  } catch (error) {
+    console.error("삭제 실패", error);
+  }
+};
 
   // 현재 날짜 칸에서 렌더링해야 할 아이템들의 순서를 계산하는 함수
   const getRenderItems = (dateStr: string, index: number) => {
@@ -357,8 +372,9 @@ export default function MonthlyCalendar() {
       isOpen={isVoteDetailOpen}
       onClose={() => setIsVoteDetailOpen(false)}
       data={selectedVote}
-      onEdit={handleVoteEdit} 
-    />
+      onEdit={handleVoteEdit}
+      onDelete={() => setIsVoteDeleteModalOpen(true)}
+      />
 
       {/* 삭제 확인 모달 */}
       <Modal
@@ -369,6 +385,17 @@ export default function MonthlyCalendar() {
         confirmText="삭제하기"
         onCancel={() => setIsDeleteModalOpen(false)}
         onConfirm={handleDeleteConfirm}
+      />
+
+      {/* 투표 삭제 확인 모달 (일정 삭제 모달과 동일한 로직) */}
+      <Modal
+        open={isVoteDeleteModalOpen}
+        title="투표를 삭제하시겠습니까?"
+        description="투표를 삭제하면 캘린더에서 사라져요."
+        cancelText="유지하기"
+        confirmText="삭제하기"
+        onCancel={() => setIsVoteDeleteModalOpen(false)}
+        onConfirm={handleVoteDeleteConfirm}
       />
     </div>
   )
