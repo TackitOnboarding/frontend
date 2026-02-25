@@ -74,7 +74,7 @@ function App(): JSX.Element {
         {/* 캘린더 */}
         <Route path="auth/calendar" element={<CalendarPage />} />
 
-        <Route path="/executive" element={<ExecutivePage />} />
+        <Route path="auth/executive" element={<ExecutivePage />} />
 
         {/* 게시판 */}
         {/* <Route path="/free" element={<FreePostList />} /> */}
