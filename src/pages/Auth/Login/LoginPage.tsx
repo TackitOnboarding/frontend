@@ -103,7 +103,7 @@ export default function LoginPage(): JSX.Element {
       // 2. 프로필 리스트 전체 저장 (넷플릭스 프로필 선택창 같은 곳에서 쓰기 위함)
       localStorage.setItem('userProfiles', JSON.stringify(profiles));
       
-      navigate('/auth/profiles');
+      navigate('/profiles');
 
     } catch (err: any) {
       if (err.response?.status === 401) {

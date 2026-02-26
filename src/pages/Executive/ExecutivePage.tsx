@@ -2,10 +2,31 @@ import { useState } from "react";
 // import HomeBar from "../../components/HomeBar"
 import MainFooter from "../../components/layouts/MainFooter";
 import DepositSection from "./DepositSection";
+import PaymentSection from "./PaymentSection";
 
 type ExecutiveTab = 'DEPOSIT' | 'PAYMENT';
 
 export default function ExecutivePage() {
+  const mockCurrentDues = {
+    duesId: 1,
+    title: "1월 회비",
+    startDate: "2026-01-01",
+    endDate: "2026-01-10",
+    participationRate: 67,
+    totalCollectedAmount: 40000,
+    totalTargetAmount: 60000,
+    unpaidCount: 4,
+    myPaymentStatus: "UNPAID", // 'PAID'로 바꾸면 파란색 UI로 변합니다
+  };
+
+  const mockYearlyStats = [
+    { month: 1, collectedAmount: 62000, targetAmount: 60000 },
+    { month: 3, collectedAmount: 58000, targetAmount: 60000 },
+    { month: 5, collectedAmount: 60000, targetAmount: 60000 },
+    { month: 7, collectedAmount: 50000, targetAmount: 60000 },
+    { month: 9, collectedAmount: 60000, targetAmount: 60000 },
+  ];
+
   const [activeTab, setActiveTab] = useState<ExecutiveTab>('DEPOSIT');
 
   const tabConfigs = {
@@ -40,7 +61,8 @@ export default function ExecutivePage() {
           {activeTab === 'DEPOSIT' ? (
             <div className="w-full">{ <DepositSection /> }</div>
           ) : (
-            <div className="w-full">{/* <PaymentSection /> 납부 현황 컴포넌트 */}</div>
+            <div className="w-full">{ <PaymentSection currentDues={mockCurrentDues} 
+        yearlyAmount={mockYearlyStats}/> }</div>
           )}
         </div>
       </div>

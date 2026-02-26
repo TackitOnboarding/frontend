@@ -40,33 +40,26 @@ export default function ProfileSelectPage() {
         console.error("프로필 데이터 파싱 에러", e);
       }
     }
-  }, [])
+  }, []);
+
+  const handleProfileClick = (profile: Profile) => {
+    localStorage.setItem('currentOrgId', String(profile.memberOrgId));
+    localStorage.setItem('currentNickname', profile.nickname);
+    
+    navigate('/main'); 
+  };
 
   const handleJoinOrganization = () => {
-    navigate('/auth/organization/type', {
+    navigate('/organization/type', {
       state: {mode: 'JOIN'}
     })
   }
 
   const handleCreateOrganization = () => {
-    navigate('/auth/organization/type', {
+    navigate('/organization/type', {
       state: {mode: 'CREATE'}
     })
   }
-
-  // useEffect(() => {
-  //   const fetchProfiles = async () => {
-  //     try {
-  //       const res = await api.get('/profiles') // 명세서 보고 수정
-  //       setProfiles(res.data || [])
-  //     } catch (error) {
-  //       console.error('프로필 불러오기 실패:', error)
-  //     } finally {
-  //       setLoading(false)
-  //     }
-  //   }
-  //   fetchProfiles()
-  // }, [])
 
   return (
     <AuthLayout showCornerLogo={true}>
@@ -92,7 +85,7 @@ export default function ProfileSelectPage() {
                 <div
                   key={profile.memberOrgId}
                   className="flex flex-col items-center cursor-pointer group gap-6"
-                  onClick={() => navigate(`/main/${profile.memberOrgId}`)}
+                  onClick={() => handleProfileClick(profile)}
                 >
                   <div className="w-[30px] h-[30px] rounded-full flex items-center justify-center">
                     <img src="/icons/profile-default.svg" alt="organization" className="w-[30px] h-[30px]" />

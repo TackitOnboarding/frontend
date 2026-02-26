@@ -98,7 +98,7 @@ export default function DepositSection({ data, transactions }: any) {
                     </div>
 
                     {/* chart Bar */}
-                    <div className="relative w-full h-2 rounded-full bg-primary-disable overflow-hidden">
+                    <div className="relative w-full h-2 rounded-full bg-gray-50 overflow-hidden">
                       <div
                         className={`absolute left-0 top-0 transition-all duration-500 ${config.color}`}
                         style={{ width: `${ratio}%`}}

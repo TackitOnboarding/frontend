@@ -45,7 +45,7 @@ export default function OrganizationCompletePage() {
           variant="primary"
           size="m"
           className="w-full mt-4"
-          onClick={() => navigate('/auth/profiles')}
+          onClick={() => navigate('/profiles')}
         >
           메인으로 가기
         </Button>

@@ -6,6 +6,8 @@ import { Button } from '../../../components/ui/Button';
 import SegmentedSelect, { SelectOption } from '../../../components/forms/SegmentedSelect'
 import TextField from '../../../components/forms/TextField';
 import { useUserForm } from '../../../hooks/useUserForm';
+import api from '../../../api/api'
+import { toastError } from '../../../utils/toast';
 
 type MemberRole = 'EXECUTIVE' | 'GENERAL';
 type MemberType = 'NEWBIE' | 'SENIOR';
@@ -73,13 +75,26 @@ export default function OrganizationFormPage() {
     memberRole && 
     memberType;
 
-  const handleComplete = () => {
-    setSubmitted(true);
+  const handleComplete = async () => {
     if (!canSubmit) return;
 
-    navigate('/auth/organization/complete', { 
-      state: { type: type } 
-    });
+    const { organization } = location.state || {};
+    const orgId = organization?.id;
+
+    try {
+      const payload = {
+        nickname: nickname,
+        memberRole: memberRole,
+        memberType: memberType,
+      };
+
+      await api.post(`/orgs/${orgId}`, payload);
+
+      navigate('/organization/complete', { state: { type, mode: 'JOIN' } });
+    } catch (error: any) {
+      console.error("참여 신청 에러:", error.response?.data);
+      toastError("참여 신청에 실패했습니다.");
+    }
   };
 
   const roleOptions: [SelectOption<MemberRole>, SelectOption<MemberRole>] = [

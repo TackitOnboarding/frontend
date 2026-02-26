@@ -50,12 +50,12 @@ function App(): JSX.Element {
   return (
     <Router>
       <Routes>
-        <Route path="/auth/profiles" element={<ProfileSelectPage />} />
-        <Route path="/auth/organization/type" element={<OrganizationTypePage />} />
-        <Route path="/auth/organization/search" element={<OrganizationSearchPage />} />
-        <Route path="/auth/organization/form" element={<OrganizationFormPage />} />
-        <Route path="/auth/organization/create" element={<OrganizationCreatePage />} />
-        <Route path="/auth/organization/complete" element={<OrganizationCompletePage />} />
+        <Route path="/profiles" element={<ProfileSelectPage />} />
+        <Route path="/organization/type" element={<OrganizationTypePage />} />
+        <Route path="/organization/search" element={<OrganizationSearchPage />} />
+        <Route path="/organization/form" element={<OrganizationFormPage />} />
+        <Route path="/organization/create" element={<OrganizationCreatePage />} />
+        <Route path="/organization/complete" element={<OrganizationCompletePage />} />
 
         <Route path="/" element={<LoginPage />} />
         <Route path="/login" element={<LoginPage />} />

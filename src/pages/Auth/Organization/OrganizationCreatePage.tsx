@@ -5,6 +5,8 @@ import { AuthCard } from '../../../components/ui/AuthCard';
 import { Button } from '../../../components/ui/Button';
 import TextField from '../../../components/forms/TextField';
 import { useUserForm } from '../../../hooks/useUserForm';
+import api from '../../../api/api'
+import { toastError } from '../../../utils/toast';
 
 
 export default function OrganizationCreatePage() {
@@ -37,12 +39,27 @@ export default function OrganizationCreatePage() {
 
   const canSubmit = organizationName.trim() !== "" && !orgNameHasError && orgNameMessage === "사용 가능한 이름입니다.";
 
-  const handleComplete = () => {
+  const handleComplete = async () => {
     if (!canSubmit) return;
 
-    navigate('/auth/organization/complete', { 
-      state: { type, mode } 
-    });
+    try {
+      const payload = {
+        orgName: organizationName,
+        orgType: type, // 'CLUB' 또는 'COMMUNITY'
+        orgDescription: description,
+        ...(type === 'CLUB' && school?.id && { universityId: Number(school.id) }), // 동아리일 때만 대학 ID 추가
+      };
+
+      const res = await api.post('/orgs', payload);
+      console.log("생성된 모임 정보:", res.data);
+
+      navigate('/organization/complete', { 
+        state: { type, mode } 
+      });
+    } catch (error) {
+      console.error("모임 생성 실패", error);
+      toastError("모임 생성에 실패했습니다. 다시 시도해 주세요.");
+    }
   };
 
 

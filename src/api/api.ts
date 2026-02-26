@@ -108,10 +108,11 @@ api.interceptors.request.use(
     const url = typeof config.url === 'string' ? config.url : ''
 
     if (token && isAccessTokenExpired()) {
-      forceLogout()
-      return Promise.reject(
-        new axios.Cancel('Token expired — blocking request & logout')
-      )
+      const pathname = url.startsWith('/') ? url : `/${url}`
+      if (!AUTH_FREE.includes(pathname)) {
+        forceLogout()
+        return Promise.reject(new axios.Cancel('Token expired'))
+      }
     }
 
     const isAbsolute = /^https?:\/\//i.test(url)

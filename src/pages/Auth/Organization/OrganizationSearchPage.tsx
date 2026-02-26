@@ -3,41 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import AuthLayout from '../../../components/layouts/AuthLayout'
 import { AuthCard } from '../../../components/ui/AuthCard'
 import { Button } from '../../../components/ui/Button'
-// import api from '../../../api/api'
-
-
-// type OrgType = 'CLUB' | 'COMMUNITY'
-
-interface SearchSchoolResult {
-  id: number;
-  name: string;
-}
-
-interface SearchClubResult {
-  id: number;
-  schoolId: number;
-  name: string;
-}
-
-// 작업 확인용 목데이터
-const MOCK_SCHOOLS: SearchSchoolResult[] = [
-  { id: 1, name: "숙명여자대학교" },
-  { id: 2, name: "서울대학교" },
-  { id: 3, name: "연세대학교" },
-];
-
-const MOCK_CLUBS: SearchClubResult[] = [
-  { id: 1, schoolId: 1, name: "DACOS" },
-  { id: 2, schoolId: 1, name: "SOLUX" },
-  { id: 3, schoolId: 1, name: "APPS" },
-  { id: 10, schoolId: 0, name: "연합 러닝크루" }, // 연합 동아리 예시
-  { id: 11, schoolId: 0, name: "대학생 토론연합" },
-];
-
-const MOCK_COMMUNITIES = [
-  { id: 101, name: "아침 러닝" },
-  { id: 102, name: "경도" },
-];
+import api from '../../../api/api'
 
 
 export default function OrganizationSearchPage() {
@@ -50,7 +16,7 @@ export default function OrganizationSearchPage() {
 
   // 교내 동아리 서브 스텝
   const [subStep, setSubStep] = useState(1); 
-  const [selectedSchool, setSelectedSchool] = useState<SearchSchoolResult | null>(null);
+  const [selectedSchool, setSelectedSchool] = useState<{id: number, name: string} | null>(null);
   const [selectedOrganization, setSelectedOrganization] = useState<any | null>(null);
   const [searchTerm, setSearchTerm] = useState('')
   const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -75,34 +41,40 @@ export default function OrganizationSearchPage() {
 
   // 검색 로직(아직 debounce 미적용)
   const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    setSearchTerm(value)
+    const value = e.target.value;
+    setSearchTerm(value);
 
     if (value.trim().length > 0) {
-      if (isClub) {
-        if (subStep === 1) {
-          // 학교 검색
-          setSearchResults(MOCK_SCHOOLS.filter(s => s.name.includes(value)));
+      try {
+        if (isClub && subStep === 1) {
+          // 1. 대학교 검색 API 연결
+          // Path: /api/universities/search, Param: word
+          const res = await api.get('/universities/search', {
+            params: { word: value }
+          });
+          
+          // 제공해주신 명세에 따르면 응답이 바로 배열 형태입니다.
+          setSearchResults(res.data); 
         } else {
-          // 선택된 학교 ID에 해당하는 동아리만 검색
-          setSearchResults(MOCK_CLUBS.filter(c => 
-            c.schoolId === selectedSchool?.id && c.name.includes(value)
-          ));
+          // 2. 모임 검색 API (기존 명세 기반 유지)
+          const endpoint = isClub ? '/orgs/search' : '/orgs/search';
+          const res = await api.get(endpoint, {
+            params: { 
+              query: value,
+              ...(isClub && { universityId: selectedSchool?.id }),
+              ...(!isClub && { orgType: 'COMMUNITY' })
+            }
+          });
+          setSearchResults(res.data.content || res.data);
         }
-      } else {
-        // 소모임 검색
-        setSearchResults(MOCK_COMMUNITIES.filter(c => c.name.includes(value)));
+      } catch (err) {
+        console.error('검색 실패:', err);
+        setSearchResults([]);
       }
-      // try {
-      //   const res = await api.get(`${header.apiEndpoint}?q=${value}`)
-      //   setSearchResults(res.data || [])
-      // } catch (err) {
-      //   console.error('검색 실패:', err)
-      // }
     } else {
-      setSearchResults([])
+      setSearchResults([]);
     }
-  }
+  };
 
   // 연합 버튼 클릭 핸들러
   const handleSelectUnion = () => {
@@ -195,7 +167,7 @@ export default function OrganizationSearchPage() {
               onClick={() => {
                 if (isClub && subStep === 1) {
                   if (isCreate) {
-                    navigate('/auth/organization/create', {
+                    navigate('/organization/create', {
                       state: {type: orgType, mode, school: selectedSchool }
                     })
                   } else {
@@ -204,7 +176,7 @@ export default function OrganizationSearchPage() {
                   setSearchResults([]);
                   }
                 } else {
-                  navigate('/auth/organization/form', {
+                  navigate('/organization/form', {
                     state: { type: orgType,  mode, school: selectedSchool, organization: selectedOrganization } });
                 }
               }}

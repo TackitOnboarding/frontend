@@ -29,12 +29,12 @@ export default function OrganizationTypePage() {
     if (!selectedType) return;
 
     if (mode === 'CREATE' && selectedType === 'COMMUNITY') {
-      navigate('/auth/organization/create', {
+      navigate('/organization/create', {
         state: {type: selectedType, mode }
       })
     }
     else {
-      navigate('/auth/organization/search', { 
+      navigate('/organization/search', { 
         state: { type: selectedType, mode }
     });
     }
