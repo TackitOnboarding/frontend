@@ -142,13 +142,13 @@ export default function PaymentSection({ currentDues, yearlyAmount }: PaymentSec
                       <div key={m} className="flex items-end gap-3 px-5 border-l border-line-normal">
                         {/* 수납액 막대 */}
                         <div 
-                          className="w-[55px] bg-primary-500 rounded-t-[2px] transition-all duration-500" 
-                          style={{ height: `${Math.min(collectedH, 296)}px` }} 
+                          className="w-[55px] bg-primary-500" 
+                          style={{ height: `${Math.min(collectedH, 295)}px` }} 
                         />
                         {/* 목표액 막대 */}
                         <div 
-                          className="w-[55px] bg-gray-50 rounded-t-[2px] transition-all duration-500" 
-                          style={{ height: `${Math.min(targetH, 296)}px` }} 
+                          className="w-[55px] bg-gray-50" 
+                          style={{ height: `${Math.min(targetH, 295)}px` }} 
                         />
                       </div>
                     );
