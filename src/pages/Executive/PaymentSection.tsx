@@ -87,6 +87,7 @@ export default function PaymentSection({ currentDues, yearlyAmount }: PaymentSec
       <div className="flex flex-col gap-4 items-start justify-center w-full">
         <h2 className="text-title-2b text-label-normal">연도별 회비 납부 통계</h2>
         <div className="w-[1100px] p-5 rounded-xl bg-white flex flex-col gap-5">
+          {/* 헤더: 범례 및 연도 선택*/}
           <div className="flex items-center justify-between w-full">
             <div className="flex gap-4">
               <div className="flex gap-2 items-center">
@@ -106,57 +107,66 @@ export default function PaymentSection({ currentDues, yearlyAmount }: PaymentSec
           </div>
 
           {/* 표 */}
-          <div className="relative h-[328px] w-full pl-16 pr-8 flex items-end justify-between">
+          <div className="flex gap-3 items-start justify-between">
       
             {/* 1. Y축 배경 가이드 라인 (수치 및 구분선) */}
-            <div 
-              className="absolute left-4 right-8 pointer-events-none flex flex-col justify-between" 
-              style={{ height: '296px' }}
-            >
+            <div className="flex flex-col justify-between items-end text-body-2 text-label-disable w-[49px] h-[296px]">
               {[60000, 45000, 30000, 15000, 0].map((val) => (
-                <div key={val} className="flex items-center gap-4 w-full">
-                  <span className="text-body-2 text-label-disable w-12 text-right">
-                    {val.toLocaleString()}
-                  </span>
-                  <div className="flex-1 border-t border-line-normal opacity-40" />
-                </div>
+                <span key={val}>{val}</span>
               ))}
             </div>
 
-            {/* 2. 월별 막대 그래프 데이터 매핑 (홀수 월 기준) */}
-            {[1, 3, 5, 7, 9].map((m) => {
-              // 명세서 데이터(yearlyStats)에서 해당 월의 데이터를 찾음
-              const monthData = yearlyAmount?.find((s: any) => s.month === m);
-              
-              // Y축 최대값(60,000원) 대비 높이 비율 계산
-              const maxVal = 60000;
-              const collectedH = monthData ? (monthData.collectedAmount / maxVal) * 296 : 0;
-              const targetH = monthData ? (monthData.targetAmount / maxVal) * 296 : 0;
+            <div className="flex flex-col gap-3 flex-1">
 
-              return (
-                <div key={m} className="relative flex flex-col items-center z-10 px-10 ">
-                  {/* 막대 그룹 (수납액 & 목표액) */}
-                  <div className="flex items-end gap-1.5 mb-[22px]" style={{ height: '296px' }}>
-                    {/* 수납액 막대 (파란색)  */}
-                    <div 
-                      className="w-[60px] bg-primary-500 rounded-t-sm transition-all duration-1000 ease-out shadow-sm" 
-                      style={{ height: `${Math.min(collectedH, 100)}%` }}
-                    />
-                    {/* 목표액 막대 (연회색) */}
-                    <div 
-                      className="w-[60px] bg-gray-50 rounded-t-sm transition-all duration-1000 ease-out" 
-                      style={{ height: `${Math.min(targetH, 100)}%` }}
-                    />
-                  </div>
-                  
-                  {/* X축 월 텍스트 표시 */}
-                  <span className="text-body-2 text-label-disable absolute bottom-0 leading-[32px]">{m}월</span>
+              {/*  그래프 및 가이드라인 영역*/}
+              <div className="relative w-full" style={{ height: '296px' }}>
+          
+                {/* 배경 가이드 라인 */}
+                <div className="absolute inset-0 flex flex-col justify-between pointer-events-none border-r border-line-normal">
+                  {[...Array(5)].map((_, i) => (
+                    <div key={i} className="w-full border-t border-line-normal" />
+                  ))}
                 </div>
-              );
-            })}
+
+                {/* 막대 그래프 컨테이너 */}
+                <div className="absolute inset-0 flex justify-between items-end">
+                  {[1, 3, 5, 7, 9, 11].map((m) => {
+                    const monthData = yearlyAmount?.find((s: any) => s.month === m);
+                    const maxVal = 60000;
+                    
+                    // 높이를 px 단위로 직접 계산 (전체 296px 기준)
+                    const collectedH = monthData ? (monthData.collectedAmount / maxVal) * 296 : 0;
+                    const targetH = monthData ? (monthData.targetAmount / maxVal) * 296 : 0;
+
+                    return (
+                      <div key={m} className="flex items-end gap-3 px-5 border-l border-line-normal">
+                        {/* 수납액 막대 */}
+                        <div 
+                          className="w-[55px] bg-primary-500 rounded-t-[2px] transition-all duration-500" 
+                          style={{ height: `${Math.min(collectedH, 296)}px` }} 
+                        />
+                        {/* 목표액 막대 */}
+                        <div 
+                          className="w-[55px] bg-gray-50 rounded-t-[2px] transition-all duration-500" 
+                          style={{ height: `${Math.min(targetH, 296)}px` }} 
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* x축 */}
+              <div className="flex justify-between w-full">
+                {[1, 3, 5, 7, 9, 11].map((m) => (
+                  <div key={m} className="flex justify-center w-full"> 
+                    <span className="text-body-2 text-label-disable">{m}월</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
-
       </div>
     </div>
   )
