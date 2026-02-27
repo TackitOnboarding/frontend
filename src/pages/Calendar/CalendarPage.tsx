@@ -3,12 +3,12 @@ import VoteListSection from "./VoteListSection"
 import ScheduleListSection from "./ScheduleListSection"
 import MonthlyCalendar from "./MonthlyCalendar"
 import MainFooter from "../../components/layouts/MainFooter"
-// import HomeBar from "../../components/HomeBar"
+import HomeBar from "../../components/HomeBar"
 
 export default function CalendarPage () {
   return (
     <>
-    {/* <HomeBar /> */}
+    <HomeBar />
     <div className="flex w-full border border-line-normal">
       <aside className="flex flex-col w-[282px] h-[864px] border-r border-line-normal">
         <div className="w-[282px] px-6 pt-8 pb-6">

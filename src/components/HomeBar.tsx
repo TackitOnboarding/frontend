@@ -37,7 +37,7 @@ const HomeBar: React.FC = () => {
                 <NavLink to="/calendar" className={linkClass}>
                   캘린더
                 </NavLink>
-                <NavLink to="/account" className={linkClass}>
+                <NavLink to="/executive" className={linkClass}>
                   회비함
                 </NavLink>
                 {/* 운영진 전용 메뉴 */}

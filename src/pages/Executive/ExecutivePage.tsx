@@ -1,5 +1,5 @@
 import { useState } from "react";
-// import HomeBar from "../../components/HomeBar"
+import HomeBar from "../../components/HomeBar"
 import MainFooter from "../../components/layouts/MainFooter";
 import DepositSection from "./DepositSection";
 import PaymentSection from "./PaymentSection";
@@ -36,7 +36,7 @@ export default function ExecutivePage() {
 
   return (
     <>
-    {/* <HomeBar /> */}
+    <HomeBar />
     <div className="flex w-full bg-background-neutral px-[170px] pt-8 pb-10 items-center justify-center">
       <div className="flex flex-col gap-5 items-start justify-center">
 
