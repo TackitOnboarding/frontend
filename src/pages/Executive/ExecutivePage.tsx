@@ -1,31 +1,16 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import HomeBar from "../../components/HomeBar"
 import MainFooter from "../../components/layouts/MainFooter";
+import api from "../../api/api";
 import DepositSection from "./DepositSection";
 import PaymentSection from "./PaymentSection";
 
 type ExecutiveTab = 'DEPOSIT' | 'PAYMENT';
 
 export default function ExecutivePage() {
-  const mockCurrentDues = {
-    duesId: 1,
-    title: "1월 회비",
-    startDate: "2026-01-01",
-    endDate: "2026-01-10",
-    participationRate: 67,
-    totalCollectedAmount: 40000,
-    totalTargetAmount: 60000,
-    unpaidCount: 4,
-    myPaymentStatus: "UNPAID", // 'PAID'로 바꾸면 파란색 UI로 변합니다
-  };
-
-  const mockYearlyStats = [
-    { month: 1, collectedAmount: 62000, targetAmount: 60000 },
-    { month: 3, collectedAmount: 58000, targetAmount: 60000 },
-    { month: 5, collectedAmount: 60000, targetAmount: 60000 },
-    { month: 7, collectedAmount: 50000, targetAmount: 60000 },
-    { month: 9, collectedAmount: 60000, targetAmount: 60000 },
-  ];
+  const { orgId } = useParams<{ orgId: string }>();
+  const numericOrgId = Number(orgId);
 
   const [activeTab, setActiveTab] = useState<ExecutiveTab>('DEPOSIT');
 
@@ -33,6 +18,38 @@ export default function ExecutivePage() {
     DEPOSIT: { title: '입출금 내역' },
     PAYMENT: { title: '납부 현황' },
   };
+
+  const [currentDues, setCurrentDues] = useState<any>(null);
+  const [yearlyStats, setYearlyStats] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchPaymentData = async () => {
+    setLoading(true);
+    try {
+      // 1. 현재 회비 납부 현황
+      const duesRes = await api.get('/api/accountings/dues', {
+        params: { orgId: numericOrgId }
+      });
+      setCurrentDues(duesRes.data.content); // .content 추가
+
+      // 2. 연도별 회비 납부 통계
+      const statsRes = await api.get('/api/accountings/yearly', {
+        params: { 
+          orgId: numericOrgId, 
+          year: new Date().getFullYear() 
+        }
+      });
+      setYearlyStats(statsRes.data.content); // .content 추가
+    } catch (err) {
+      console.error("납부 데이터 로딩 실패", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (numericOrgId) fetchPaymentData();
+  }, [numericOrgId]);
 
   return (
     <>
@@ -59,10 +76,17 @@ export default function ExecutivePage() {
 
         <div className="w-full flex justify-center items-center">
           {activeTab === 'DEPOSIT' ? (
-            <div className="w-full">{ <DepositSection /> }</div>
+            <div className="w-full">
+              <DepositSection orgId={numericOrgId} />
+            </div>
           ) : (
-            <div className="w-full">{ <PaymentSection currentDues={mockCurrentDues} 
-        yearlyAmount={mockYearlyStats}/> }</div>
+            <div className="w-full">
+              <PaymentSection 
+                orgId={numericOrgId} 
+                currentDues={currentDues} 
+                yearlyAmount={yearlyStats}
+              />
+            </div>
           )}
         </div>
       </div>

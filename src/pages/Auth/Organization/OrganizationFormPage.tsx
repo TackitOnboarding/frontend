@@ -9,7 +9,7 @@ import { useUserForm } from '../../../hooks/useUserForm';
 import api from '../../../api/api'
 import { toastError } from '../../../utils/toast';
 
-type MemberRole = 'EXECUTIVE' | 'GENERAL';
+type MemberRole = 'ADMIN' | 'GENERAL';
 type MemberType = 'NEWBIE' | 'SENIOR';
 
 const TYPE_ICONS: Record<MemberType, { src: string; alt: string }> = {
@@ -98,7 +98,7 @@ export default function OrganizationFormPage() {
   };
 
   const roleOptions: [SelectOption<MemberRole>, SelectOption<MemberRole>] = [
-    { value: 'EXECUTIVE', label: '운영진' },
+    { value: 'ADMIN', label: '운영진' },
     { value: 'GENERAL', label: '일반회원' },
   ];
 

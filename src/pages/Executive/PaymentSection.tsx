@@ -1,11 +1,12 @@
 import { useState } from "react";
 
 interface PaymentSectionProps {
+  orgId: number;
   currentDues: any;
-  yearlyAmount: any;
+  yearlyAmount: any[];
 }
 
-export default function PaymentSection({ currentDues, yearlyAmount }: PaymentSectionProps) {
+export default function PaymentSection({ orgId, currentDues, yearlyAmount }: PaymentSectionProps) {
   const [viewYear, setViewYear] = useState(new Date().getFullYear());
 
   const isUnpaid = currentDues?.myPaymentStatus === "UNPAID";

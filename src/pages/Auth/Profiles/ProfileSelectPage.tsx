@@ -14,13 +14,13 @@ interface Profile {
 }
 
 const BADGE_ICONS = {
-  EXECUTIVE: '/icons/executive.svg',   // 운영진
+  ADMIN: '/icons/executive.svg',   // 운영진
   SENIOR: '/icons/senior.svg', // 선배
   NEWBIE: '/icons/newbie.svg', // 신입
 } as const;
 
 const getBadgeInfo = (role: string, type: string) => {
-  if (role === 'EXECUTIVE') return { src: BADGE_ICONS.EXECUTIVE, label: '운영진' };
+  if (role === 'ADMIN') return { src: BADGE_ICONS.ADMIN, label: '운영진' };
   if (type === 'SENIOR') return { src: BADGE_ICONS.SENIOR, label: '선배' };
   if (type === 'NEWBIE') return { src: BADGE_ICONS.NEWBIE, label: '신입' };
   return null;
@@ -46,7 +46,7 @@ export default function ProfileSelectPage() {
     localStorage.setItem('currentOrgId', String(profile.memberOrgId));
     localStorage.setItem('currentNickname', profile.nickname);
     
-    navigate('/main'); 
+    navigate(`/${profile.memberOrgId}/main`); 
   };
 
   const handleJoinOrganization = () => {

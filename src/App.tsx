@@ -63,18 +63,22 @@ function App(): JSX.Element {
         <Route path="/login/find-email" element={<FindEmailPage />} />
         <Route path="/login/find-password" element={<FindPasswordPage />} />
         <Route path="/login/reset-password" element={<ResetPasswordPage />} />
-        <Route path="/main" element={<MainPage />} />
+        <Route path="/:orgId/main" element={<MainPage />} />
 
         {/* 게시판(new) */}
-        <Route path="/board" element={<BoardList />} />
+        <Route path="/:orgId/board" element={<BoardList />} />
         <Route path="/write/:boardType" element={<BoardWrite />} />
         <Route path="/edit/:boardType/:id" element={<BoardEdit />} />
         <Route path="/:boardType/:id" element={<BoardDetail />} />
 
         {/* 캘린더 */}
-        <Route path="/calendar" element={<CalendarPage />} />
+        <Route path="/:orgId/calendar" element={<CalendarPage />} />
 
-        <Route path="/executive" element={<ExecutivePage />} />
+        {/* 회비함 */}
+        <Route path="/:orgId/executive" element={<ExecutivePage />} />
+
+        {/* 운영진 관리 */}
+        
 
         {/* 게시판 */}
         {/* <Route path="/free" element={<FreePostList />} /> */}
@@ -96,6 +100,7 @@ function App(): JSX.Element {
         <Route path="/mypage/comments" element={<MyCommentList />} />
         <Route path="/mypage/bookmarked" element={<Bookmarked />} />
         <Route path="/mypage/edit-info" element={<EditInfoPage />} />
+
         {/* 관리자 페이지 */}
         <Route path="/admin" element={<AdminDashboardPage />} />
         <Route path="/admin/users" element={<AdminUsersPage />} />{' '}

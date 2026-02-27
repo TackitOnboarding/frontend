@@ -1,10 +1,11 @@
 import React from 'react'
-import { NavLink, useNavigate } from 'react-router-dom'
+import { NavLink, useNavigate, useParams } from 'react-router-dom'
 import NotificationBell from './notify/NotificationBell'
 import MyInfo from '../pages/MyPage/MyInfo'
 
 const HomeBar: React.FC = () => {
   const navigate = useNavigate()
+  const { orgId } = useParams<{ orgId: string }>()
 
   const linkClass = ({ isActive }: { isActive: boolean }): string =>
     [
@@ -25,24 +26,24 @@ const HomeBar: React.FC = () => {
                 src="/logo.svg"
                 alt="Tackit"
                 className="w-[120px] h-10 cursor-pointer mr-10"
-                onClick={() => navigate('/main')}
+                onClick={() => navigate(`/${orgId}/main`)}
               />
               <nav className="flex items-center">
-                <NavLink to="/main" className={linkClass} end>
+                <NavLink to={`/${orgId}/main`} className={linkClass} end>
                   홈
                 </NavLink>
-                <NavLink to="/board" className={linkClass}>
+                <NavLink to={`/${orgId}/board`} className={linkClass}>
                   게시판
                 </NavLink>
-                <NavLink to="/calendar" className={linkClass}>
+                <NavLink to={`/${orgId}/calendar`} className={linkClass}>
                   캘린더
                 </NavLink>
-                <NavLink to="/executive" className={linkClass}>
+                <NavLink to={`/${orgId}/executive`} className={linkClass}>
                   회비함
                 </NavLink>
                 {/* 운영진 전용 메뉴 */}
-                {/* {myInfo?.member_role === 'EXECUTIVE' && (
-                  <NavLink to="/executive" className={linkClass}>
+                {/* {myInfo?.memberRole === 'ADMIN' && (
+                  <NavLink to={`/${orgId}/management`} className={linkClass}>
                     관리
                   </NavLink>
                 )} */}

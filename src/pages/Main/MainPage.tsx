@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useParams } from 'react-router-dom'
 import HomeBar from '../../components/HomeBar'
 import MainFooter from '../../components/layouts/MainFooter'
 import api from '../../api/api'
 import SectionList from '../../components/SectionList'
 import './MainPage.css'
-// import PopularPostsSection from './PopularPostsSection'
 import OnboardingModal from '../../components/modals/OnboardingModal'
 
 const ONBOARD_KEY = 'onboard.seen.v1'
@@ -34,6 +33,7 @@ const toBase = (x: any): BaseItem => ({
 })
 
 export default function MainPage() {
+  const { orgId } = useParams<{ orgId: string }>()
   const [notices, setNotices] = useState<{items: BaseItem[], total: number}>({ items: [], total: 1 })
   const [noticePage, setNoticePage] = useState(1)
 

@@ -1,8 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import api from "../../api/api";
 import Chip from "../../components/Chip";
-import SummaryCard from "../../components/executive/SummaryCard";
+import SummaryCard from "../../components/executive/SummaryCard"
+import { PayModal } from "../../components/executive/PayModal";
 
-export default function DepositSection({ data, transactions }: any) {
+export default function DepositSection({ orgId }: { orgId: number }) {
+
   const categoryMap: any = {
     FOOD: { label: "식비", color: "bg-chip-blue" },
     STUFF: { label: "사무용품", color: "bg-chip-pink" },
@@ -10,15 +13,45 @@ export default function DepositSection({ data, transactions }: any) {
     ETC: { label: "기타", color: "bg-chip-green" },
   };
 
-  const totalExpense = data?.totalExpense || 0;
-
+  const [data, setData] = useState<any>(null);
+  const [transactions, setTransactions] = useState<any[]>([]);
   const [viewDate, setViewDate] = useState(new Date());
+  const [isPayModalOpen, setIsPayModalOpen] = useState(false);
 
   const year = viewDate.getFullYear();
   const month = viewDate.getMonth();
 
   const handlePrevMonth = () => setViewDate(new Date(year, month - 1, 1));
   const handleNextMonth = () => setViewDate(new Date(year, month + 1, 1));
+
+  const fetchMonthlyStatus = async () => {
+    const apiMonth = viewDate.getMonth() + 1;
+
+    try {
+      // 1. 월별 현황 및 지출 통계 조회
+      const statusRes = await api.get('/accountings/monthly/status', {
+        params: { orgId, year, month: apiMonth}
+      });
+
+      // 2. 상세 내역 리스트 조회
+      const listRes = await api.get('/api/accountings/monthly', {
+        params: { orgId, year, month: apiMonth }
+      });
+      
+      setData(statusRes.data.content); 
+      setTransactions(listRes.data.content || []); 
+    } catch (err) {
+      console.error("데이터 로드 실패:", err);
+      setData(null);
+      setTransactions([]);
+    }
+  };
+
+  useEffect(() => {
+    if (orgId) fetchMonthlyStatus();
+  }, [orgId, viewDate]);
+
+  const totalExpense = data?.totalExpense || 0;
 
   return (
     <div className="flex flex-col gap-5 w-[1100px]">
@@ -32,7 +65,7 @@ export default function DepositSection({ data, transactions }: any) {
 
         <button
           className="flex gap-[6px] items-center px-4 py-3 rounded-xl bg-primary-500 text-white text-body-1sb"
-          // onClick={}
+          onClick={() => setIsPayModalOpen(true)}
         >
           <img src="/icons/add.svg" alt="add" className="w-6 h-6"/>
           내역 등록
@@ -80,7 +113,7 @@ export default function DepositSection({ data, transactions }: any) {
             <h2 className="text-title-2b text-label-normal">카테고리별 지출</h2>
             <div className="flex flex-col gap-4 bg-white p-6 rounded-xl w-[540px] h-[268px]">
               {/* 카테고리 칩 & 바 4개*/}
-              {data?.categoryExpenses?.map((item: any) => {
+              {data?.categoryStats?.map((item: any) => {
                 const config = categoryMap[item.category];
                 const ratio = totalExpense > 0 ? (item.amount / totalExpense) * 100: 0;
                 return (
@@ -107,6 +140,9 @@ export default function DepositSection({ data, transactions }: any) {
                   </div>
                 )
               })}
+              {(!data?.categoryStats || data.categoryStats.length === 0) && (
+                <div className="flex items-center justify-center h-full text-label-assistive text-body-2">통계 데이터가 없습니다.</div>
+              )}
             </div>
           </div>
 
@@ -165,11 +201,23 @@ export default function DepositSection({ data, transactions }: any) {
                   </div>
                 );
               })}
+              {transactions.length === 0 && (
+                <div className="flex-1 flex items-center justify-center py-20 text-label-assistive text-body-1">
+                  해당 월의 거래 내역이 없습니다.
+                </div>
+              )}
             </div>
           </div>
         </div>
-
       </div>
+      {/* 내역 등록 모달 */}
+      <PayModal 
+        isOpen={isPayModalOpen} 
+        onClose={() => {
+          setIsPayModalOpen(false);
+        }} 
+        orgId={orgId} 
+      />
     </div>
   )
 }
