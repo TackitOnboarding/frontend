@@ -13,7 +13,7 @@ export default function OrganizationCreatePage() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { type, mode, school } = location.state || {};
+  const { type, school } = location.state || {};
   const isClub = type === 'CLUB';
 
   //  모임 이름 중복 테스트를 위해 useUserForm 활용

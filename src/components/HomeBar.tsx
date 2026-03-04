@@ -1,11 +1,10 @@
 import React from 'react'
-import { NavLink, useNavigate, useParams } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import NotificationBell from './notify/NotificationBell'
 import MyInfo from '../pages/MyPage/MyInfo'
 
 const HomeBar: React.FC = () => {
   const navigate = useNavigate()
-  const { orgId } = useParams<{ orgId: string }>()
 
   const linkClass = ({ isActive }: { isActive: boolean }): string =>
     [

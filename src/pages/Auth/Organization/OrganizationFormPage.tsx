@@ -29,7 +29,7 @@ export default function OrganizationFormPage() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { type, mode, school, organization} = location.state || {};
+  const { type, organization} = location.state || {};
   const isClub = type === 'CLUB';
 
   // 드롭다운 옵션 (입사년도)

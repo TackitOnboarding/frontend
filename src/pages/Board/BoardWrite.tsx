@@ -10,7 +10,7 @@ import RichTextEditor, {
   type RichTextEditorHandle,
 } from '../../components/editor/RichTextEditor'
 import { toastError, toastSuccess } from '../../utils/toast'
-import { PostCreateReq, PostCreateRes } from '../../types/post'
+import { PostCreateRes } from '../../types/post'
 import { replaceFirstDataUrlImgWithToken } from '../../utils/coverToken'
 import LeaveModal from '../../components/modals/LeaveModal'
 

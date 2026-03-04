@@ -300,7 +300,7 @@ export const ScheduleRegisterModal = ({ isOpen, onClose, initialData, inEdit = f
               className="flex bg-white border border-line-normal outline-none rounded-xl px-4 py-3 w-[352px]"
               placeholder="설명 입력"
               value={formData.description}
-              onChange={(e) => setFormData({ ... formData, description: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             />
           </div>
 
