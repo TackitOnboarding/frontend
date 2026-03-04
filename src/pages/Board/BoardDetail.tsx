@@ -95,7 +95,7 @@ const BOARD_CONFIG: Record<BoardType, BoardConfig> ={
 }
 
 function BoardDetail() {
-  const { boardType, id } = useParams<{ boardType: string; id: string }>()
+  const { boardType, id } = useParams<{boardType: string; id: string }>()
   const navigate = useNavigate()
   const { userInfo } = useFetchUserInfo()
 
@@ -161,13 +161,15 @@ function BoardDetail() {
         setLoading(false)
       }
     }
-    if (id) fetchPost()
+    if (id ) fetchPost()
   }, [id, config])
 
   // 댓글 로딩
   useEffect(() => {
-    if (config.commentApi && id) {
-      api.get(config.commentApi(id)).then(res => setComments(normalizeComments(res.data))).catch(() => setComments([]))
+    if (config.commentApi && id ) {
+      api.get(config.commentApi(id))
+        .then(res => setComments(normalizeComments(res.data)))
+        .catch(() => setComments([]))
     }
   }, [id, config])
 
@@ -295,7 +297,7 @@ function BoardDetail() {
             isBookmarked={isScrapped}
             onToggleBookmark={handleScrapToggle}
             isAuthor={isAuthor}
-            onEdit={() => navigate(`/edit/${type}/${id}`)}
+            onEdit={() => navigate(`/board/edit/${type}/${id}`)}
             onDelete={handleDeletePost}
             onReport={() => setShowPostReportModal(true)}
           />

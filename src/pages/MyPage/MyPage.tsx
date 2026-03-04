@@ -158,13 +158,13 @@ export default function MyPageHome() {
                         </div>
                       </div>
 
-                      {/* 로그아웃 버튼 */}
+                      {/* 프로필 전환 버튼 */}
                       <Button
                         variant="outlined"
                         size="outlinedM"
-                        onClick={() => setLogoutOpen(true)}
+                        onClick={() => navigate('/profiles')}
                       >
-                        로그아웃
+                        프로필 전환
                       </Button>
                     </div>
                   </div>
@@ -199,13 +199,21 @@ export default function MyPageHome() {
                 </section>
 
                 {/* 하단 탈퇴 버튼 */}
-                <div className="flex justify-center mt-auto">
+                <div className="flex flex-col items-center gap-8 mt-auto">
+                  <Button
+                    variant="outlined"
+                    size="outlinedM"
+                    onClick={() => setLogoutOpen(true)}
+                  >
+                    로그아웃
+                  </Button>
+
                   <button
                     type="button"
                     className="text-body-1 text-label-neutral"
                     onClick={() => setWithdrawOpen(true)}
                   >
-                    탈퇴하기
+                    모임 탈퇴하기
                   </button>
                 </div>
 

@@ -8,7 +8,7 @@ export default function OrganizationCompletePage() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { type, mode = 'JOIN' } = location.state || {};
+  const { type, mode = 'JOIN', orgName } = location.state || {};
   const isClub = type === 'CLUB';
   const isCreate = mode === 'CREATE';
 
@@ -22,7 +22,7 @@ export default function OrganizationCompletePage() {
           <img src="/icons/check-circle.svg" alt="check icon" className="w-7 h-7"/>
           <div className="flex flex-col items-center justify-center w-[392px] gap-1">
             <h2 className="text-title-2b text-label-normal">
-              {categoryText} {actionText}
+              {orgName ? `'${orgName}' ` : ''}{categoryText} {actionText}
             </h2>
             <div className="flex flex-col text-center text-body-2 text-label-neutral">
               {isCreate ? (

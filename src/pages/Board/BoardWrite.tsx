@@ -36,14 +36,12 @@ const BOARD_CONFIG = {
     placeholder: '자유롭게 작성해 주세요.',
     dtoKey: 'dto', // Free 게시판은 dto 사용
   },
-  // 공지
   notice: {
     tagApi: '/api/notice-tags/list',
     postApi: '/api/notice-posts',
     placeholder: '공지사항을 입력해 주세요.',
     dtoKey: 'dto',
   },
-  // 활동일지
   activity: {
     tagApi: '/api/activity-tags/list',
     postApi: '/api/activity-posts',
@@ -139,14 +137,21 @@ function BoardWrite() {
     setSubmitting(true)
     try {
       const contentForServer = replaceFirstDataUrlImgWithToken(content)
-      const payload: PostCreateReq = {
+
+      const isTagBoard = ['tip', 'qna', 'free'].includes(boardType || '');
+
+      const payload: any = {
         title: title.trim(),
         content: contentForServer,
-        tagIds: selectedTagIds,
+        isAnonymous: isAnonymous, // 명세 필수 필드
+      };
+
+      if (isTagBoard) {
+        payload.tagIds = selectedTagIds; // 태그 게시판일 때만 포함
       }
 
       const form = new FormData()
-      if (pickedImage) form.append('image', pickedImage)
+      if (pickedImage) {form.append('image', pickedImage)}
       
       // 게시판별로 다른 dtoKey(dto 또는 request) 사용
       form.append(
@@ -160,7 +165,7 @@ function BoardWrite() {
       toastSuccess('작성이 완료되었습니다.')
       // 작성 후 해당 게시판 상세 페이지로 이동
       const currentPath = boardType?.toLowerCase() || 'free'
-      navigate(`/${currentPath}/${newId}`)
+      navigate(`/board/${currentPath}/${newId}`)
 
     } catch (err: any) {
       toastError(err?.response?.data?.message || '글 작성에 실패했습니다.')

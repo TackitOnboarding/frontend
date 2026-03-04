@@ -33,7 +33,6 @@ const toBase = (x: any): BaseItem => ({
 })
 
 export default function MainPage() {
-  const { orgId } = useParams<{ orgId: string }>()
   const [notices, setNotices] = useState<{items: BaseItem[], total: number}>({ items: [], total: 1 })
   const [noticePage, setNoticePage] = useState(1)
 

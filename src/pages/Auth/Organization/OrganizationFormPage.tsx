@@ -29,7 +29,7 @@ export default function OrganizationFormPage() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { type } = location.state || {};
+  const { type, mode, school, organization} = location.state || {};
   const isClub = type === 'CLUB';
 
   // 드롭다운 옵션 (입사년도)
@@ -76,21 +76,23 @@ export default function OrganizationFormPage() {
     memberType;
 
   const handleComplete = async () => {
-    if (!canSubmit) return;
+    const orgId = organization?.id || organization?.orgId;
 
-    const { organization } = location.state || {};
-    const orgId = organization?.id;
+    const payload = {
+      nickname: nickname,
+      memberRole: memberRole,
+      memberType: memberType,
+    };
+
+    if (!orgId) {
+      toastError("모임 정보가 없습니다. 다시 시도해 주세요.");
+      return;
+    }
 
     try {
-      const payload = {
-        nickname: nickname,
-        memberRole: memberRole,
-        memberType: memberType,
-      };
+      await api.post(`/api/orgs/${orgId}`, payload);
 
-      await api.post(`/orgs/${orgId}`, payload);
-
-      navigate('/organization/complete', { state: { type, mode: 'JOIN' } });
+      navigate('/organization/complete', { state: { type, mode: 'JOIN', orgName: organization?.name } });
     } catch (error: any) {
       console.error("참여 신청 에러:", error.response?.data);
       toastError("참여 신청에 실패했습니다.");

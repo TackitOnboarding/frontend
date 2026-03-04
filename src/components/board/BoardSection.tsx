@@ -21,7 +21,7 @@ type Post = {
   profileImageUrl?: string | null
 }
 
-export default function BoardSection({ config, myInfo, loading }: any) {
+export default function BoardSection({ config, myInfo, loading}: any) {
   const navigate = useNavigate()
   const [tagId, setTagId] = useState<number | null>(0)
   const [posts, setPosts] = useState<Post[]>([])

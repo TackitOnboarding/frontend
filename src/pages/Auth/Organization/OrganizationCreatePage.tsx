@@ -42,25 +42,44 @@ export default function OrganizationCreatePage() {
   const handleComplete = async () => {
     if (!canSubmit) return;
 
-    try {
+    try{
       const payload = {
-        orgName: organizationName,
-        orgType: type, // 'CLUB' 또는 'COMMUNITY'
-        orgDescription: description,
-        ...(type === 'CLUB' && school?.id && { universityId: Number(school.id) }), // 동아리일 때만 대학 ID 추가
+        orgName: organizationName,   // 사용자가 입력한 이름
+        orgType: type,            // 'COMMUNITY'
+        orgDescription: description, // 사용자가 입력한 설명
+        ...(type === 'CLUB' && school?.id && { universityId: Number(school.id) }),
       };
 
-      const res = await api.post('/orgs', payload);
-      console.log("생성된 모임 정보:", res.data);
+      console.log("보내는 데이터:", payload);
 
-      navigate('/organization/complete', { 
-        state: { type, mode } 
-      });
-    } catch (error) {
-      console.error("모임 생성 실패", error);
-      toastError("모임 생성에 실패했습니다. 다시 시도해 주세요.");
-    }
-  };
+      const res = await api.post('/api/orgs', payload);
+      const newOrgId = res.data.orgId; // 백엔드 응답에서 ID 확인
+
+    // 2. 수동 업데이트 (백엔드가 reissue에서 프로필을 줄 때까지만 사용하는 임시 코드)
+    const stored = localStorage.getItem('userProfiles');
+    const currentProfiles = stored ? JSON.parse(stored) : [];
+
+    const tempProfile = {
+      memberOrgId: newOrgId,
+      orgName: organizationName,
+      orgType: type,
+      nickname: "관리자", // 임시 닉네임
+      profileImage: null,
+      memberType: "SENIOR", 
+      memberRole: "ADMIN"
+    };
+
+    localStorage.setItem('userProfiles', JSON.stringify([...currentProfiles, tempProfile]));
+
+    // 3. 완료 페이지로 이동
+    navigate('/organization/complete', { 
+      state: { type, mode: 'CREATE', orgName: organizationName } 
+    });
+  } catch (error) {
+    console.error("모임 생성 실패", error);
+    toastError("모임 생성에 실패했습니다.");
+  }
+};
 
 
   return (

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import AuthLayout from '../../../components/layouts/AuthLayout'
-// import api from '../../../api/api'
+import api from '../../../api/api'
 
 interface Profile {
   memberOrgId: number
@@ -28,25 +28,33 @@ const getBadgeInfo = (role: string, type: string) => {
 
 
 export default function ProfileSelectPage() {
+  const location = useLocation();
   const [profiles, setProfiles] = useState<Profile[]>([])
   const navigate = useNavigate()
 
   useEffect(() => {
-    const stored = localStorage.getItem('userProfiles');
-    if (stored) {
+    const loadInitialData = () => {
       try {
-        setProfiles(JSON.parse(stored));
-      } catch(e) {
-        console.error("프로필 데이터 파싱 에러", e);
+        const stored = localStorage.getItem('userProfiles');
+        if (stored) {
+          const parsedProfiles = JSON.parse(stored);
+          // 데이터가 배열인지 한 번 더 확인하면 안전합니다.
+          if (Array.isArray(parsedProfiles)) {
+            setProfiles(parsedProfiles);
+          }
+        }
+      } catch (e) {
+        console.error("프로필 데이터 로드 중 오류:", e);
       }
-    }
-  }, []);
+    };
+
+    loadInitialData();
+  }, [location.pathname]);
 
   const handleProfileClick = (profile: Profile) => {
-    localStorage.setItem('currentOrgId', String(profile.memberOrgId));
-    localStorage.setItem('currentNickname', profile.nickname);
-    
-    navigate(`/${profile.memberOrgId}/main`); 
+    localStorage.setItem('currentProfile', JSON.stringify(profile));
+
+    navigate(`/${profile.memberOrgId}/main`);
   };
 
   const handleJoinOrganization = () => {
@@ -60,6 +68,7 @@ export default function ProfileSelectPage() {
       state: {mode: 'CREATE'}
     })
   }
+
 
   return (
     <AuthLayout showCornerLogo={true}>
@@ -77,7 +86,7 @@ export default function ProfileSelectPage() {
             )}
           </h1>
 
-          <div className="flex flex-wrap justify-center gap-[60px]">
+          <div className="flex flex-wrap items-center justify-center gap-[60px]">
             {/* 이미 가입된 프로필 리스트(default) */}
             {profiles.map((profile) => {
               const badge = getBadgeInfo(profile.memberRole, profile.memberType);
@@ -87,8 +96,8 @@ export default function ProfileSelectPage() {
                   className="flex flex-col items-center cursor-pointer group gap-6"
                   onClick={() => handleProfileClick(profile)}
                 >
-                  <div className="w-[30px] h-[30px] rounded-full flex items-center justify-center">
-                    <img src="/icons/profile-default.svg" alt="organization" className="w-[30px] h-[30px]" />
+                  <div className="w-[120px] h-[120px] rounded-full flex items-center justify-center">
+                    <img src="/icons/profile-default.svg" alt="organization" className="w-[120px] h-[120px]" />
                   </div>
 
                   <div className="flex flex-col items-center justify-center gap-1">

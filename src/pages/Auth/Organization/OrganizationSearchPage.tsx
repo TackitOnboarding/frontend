@@ -1,10 +1,17 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import AuthLayout from '../../../components/layouts/AuthLayout'
 import { AuthCard } from '../../../components/ui/AuthCard'
 import { Button } from '../../../components/ui/Button'
 import api from '../../../api/api'
 
+function debounce<T extends (...args: any[]) => any>(fn: T, delay: number) {
+  let timer: ReturnType<typeof setTimeout>;
+  return (...args: Parameters<T>) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), delay);
+  };
+}
 
 export default function OrganizationSearchPage() {
   const location = useLocation()
@@ -39,41 +46,43 @@ export default function OrganizationSearchPage() {
 
   const header = getHeaderInfo();
 
-  // 검색 로직(아직 debounce 미적용)
-  const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const debouncedSearch = useMemo(
+    () =>
+      debounce(async (query: string, step: number, schoolId?: number) => {
+        if (!query.trim()) {
+          setSearchResults([]);
+          return;
+        }
+
+        try {
+          if (isClub && step === 1) {
+            // 대학교 검색
+            const res = await api.get('/api/universities/search', { params: { word: query } });
+            setSearchResults(res.data);
+          } else {
+            // 모임 검색 (소모임 검색 API가 없을 경우 500이 날 수 있음)
+            const res = await api.get('/api/orgs/search', {
+              params: { 
+                query,
+                ...(isClub && { universityId: schoolId }),
+                ...(!isClub && { orgType: 'COMMUNITY' })
+              }
+            });
+            setSearchResults(res.data.content || res.data);
+          }
+        } catch (e) {
+          console.error("검색 중 에러 발생:", e);
+          setSearchResults([]);
+        }
+      }, 500), // 500ms 지연
+    [isClub]
+  );
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchTerm(value);
-
-    if (value.trim().length > 0) {
-      try {
-        if (isClub && subStep === 1) {
-          // 1. 대학교 검색 API 연결
-          // Path: /api/universities/search, Param: word
-          const res = await api.get('/universities/search', {
-            params: { word: value }
-          });
-          
-          // 제공해주신 명세에 따르면 응답이 바로 배열 형태입니다.
-          setSearchResults(res.data); 
-        } else {
-          // 2. 모임 검색 API (기존 명세 기반 유지)
-          const endpoint = isClub ? '/orgs/search' : '/orgs/search';
-          const res = await api.get(endpoint, {
-            params: { 
-              query: value,
-              ...(isClub && { universityId: selectedSchool?.id }),
-              ...(!isClub && { orgType: 'COMMUNITY' })
-            }
-          });
-          setSearchResults(res.data.content || res.data);
-        }
-      } catch (err) {
-        console.error('검색 실패:', err);
-        setSearchResults([]);
-      }
-    } else {
-      setSearchResults([]);
-    }
+    // 디바운스된 함수 실행
+    debouncedSearch(value, subStep, selectedSchool?.id);
   };
 
   // 연합 버튼 클릭 핸들러
@@ -83,6 +92,15 @@ export default function OrganizationSearchPage() {
     setSearchTerm(unionData.name);
     setSearchResults([]);
   };
+  // 소모임이면서 생성 모드일 때의 예외 처리
+  useEffect(() => {
+    if (!isClub && isCreate) {
+      // 소모임 이름 검색 API가 없으므로, 검색 단계를 건너뛰고 바로 생성 페이지로 이동합니다.
+      navigate('/organization/create', { 
+        state: { type: orgType, mode: 'CREATE' } 
+      });
+    }
+  }, [isClub, isCreate, navigate, orgType]);
 
   return (
     <AuthLayout icons={['/assets/auth/auth-icon.svg']} iconOffset={80}>
@@ -115,7 +133,7 @@ export default function OrganizationSearchPage() {
                 type="text"
                 placeholder={header.placeholder}
                 value={searchTerm}
-                onChange={handleSearch}
+                onChange={handleSearchChange}
                 className="w-full h-12 rounded-xl p-3 border border-line-normal outline-none placeholder:text-body-1 placeholder:text-label-assistive"
               />
               <img src="/icons/search.svg" alt="search" className="absolute p-0 -translate-y-1/2 bg-transparent border-0 cursor-pointer right-3 top-1/2 w-6 h-6" />

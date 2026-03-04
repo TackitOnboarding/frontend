@@ -18,8 +18,8 @@ export default function BoardList() {
       endpoint: '/api/tip-posts',
       tagEndpoint: '/api/tip-tags/list',
       tagPostUrl: (id: number) => `/api/tip-tags/${id}/posts`,
-      writePath: '/write/tip',
-      detailPath: '/tip',
+      writePath: `/board/write/tip`,
+      detailPath: `/board/tip`,
       role: 'SENIOR',
       fallbackTags: [{ id: 1, name: '업무팁' }, { id: 2, name: '협업' }, { id: 3, name: '툴' }, { id: 4, name: '커리어' }]
     },
@@ -29,10 +29,10 @@ export default function BoardList() {
       endpoint: '/api/qna-posts',
       tagEndpoint: '/api/qna-tags/list',
       tagPostUrl: (id: number) => `/api/qna-tags/${id}/posts`,
-      writePath: '/write/qna',
-      detailPath: '/qna',
+      writePath: `/board/write/qna`,
+      detailPath: `/board/qna`,
       role: 'NEWBIE',
-      fallbackTags: [{ id: 1, name: '리액트' }, { id: 2, name: '백엔드' }, { id: 3, name: '배포' }, { id: 4, name: 'CS' }]
+      fallbackTags: [{ id: 1, name: '도움요청' }, { id: 2, name: '실수했어요' }, { id: 3, name: '조언구해요' }, { id: 4, name: '추천해주세요' }, { id: 5, name:"프로세스"}]
     },
     free: {
       title: '다같이 얘기해요',
@@ -40,8 +40,8 @@ export default function BoardList() {
       endpoint: '/api/free-posts',
       tagEndpoint: '/api/free_tags',
       tagPostUrl: (id: number) => `/api/free_tags/${id}/posts`,
-      writePath: '/write/free',
-      detailPath: '/free',
+      writePath: `/board/write/free`,
+      detailPath: `/board/free`,
       role: 'ALL',
       fallbackTags: [{ id: 1, name: '업무팁' }, { id: 2, name: '인수인계' }, { id: 3, name: '조직문화' }]
     }
@@ -85,7 +85,7 @@ export default function BoardList() {
                     key={activeTab}
                     config={currentBoard} 
                     myInfo={myInfo} 
-                    loading={loading} 
+                    loading={loading}
                   />
                 </div>
               </div>

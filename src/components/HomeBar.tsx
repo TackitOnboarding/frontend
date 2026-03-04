@@ -26,24 +26,24 @@ const HomeBar: React.FC = () => {
                 src="/logo.svg"
                 alt="Tackit"
                 className="w-[120px] h-10 cursor-pointer mr-10"
-                onClick={() => navigate(`/${orgId}/main`)}
+                onClick={() => navigate('/main')}
               />
               <nav className="flex items-center">
-                <NavLink to={`/${orgId}/main`} className={linkClass} end>
+                <NavLink to={'/main'} className={linkClass} end>
                   홈
                 </NavLink>
-                <NavLink to={`/${orgId}/board`} className={linkClass}>
+                <NavLink to={'/board'} className={linkClass}>
                   게시판
                 </NavLink>
-                <NavLink to={`/${orgId}/calendar`} className={linkClass}>
+                <NavLink to={'/calendar'} className={linkClass}>
                   캘린더
                 </NavLink>
-                <NavLink to={`/${orgId}/executive`} className={linkClass}>
+                <NavLink to={'executive'} className={linkClass}>
                   회비함
                 </NavLink>
                 {/* 운영진 전용 메뉴 */}
                 {/* {myInfo?.memberRole === 'ADMIN' && (
-                  <NavLink to={`/${orgId}/management`} className={linkClass}>
+                  <NavLink to={'/management'} className={linkClass}>
                     관리
                   </NavLink>
                 )} */}

@@ -66,16 +66,16 @@ function App(): JSX.Element {
         <Route path="/:orgId/main" element={<MainPage />} />
 
         {/* 게시판(new) */}
-        <Route path="/:orgId/board" element={<BoardList />} />
-        <Route path="/write/:boardType" element={<BoardWrite />} />
-        <Route path="/edit/:boardType/:id" element={<BoardEdit />} />
-        <Route path="/:boardType/:id" element={<BoardDetail />} />
+        <Route path="/board" element={<BoardList />} />
+        <Route path="/board/write/:boardType" element={<BoardWrite />} />
+        <Route path="/board/edit/:boardType/:id" element={<BoardEdit />} />
+        <Route path="/board/:boardType/:id" element={<BoardDetail />} />
 
         {/* 캘린더 */}
-        <Route path="/:orgId/calendar" element={<CalendarPage />} />
+        <Route path="/calendar" element={<CalendarPage />} />
 
         {/* 회비함 */}
-        <Route path="/:orgId/executive" element={<ExecutivePage />} />
+        <Route path="/executive" element={<ExecutivePage />} />
 
         {/* 운영진 관리 */}
         

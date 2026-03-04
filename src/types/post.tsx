@@ -4,6 +4,7 @@ export type PostCreateReq = {
   title: string
   content: string
   tagIds: number[]
+  isAnonymous: boolean,
 }
 
 export type PostCreateRes = {

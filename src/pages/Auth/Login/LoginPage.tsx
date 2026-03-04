@@ -19,7 +19,7 @@ type AuthResponse = {
   token: {
     accessToken: string
     refreshToken: string
-    accessTokenExpiresIn: number | string
+    accessTokenExpiresIn: number
     grantType: string
   }
   profiles: Profile[];

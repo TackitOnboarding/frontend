@@ -42,7 +42,7 @@ export default function SectionList({
         <h3 className="flex items-center text-title-1 gap-2"><img src={iconSrc} alt={`${title} 아이콘`} className="w-10 h-10" />{title}</h3>
         {showWriteButton && (
           <Link
-            to={`/write/${moreTo.replace('/', '')}`}
+            to={`/board/write/${moreTo.replace('/', '')}`}
             className="flex items-center gap-2 px-[18px] py-[10px] bg-[#5D7CFF] text-white rounded-[12px] hover:bg-blue-600 transition-colors shadow-sm"
           >
             <span className="text-xl font-light">+</span>

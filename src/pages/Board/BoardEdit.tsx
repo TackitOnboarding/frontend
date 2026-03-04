@@ -10,7 +10,6 @@ import RichTextEditor, {
   RichTextEditorHandle,
 } from '../../components/editor/RichTextEditor'
 import { toastSuccess, toastError } from '../../utils/toast'
-// import { PostUpdateReq, PostCreateRes } from '../../types/post'
 import {
   hydrateCoverToken,
   replaceFirstDataUrlImgWithToken,
@@ -99,6 +98,7 @@ function BoardEdit() {
         
         setTitle(p.title ?? '')
         setContent(hydrateCoverToken(String(p.content ?? ''), p.imageUrl ?? null))
+        setIsAnonymous(!!p.anonymous)
 
         const matched = tagNormalized.filter((t) =>
           (p.tags ?? []).includes(t.tagName)
@@ -170,7 +170,7 @@ function BoardEdit() {
       toastSuccess('게시글이 수정되었습니다.')
       
       const currentPath = boardType?.toLowerCase() || 'free'
-      navigate(`/${currentPath}/${targetId}`)
+      navigate(`/board/${currentPath}/${targetId}`)
     } catch (err: any) {
       toastError(err?.response?.data?.message || '수정에 실패했습니다.')
     } finally {
