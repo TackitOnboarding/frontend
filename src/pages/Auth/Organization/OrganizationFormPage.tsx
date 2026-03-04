@@ -91,6 +91,8 @@ export default function OrganizationFormPage() {
 
     try {
       await api.post(`/api/orgs/${orgId}`, payload);
+      localStorage.removeItem('activeProfileId');
+      localStorage.removeItem('currentProfile');
 
       navigate('/organization/complete', { state: { type, mode: 'JOIN', orgName: organization?.name } });
     } catch (error: any) {

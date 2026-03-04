@@ -63,7 +63,7 @@ function App(): JSX.Element {
         <Route path="/login/find-email" element={<FindEmailPage />} />
         <Route path="/login/find-password" element={<FindPasswordPage />} />
         <Route path="/login/reset-password" element={<ResetPasswordPage />} />
-        <Route path="/:orgId/main" element={<MainPage />} />
+        <Route path="/main" element={<MainPage />} />
 
         {/* 게시판(new) */}
         <Route path="/board" element={<BoardList />} />

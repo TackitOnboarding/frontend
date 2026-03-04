@@ -100,6 +100,9 @@ export default function LoginPage(): JSX.Element {
       localStorage.setItem('accessTokenExpiresIn', String(accessTokenExpiresIn))
       localStorage.setItem('grantType', grantType)
 
+      //이전 로그인 흔적 지우기
+      localStorage.removeItem('activeProfileId');
+
       // 2. 프로필 리스트 전체 저장 (넷플릭스 프로필 선택창 같은 곳에서 쓰기 위함)
       localStorage.setItem('userProfiles', JSON.stringify(profiles));
       

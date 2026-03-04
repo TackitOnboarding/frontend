@@ -34,7 +34,8 @@ export default function MyPageHome() {
     localStorage.removeItem('refreshToken')
     localStorage.removeItem('accessTokenExpiresIn')
     localStorage.removeItem('grantType')
-    localStorage.removeItem('role')
+    localStorage.removeItem('activeProfileId');
+    localStorage.removeItem('currentProfile');
 
     navigate('/login')
   }

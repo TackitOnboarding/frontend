@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import AuthLayout from '../../../components/layouts/AuthLayout'
-import api from '../../../api/api'
 
 interface Profile {
   memberOrgId: number
@@ -54,7 +53,9 @@ export default function ProfileSelectPage() {
   const handleProfileClick = (profile: Profile) => {
     localStorage.setItem('currentProfile', JSON.stringify(profile));
 
-    navigate(`/${profile.memberOrgId}/main`);
+    localStorage.setItem('activeProfileId', String(profile.memberOrgId));
+
+    navigate('/main');
   };
 
   const handleJoinOrganization = () => {

@@ -53,14 +53,14 @@ export default function OrganizationCreatePage() {
       console.log("보내는 데이터:", payload);
 
       const res = await api.post('/api/orgs', payload);
-      const newOrgId = res.data.orgId; // 백엔드 응답에서 ID 확인
+      const newMemberOrgId = res.data.memberOrgId || res.data.orgId;
 
     // 2. 수동 업데이트 (백엔드가 reissue에서 프로필을 줄 때까지만 사용하는 임시 코드)
     const stored = localStorage.getItem('userProfiles');
     const currentProfiles = stored ? JSON.parse(stored) : [];
 
-    const tempProfile = {
-      memberOrgId: newOrgId,
+    const newProfile = {
+      memberOrgId: newMemberOrgId,
       orgName: organizationName,
       orgType: type,
       nickname: "관리자", // 임시 닉네임
@@ -69,7 +69,11 @@ export default function OrganizationCreatePage() {
       memberRole: "ADMIN"
     };
 
-    localStorage.setItem('userProfiles', JSON.stringify([...currentProfiles, tempProfile]));
+    localStorage.setItem('userProfiles', JSON.stringify([...currentProfiles, newProfile]));
+
+    // 메인이동 시 헤더 작동
+    localStorage.setItem('activeProfileId', String(newMemberOrgId));
+    localStorage.setItem('currentProfile', JSON.stringify(newProfile));
 
     // 3. 완료 페이지로 이동
     navigate('/organization/complete', { 

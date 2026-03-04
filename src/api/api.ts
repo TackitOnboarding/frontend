@@ -2,7 +2,7 @@ import axios from 'axios'
 import { notificationSSE } from '../services/notificationSSE'
 
 // 1) BASE_URL 안전 기본값
-const BASE_URL = process.env.REACT_APP_API_URL || '/api'
+const BASE_URL = process.env.REACT_APP_API_URL || ''
 
 // 2) 공용 axios 인스턴스
 const api = axios.create({
@@ -104,41 +104,39 @@ const AUTH_FREE = [
 // 3) 요청 인터셉터
 api.interceptors.request.use(
   (config) => {
-    const activeProfileId = localStorage.getItem('activeProfileId'); 
-    
-    if (activeProfileId) {
-      // 모든 요청 헤더에 백엔드가 요구한 키값으로 주입합니다.
+    const token = localStorage.getItem('accessToken')
+    const url = typeof config.url === 'string' ? config.url : ''
+    const pathname = url.startsWith('/') ? url : `/${url}`
+
+    if (token && isAccessTokenExpired()) {
+      const pathname = url.startsWith('/') ? url : `/${url}`
+      if (!AUTH_FREE.includes(pathname)) {
+        forceLogout()
+        return Promise.reject(new axios.Cancel('Token expired'))
+      }
+    }
+
+    const isAbsolute = /^https?:\/\//i.test(url)
+    if (isAbsolute) return config
+
+    const isAuthFree = AUTH_FREE.includes(pathname)
+
+    if (token && !isAuthFree) {
+      config.headers = config.headers || {}
+      config.headers.Authorization = `Bearer ${token}`
+    }
+
+    const activeProfileId = localStorage.getItem('activeProfileId');
+    const isHeaderFree = pathname === '/api/orgs' || pathname === '/orgs';
+
+    if (activeProfileId && !isHeaderFree && !isAuthFree) {
+      config.headers = config.headers || {};
       config.headers['Active-Profile-Id'] = activeProfileId;
     }
-    
-    return config;
-  }, (error) => {
-    return Promise.reject(error);}
-  //   const token = localStorage.getItem('accessToken')
-  //   const url = typeof config.url === 'string' ? config.url : ''
 
-  //   if (token && isAccessTokenExpired()) {
-  //     const pathname = url.startsWith('/') ? url : `/${url}`
-  //     if (!AUTH_FREE.includes(pathname)) {
-  //       forceLogout()
-  //       return Promise.reject(new axios.Cancel('Token expired'))
-  //     }
-  //   }
-
-  //   const isAbsolute = /^https?:\/\//i.test(url)
-  //   if (isAbsolute) return config
-
-  //   const pathname = url.startsWith('/') ? url : `/${url}`
-  //   const isAuthFree = AUTH_FREE.includes(pathname)
-
-  //   if (token && !isAuthFree) {
-  //     config.headers = config.headers || {}
-  //     config.headers.Authorization = `Bearer ${token}`
-  //   }
-
-  //   return config
-  // },
-  // (error) => Promise.reject(error)
+    return config
+  },
+  (error) => Promise.reject(error)
 )
 
 // 4) 응답 인터셉터
