@@ -20,7 +20,7 @@ interface VoteRegisterModalProps {
 }
 
 export const VoteRegisterModal = ({ isOpen, onClose, inEdit, initialData }: VoteRegisterModalProps) => {
-  const [members, setMembers] = useState<OrgMember[]>([]);
+  const [members] = useState<OrgMember[]>([]);
   const [isMemberOpen, setIsMemberOpen] = useState(false);
 
   // 드롭다운 상태

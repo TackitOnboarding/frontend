@@ -21,7 +21,7 @@ interface ScheduleRegisterModalProps {
 }
 
 export const ScheduleRegisterModal = ({ isOpen, onClose, initialData, inEdit = false, orgId = 10 }: ScheduleRegisterModalProps) => {
-  const [members, setMembers] = useState<OrgMember[]>([])
+  const [members] = useState<OrgMember[]>([])
   const [isMemberOpen, setIsMemberOpen] = useState(false)
   const [isAllDay, setIsAllDay] = useState(false); // "하루종일" 상태
   const [openDropdown, setOpenDropdown] = useState<'startDay' | 'startAMPM' |'startHour' | 'endDay' | 'endAMPM' |'endHour' | null>(null);
