@@ -1,5 +1,5 @@
-import HomeBar from "@/components/HomeBar";
-import Footer from "@/components/layouts/Footer";
+import HomeBar from "../../components/HomeBar";
+import Footer from "../../components/layouts/Footer";
 import { useState } from "react";
 import MemberManageSection from "./MemberManageSection";
 import ExecutiveManageSection from "./ExecutiveManageSection";
@@ -18,9 +18,9 @@ export default function ManagementPage() {
 
   return (
     <>
-    {/* <HomeBar/> */}
+    <HomeBar/>
     <div className="flex w-full border border-line-normal">
-      <aside className="flex flex-col w-[282px] h-[864px] border-r border-line-normal">
+      <aside className="flex flex-col w-[282px] border-r border-line-normal">
         <div className="flex flex-col w-full px-5 pt-8 gap-2">
           {(Object.keys(tabConfigs) as ManagementTab[]).map((type) => {
             const isActive = activeTab === type;
@@ -44,20 +44,17 @@ export default function ManagementPage() {
       </aside>
 
       <main className="flex flex-col items-start px-9 pt-8 pb-10 gap-10 w-full bg-background-neutral">
-        <h1 className="text-title1-bold text-label-normal">{tabConfigs[activeTab].title}</h1>
-        <div className="w-full flex items-center justify-center gap-10">
-          <div className="w-full">
-            {{
-             MEMBER: < MemberManageSection />,
-             EXECUTIVE: <ExecutiveManageSection />,
-             REPORT: <ErrorManageSection />,
-            }[activeTab]}
-          </div>
+        <div className="w-full">
+          {{
+            MEMBER: < MemberManageSection />,
+            EXECUTIVE: <ExecutiveManageSection />,
+            REPORT: <ErrorManageSection />,
+          }[activeTab]}
         </div>
       </main>
     </div>
 
-    {/* <Footer/> */}
+    <Footer/>
     </>
   )
 }

@@ -98,7 +98,8 @@ export default function MemberManageSection () {
     : members.filter(m => m.orgStatus === activeFilter);
 
   return (
-    <div className="w-full flex flex-col gap-10">
+    <div className="w-full flex flex-col gap-5">
+      <h1 className="text-title1-bold text-label-normal">회원 관리</h1>
       {/* 탭 */}
       <div className="flex gap-3">
         {[

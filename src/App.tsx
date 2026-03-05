@@ -79,7 +79,7 @@ function App(): JSX.Element {
         <Route path="/executive" element={<ExecutivePage />} />
 
         {/* 운영진 관리 */}
-        <Route path="/auth/management" element={<ManagementPage />} />
+        <Route path="/management" element={<ManagementPage />} />
         
 
         {/* 게시판 */}
