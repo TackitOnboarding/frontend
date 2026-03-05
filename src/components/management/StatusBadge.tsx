@@ -1,4 +1,4 @@
-type StatusType = 'ACTIVE' | 'PENDING' | 'INACTIVE';
+type StatusType = 'ACTIVE' | 'PENDING' | 'INACTIVE' | 'PAID' | 'UNPAID';
 
 type StatusBadgeProps = {
   status: StatusType | string;
@@ -19,6 +19,14 @@ export default function StatusBadge({
     },
     INACTIVE: {
       label: '비활성화',
+      styles: 'bg-background-neutral text-label-normal',
+    },
+    PAID: {
+      label: '납부 완료',
+      styles: 'bg-background-blue text-label-primary',
+    },
+    UNPAID: {
+      label: '미납',
       styles: 'bg-background-neutral text-label-normal',
     },
   };

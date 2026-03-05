@@ -76,7 +76,7 @@ export default function MemberManageSection () {
 
     try {
       const response = await fetch(`/api/executive/members/${action}?memberOrgId=${memberId}`, {
-        method: 'POST',
+        method: 'PATCH',
       });
 
       if (response.ok) {

@@ -102,8 +102,8 @@ export default function PaymentSection({ orgId, currentDues, yearlyAmount }: Pay
             </div>
             <div className="flex items-center justify-center rounded-[10px] border border-line-normal">
               <button onClick={handlePrevYear} className="rounded-m "><img src="/icons/prev-btn.svg" alt="prevYear" className="w-8 h-8"/></button>
-          <h1 className="text-body-1sb text-label-normal">{viewYear}</h1>
-          <button onClick={handleNextYear} className="rounded-m "><img src="/icons/next-btn.svg" alt="nextYear" className="w-8 h-8"/></button>
+              <h1 className="text-body-1sb text-label-normal">{viewYear}</h1>
+              <button onClick={handleNextYear} className="rounded-m "><img src="/icons/next-btn.svg" alt="nextYear" className="w-8 h-8"/></button>
             </div>
           </div>
 
