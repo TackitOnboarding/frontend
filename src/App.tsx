@@ -39,6 +39,7 @@ import FindPasswordPage from './pages/Auth/Login/FindPassword'
 import ResetPasswordPage from './pages/Auth/Login/ResetPassword'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
+import ManagementPage from './pages/Management/ManagementPage'
 
 function App(): JSX.Element {
   useEffect(() => {
@@ -78,6 +79,7 @@ function App(): JSX.Element {
         <Route path="/executive" element={<ExecutivePage />} />
 
         {/* 운영진 관리 */}
+        <Route path="/auth/management" element={<ManagementPage />} />
         
 
         {/* 게시판 */}
