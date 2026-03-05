@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { toastError, toastSuccess } from '../../utils/toast'
 import MemberPaymentCard from "../../components/management/MemberPaymentCard";
 import { MemberStatus } from "../../types/member";
+import { DuesRegisterModal } from "../../components/management/DuesRegisterModal";
 
 interface MonthlyDues {
   duesId: number;
@@ -19,6 +20,7 @@ interface MonthlyDues {
 export default function ExecutiveManageSection () {
   const [viewDate, setViewDate] = useState(new Date());
   const [duesList, setDuesList] = useState<MonthlyDues[]>([]);
+  const [isDuesModalOpen, setIsDuesModalOpen] = useState(false);
 
   const year = viewDate.getFullYear();
   const month = viewDate.getMonth();
@@ -77,7 +79,7 @@ export default function ExecutiveManageSection () {
         <h1 className="text-title1-bold text-label-normal">회비 관리</h1>
         <button
           type="button"
-          // onClick={}
+          onClick={() => setIsDuesModalOpen(true)}
           className="flex px-4 py-3 bg-primary-500 rounded-xl gap-[6px]"
         >
           <img src="/icons/add.svg" alt="add" className="w-6 h-6" />
@@ -152,8 +154,11 @@ export default function ExecutiveManageSection () {
             </div>
           </div>
         )})}
-
-      
+        <DuesRegisterModal 
+          isOpen={isDuesModalOpen} 
+          onClose={() => setIsDuesModalOpen(false)} 
+          onSuccess={fetchMonthlyDues}
+        />
     </div>
   )
 }
