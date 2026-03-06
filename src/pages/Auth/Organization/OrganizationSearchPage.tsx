@@ -48,7 +48,7 @@ export default function OrganizationSearchPage() {
 
   const debouncedSearch = useMemo(
     () =>
-      debounce(async (query: string, step: number, schoolId?: number) => {
+      debounce(async (query: string, step: number) => {
         if (!query.trim()) {
           setSearchResults([]);
           return;
@@ -56,25 +56,39 @@ export default function OrganizationSearchPage() {
 
         try {
           if (isClub && step === 1) {
-            // 대학교 검색
-            const res = await api.get('/api/universities/search', { params: { word: query } });
+            // 1. 대학교 검색 (명세: params 키 'word')
+            const res = await api.get('/api/universities/search', { 
+              params: { word: query } 
+            });
+            // 대학교 응답은 [ {id, name, regionName}, ... ] 배열 형태
             setSearchResults(res.data);
           } else {
-            // 모임 검색 (소모임 검색 API가 없을 경우 500이 날 수 있음)
+            // 2. 모임 검색 (명세: params 키 'orgName', 'orgType')
             const res = await api.get('/api/orgs/search', {
               params: { 
-                query,
-                ...(isClub && { universityId: schoolId }),
-                ...(!isClub && { orgType: 'COMMUNITY' })
+                orgName: query, // 명세에 따라 orgName 사용
+                orgType: isClub ? 'CLUB' : 'COMMUNITY' // CLUB 또는 COMMUNITY 필수
               }
             });
-            setSearchResults(res.data.content || res.data);
+
+            // 모임 검색 응답은 { content: [ {orgId, orgName, ...}, ... ] } 구조
+            const rawData = res.data.content || [];
+            
+            // UI에서 사용하는 id, name 키값으로 변환하여 저장
+            const mappedData = rawData.map((item: any) => ({
+              id: item.orgId,     // orgId를 id로 매핑
+              name: item.orgName, // orgName을 name으로 매핑
+              universityName: item.universityName,
+              createdAt: item.createdAt
+            }));
+            
+            setSearchResults(mappedData);
           }
         } catch (e) {
           console.error("검색 중 에러 발생:", e);
           setSearchResults([]);
         }
-      }, 500), // 500ms 지연
+      }, 500),
     [isClub]
   );
 
@@ -82,7 +96,7 @@ export default function OrganizationSearchPage() {
     const value = e.target.value;
     setSearchTerm(value);
     // 디바운스된 함수 실행
-    debouncedSearch(value, subStep, selectedSchool?.id);
+    debouncedSearch(value, subStep);
   };
 
   // 연합 버튼 클릭 핸들러

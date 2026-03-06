@@ -90,14 +90,17 @@ export default function OrganizationFormPage() {
     }
 
     try {
-      await api.post(`/api/orgs/${orgId}`, payload);
-      localStorage.removeItem('activeProfileId');
-      localStorage.removeItem('currentProfile');
+      const response = await api.post(`/api/orgs/${orgId}`, payload);
 
-      navigate('/organization/complete', { state: { type, mode: 'JOIN', orgName: organization?.name } });
+      if (response.status === 200) {
+        localStorage.removeItem('activeProfileId');
+        localStorage.removeItem('currentProfile');
+
+        navigate('/organization/complete', { state: { type, mode: 'JOIN', orgName: organization?.name || organization?.orgName } });
+      }
     } catch (error: any) {
-      console.error("참여 신청 에러:", error.response?.data);
-      toastError("참여 신청에 실패했습니다.");
+      const serverMessage = error.response?.data?.status?.message;
+      toastError(serverMessage || "참여 신청에 실패했습니다. 다시 시도해 주세요.");
     }
   };
 

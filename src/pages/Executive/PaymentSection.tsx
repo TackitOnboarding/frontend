@@ -42,10 +42,10 @@ export default function PaymentSection({ orgId, currentDues, yearlyAmount }: Pay
               </div>
 
               <div className="flex gap-1 items-center ">
-                <span className="text-title-1sb text-label-normal">
+                <span className="text-title-1sb text-label-normal whitespace-nowrap">
                   {currentDues?.totalCollectedAmount?.toLocaleString()}원
                 </span>
-                <span className="text-body-1 text-label-neutral">
+                <span className="text-body-1 text-label-neutral whitespace-nowrap">
                   {" "}/ {currentDues?.totalTargetAmount?.toLocaleString()}원
                 </span>
               </div>

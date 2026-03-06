@@ -95,65 +95,156 @@ export default function ExecutiveManageSection () {
       </div>
 
       {/* 회비 */}
-      {duesList.map((dues) => {
-        const rate = (dues.collectedAmount / dues.targetAmount) * 100;
+      <div className="flex flex-col gap-10">
+        {duesList.length > 0 ? (
+          // 데이터가 있을 때의 리스트
+        
+        duesList.map((dues) => {
+          const rate = (dues.collectedAmount / dues.targetAmount) * 100;
 
-        return (
-          <div key={dues.duesId} className="flex flex-col rounded-lg bg-white">
+          return (
+            <div key={dues.duesId} className="flex flex-col rounded-lg bg-white">
 
-            <div className="flex flex-col px-6 py-8 gap-3 border-b border-line-normal w-full ">
+              <div  className="flex flex-col px-6 py-8 gap-3 border-b border-line-normal w-full ">
 
-              <div className="flex gap-3 items-center justify-between">
+                <div className="flex gap-3 items-center justify-between">
 
-                <div className="flex flex-col gap-3 items-start justify-center w-full">
-                  <span className="text-title-2b text-label-normal">{dues.title}</span>
-                  <p className="text-body-1 text-label-neutral">
-                    {dues.startDate.replace(/-/g, '.')} - {dues.endDate.split('-')[1]}.{dues.endDate.split('-')[2]}
-                  </p>
+                  <div className="flex gap-3 items-center justify-start w-full">
+                    <span className="text-title-2b text-label-normal">{dues.title}</span>
+                    <p className="text-body-1 text-label-neutral">
+                      {dues.startDate.replace(/-/g, '.')} - {dues.endDate.split('-')[1]}.{dues.endDate.split('-')[2]}
+                    </p>
+                  </div>
+
+                  <div className="flex gap-1 items-center ">
+                    <span className="text-title-1sb text-label-normal whitespace-nowrap">
+                      {dues.collectedAmount.toLocaleString()}원
+                    </span>
+                    <span className="text-body-1 text-label-neutral whitespace-nowrap">
+                        / {dues.targetAmount.toLocaleString()}원
+                    </span>
+                  </div>  
                 </div>
 
-                <div className="flex gap-1 items-center ">
-                  <span className="text-title-1sb text-label-normal">
-                    {dues.collectedAmount.toLocaleString()}원
-                  </span>
-                  <span className="text-body-1 text-label-neutral">
-                      / {dues.targetAmount.toLocaleString()}원
-                  </span>
-                </div>  
-              </div>
-
-              {/* 현황 바 */}
-              <div className="relative w-full rounded-full h-2 bg-gray-50 overflow-hidden">
-                <div 
-                  className="absolute left-0 top-0 h-full rounded-full transition-all duration-700"
-                  style={{ width: `${rate}%` }}
-                />
-              </div>
-            </div>
-
-            {/* 회원별 납부 현황 그리드 */}
-            <div className="flex flex-col p-6 gap-4">
-              <div className="flex items-center justify-between w-full">
-                <h3 className="text-title-2b text-label-normal">회원별 납부 현황</h3>
-                <span className="text-body-1 text-label-neutral">
-                  <b className="text-body-1sb text-label-normal">{dues.paidMemberCount}명</b> / {dues.totalMemberCount}명 납부
-                </span>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                {dues.members.map((member) => (
-                  <MemberPaymentCard 
-                    key={member.memberOrgId}
-                    member={member}
-                    duesId={dues.duesId}
-                    onStatusChange={handleStatusChange}
+                {/* 현황 바 */}
+                <div className="relative w-full rounded-full h-2 bg-gray-50 overflow-hidden">
+                  <div 
+                    className="absolute left-0 top-0 h-full rounded-full transition-all duration-700"
+                    style={{ width: `${rate}%` }}
                   />
-                ))}
-                
+                </div>
               </div>
 
+              {/* 회원별 납부 현황 그리드 */}
+              <div className="flex flex-col p-6 gap-4">
+                <div className="flex items-center justify-between w-full">
+                  <h3 className="text-title-2b text-label-normal">회원별 납부 현황</h3>
+                  <span className="text-body-1 text-label-neutral">
+                    <b className="text-body-1sb text-label-normal">{dues.paidMemberCount}명</b> / {dues.totalMemberCount}명 납부
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  {dues.members.map((member) => (
+                    <MemberPaymentCard 
+                      key={member.memberOrgId}
+                      member={member}
+                      duesId={dues.duesId}
+                      onStatusChange={handleStatusChange}
+                    />
+                  ))}
+                  
+                </div>
+
+              </div>
             </div>
-          </div>
-        )})}
+          )})
+        ): (
+          // 데이터가 없을 때
+          <>      
+            {/* 회비 */}
+            <div className="flex flex-col rounded-lg bg-white">
+              <div  className="flex flex-col px-6 py-8 gap-3 border-b border-line-normal w-full ">
+                  <div className="flex gap-3 items-center justify-between">
+                    <div className="flex gap-3 items-center justify-start w-full">
+                    {/* 현재 보고 있는 월을 제목에 반영 */}
+                    <span className="text-title-2b text-label-normal">{month + 1}월 회비</span>
+                    <p className="text-body-1 text-label-neutral">
+                      {year}.{String(month + 1).padStart(2, '0')}.01 - {String(month + 1).padStart(2, '0')}.10
+                    </p>
+                  </div>
+
+                  <div className="flex gap-1 items-center">
+                    <span className="text-title-1sb text-label-normal whitespace-nowrap">0원</span>
+                    <span className="text-body-1 text-label-neutral whitespace-nowrap">/ 0원</span>
+                  </div>
+                </div>
+
+                {/* 0% 상태의 현황 바 */}
+                <div className="relative w-full rounded-full h-2 bg-gray-50 overflow-hidden">
+                  <div className="absolute left-0 top-0 h-full bg-primary-500 w-0 transition-all duration-700" />
+                </div>
+              </div>
+
+              {/* 하단 회원 현황 영역 틀 유지 */}
+              <div className="flex flex-col p-6 gap-4 bg-background-secondary">
+                <div className="flex items-center justify-between w-full">
+                  <h3 className="text-title-2b text-label-normal">회원별 납부 현황</h3>
+                  <span className="text-body-1 text-label-neutral">
+                    <b className="text-body-1sb text-label-normal">0명</b> / 0명 납부
+                  </span>
+                </div>
+                
+                {/* 안내 문구 중심 배치 */}
+                <div className="flex flex-col items-center justify-center py-10 border border-dashed border-line-normal rounded-xl bg-white">
+                  <p className="text-body-2 text-label-assistive">등록된 회비 내역이 없습니다.</p>
+                  <p className="text-caption text-label-assistive">상단의 버튼을 눌러 회비를 등록해 보세요!</p>
+                </div>
+              </div>
+            </div>
+
+            {/* 회식비 */}
+              <div className="flex flex-col rounded-lg bg-white">
+              <div  className="flex flex-col px-6 py-8 gap-3 border-b border-line-normal w-full ">
+                  <div className="flex gap-3 items-center justify-between">
+                    <div className="flex gap-3 items-center justify-start w-full">
+                    {/* 현재 보고 있는 월을 제목에 반영 */}
+                    <span className="text-title-2b text-label-normal">{month + 1}월 회식비</span>
+                    <p className="text-body-1 text-label-neutral">
+                      {year}.{String(month + 1).padStart(2, '0')}.01 - {String(month + 1).padStart(2, '0')}.10
+                    </p>
+                  </div>
+
+                  <div className="flex gap-1 items-center">
+                    <span className="text-title-1sb text-label-normal whitespace-nowrap">0원</span>
+                    <span className="text-body-1 text-label-neutral whitespace-nowrap">/ 0원</span>
+                  </div>
+                </div>
+
+                {/* 0% 상태의 현황 바 */}
+                <div className="relative w-full rounded-full h-2 bg-gray-50 overflow-hidden">
+                  <div className="absolute left-0 top-0 h-full bg-primary-500 w-0 transition-all duration-700" />
+                </div>
+              </div>
+
+              {/* 하단 회원 현황 영역 틀 유지 */}
+              <div className="flex flex-col p-6 gap-4 bg-background-secondary">
+                <div className="flex items-center justify-between w-full">
+                  <h3 className="text-title-2b text-label-normal">회원별 납부 현황</h3>
+                  <span className="text-body-1 text-label-neutral">
+                    <b className="text-body-1sb text-label-normal">0명</b> / 0명 납부
+                  </span>
+                </div>
+                
+                {/* 안내 문구 중심 배치 */}
+                <div className="flex flex-col items-center justify-center py-10 border border-dashed border-line-normal rounded-xl bg-white">
+                  <p className="text-body-2 text-label-assistive">등록된 회비 내역이 없습니다.</p>
+                  <p className="text-caption text-label-assistive">상단의 버튼을 눌러 회비를 등록해 보세요!</p>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+        </div>
         <DuesRegisterModal 
           isOpen={isDuesModalOpen} 
           onClose={() => setIsDuesModalOpen(false)} 
