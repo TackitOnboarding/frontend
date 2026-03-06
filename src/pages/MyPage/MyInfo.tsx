@@ -5,9 +5,8 @@ export type MyInfoData = {
   nickname: string
   email: string
   organization: string
-  role: 'NEWBIE' | 'SENIOR' | 'ADMIN' | string
-  joinedYear: number
-  yearsOfService: number
+  memberRole: 'ADMIN' | 'GENERAL' | string
+  memberType: 'NEWBIE' | 'SENIOR' | string
   profileImageUrl: string | null
 }
 
@@ -20,22 +19,24 @@ const MyInfo: React.FC<MyInfoProps> = ({ children }) => {
   const [loading, setLoading] = useState<boolean>(true)
 
   useEffect(() => {
-    let isMounted = true
+    const savedProfile = localStorage.getItem('currentProfile')
+    const userEmail = localStorage.getItem('userEmail')
 
-    ;(async () => {
-      try {
-        const { data } = await api.get<MyInfoData>('/api/members/me')
-        if (isMounted) setMyInfo(data)
-      } catch (error) {
-        console.error('내 정보 조회 실패', error)
-      } finally {
-        if (isMounted) setLoading(false)
-      }
-    })()
-
-    return () => {
-      isMounted = false
+    if (savedProfile) {
+      const profile = JSON.parse(savedProfile)
+      
+      // 2. 새로운 데이터 규격에 맞춰 매핑
+      setMyInfo({
+        nickname: profile.nickname,
+        email: userEmail || '-',
+        organization: profile.orgName,
+        memberRole: profile.memberRole, // ADMIN | GENERAL
+        memberType: profile.memberType, // NEWBIE | SENIOR
+        profileImageUrl: profile.profileImage
+      })
     }
+    
+    setLoading(false)
   }, [])
 
   // 렌더-프로프 방식

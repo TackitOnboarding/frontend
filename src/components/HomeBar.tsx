@@ -41,11 +41,11 @@ const HomeBar: React.FC = () => {
                   회비함
                 </NavLink>
                 {/* 운영진 전용 메뉴 */}
-                {/* {myInfo?.memberRole === 'ADMIN' && (
+                {myInfo?.memberRole === 'ADMIN' && (
                   <NavLink to={'/management'} className={linkClass}>
                     관리
                   </NavLink>
-                )} */}
+                )}
               </nav>
             </div>
 

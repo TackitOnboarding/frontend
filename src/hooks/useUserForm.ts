@@ -19,7 +19,7 @@ export function useUserForm(initialRole = '') {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [nickname, setNickname] = useState('')
   const [organization, setOrganization] = useState('')
-  const [role, setRole] = useState(initialRole)
+  const [memberType, setMemberType] = useState(initialRole)
 
   // 모임 생성하기의 Form
   const [organizationName, setOrganizationName] = useState(''); // 모임 이름 상태 추가
@@ -65,7 +65,7 @@ export function useUserForm(initialRole = '') {
       !nickInvalid &&
       organization &&
       !orgInvalid &&
-      role
+      memberType
   )
 
   const checkEmailDuplicate = async () => {
@@ -97,19 +97,9 @@ export function useUserForm(initialRole = '') {
   const checkNicknameDuplicate = async () => {
     setNickServerError('')
     setNicknameCheckMessage('')
+
     if (!nickname || nickInvalid) return
-    try {
-      const encoded = encodeURIComponent(nickname)
-      await api.get(`/auth/check-nickname?nickname=${encoded}`)
-      setNicknameCheckMessage('사용 가능한 닉네임입니다.')
-    } catch (e: unknown) {
-      const err = e as AxiosError
-      if (err.response?.status === 409) {
-        setNickServerError('이미 사용 중인 닉네임입니다.')
-      } else {
-        setNickServerError('닉네임 확인 중 오류 발생')
-      }
-    }
+    setNicknameCheckMessage('닉네임 형식이 올바릅니다.');
   }
 
   // 모임 이름 중복 체크 API (나중에 엔드포인트만 수정하세요)
@@ -142,13 +132,13 @@ export function useUserForm(initialRole = '') {
     confirmPassword,
     nickname,
     organization,
-    role,
+    memberType,
     setEmail,
     setPassword,
     setConfirmPassword,
     setNickname,
     setOrganization,
-    setRole,
+    setMemberType,
     organizationName,
     setOrganizationName,
 
@@ -167,6 +157,8 @@ export function useUserForm(initialRole = '') {
     orgNameMessage,
 
     // API
+    setNickServerError,
+    setNicknameCheckMessage,
     checkEmailDuplicate,
     checkNicknameDuplicate,
     checkOrganizationNameDuplicate,

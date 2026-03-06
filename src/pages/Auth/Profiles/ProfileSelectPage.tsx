@@ -87,7 +87,7 @@ export default function ProfileSelectPage() {
             )}
           </h1>
 
-          <div className="flex flex-wrap items-center justify-center gap-[60px]">
+          <div className="flex  w-full items-center justify-center gap-[60px]">
             {/* 이미 가입된 프로필 리스트(default) */}
             {profiles.map((profile) => {
               const badge = getBadgeInfo(profile.memberRole, profile.memberType);
@@ -102,9 +102,9 @@ export default function ProfileSelectPage() {
                   </div>
 
                   <div className="flex flex-col items-center justify-center gap-1">
-                    <span className="text-title-2m text-label-normal">{profile.orgName}</span>
+                    <span className="text-title-2m text-label-normal whitespace-nowrap">{profile.orgName}</span>
                     <div className="flex gap-[2px] items-center justify-center">
-                      <p className="text-body-1 text-label-neutral">{profile.nickname}</p>
+                      <p className="text-body-1 text-label-neutral whitespace-nowrap">{profile.nickname}</p>
                       {/* 배지 아이콘 렌더링 */}
                       {badge && (
                         <img 
@@ -128,7 +128,7 @@ export default function ProfileSelectPage() {
               <div className="w-[30px] h-[30px] gap-[10px]">
                 <img src="/icons/create.svg" alt="모임 참여하기" className="w-14 h-14"/>
               </div>
-              <span className="text-title-2m text-label-normal">모임 참여하기</span>
+              <span className="text-title-2m text-label-normal whitespace-nowrap">모임 참여하기</span>
             </div>
           </div>
         </div>

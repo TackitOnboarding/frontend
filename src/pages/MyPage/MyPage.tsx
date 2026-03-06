@@ -123,19 +123,30 @@ export default function MyPageHome() {
                             ) : (
                               <>
                                 <span>{me?.nickname ?? '사용자'}</span>
-                                {me?.role === 'NEWBIE' && (
+                                {me?.memberRole === 'ADMIN' ? (
                                   <img
-                                    src="/icons/newbie.svg"
-                                    alt="신입 뱃지"
+                                    src="/icons/executive.svg"
+                                    alt="운영진 뱃지"
                                     className="w-[24px] h-[24px]"
                                   />
-                                )}
-                                {me?.role === 'SENIOR' && (
-                                  <img
-                                    src="/icons/senior.svg"
-                                    alt="선배 뱃지"
-                                    className="w-[24px] h-[24px]"
-                                  />
+                                ) : (
+                                  /* 2순위: 운영진이 아닐 때 신입/선배 체크 */
+                                  <>
+                                    {me?.memberType === 'NEWBIE' && (
+                                      <img
+                                        src="/icons/newbie.svg"
+                                        alt="신입 뱃지"
+                                        className="w-[24px] h-[24px]"
+                                      />
+                                    )}
+                                    {me?.memberType === 'SENIOR' && (
+                                      <img
+                                        src="/icons/senior.svg"
+                                        alt="선배 뱃지"
+                                        className="w-[24px] h-[24px]"
+                                      />
+                                    )}
+                                  </>
                                 )}
                               </>
                             )}

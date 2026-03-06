@@ -142,7 +142,7 @@ function EditInfoForm({ myInfo }: { myInfo: MyInfoData }) {
     setConfirmPassword,
     setNickname,
     setOrganization,
-    setRole,
+    setMemberType,
     confirmInvalid,
     nickInvalid,
   } = useUserForm('')
@@ -159,10 +159,10 @@ function EditInfoForm({ myInfo }: { myInfo: MyInfoData }) {
       setEmail(myInfo.email)
       setNickname(myInfo.nickname)
       setOrganization(myInfo.organization)
-      setRole(myInfo.role)
+      setMemberType(myInfo.memberType)
       setInitialized(true)
     }
-  }, [initialized, myInfo, setEmail, setNickname, setOrganization, setRole])
+  }, [initialized, myInfo, setEmail, setNickname, setOrganization, setMemberType])
 
   // 변경 여부/검증
   const hasPwChange = password.trim().length > 0

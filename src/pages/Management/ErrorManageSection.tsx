@@ -1,3 +1,5 @@
+// type OrgStatus = "ALL" | "REPORT"  | "INACTIVE";
+
 export default function ErrorManageSection () {
   return (
     <div className="w-full flex flex-col gap-5">

@@ -46,6 +46,8 @@ export default function OrganizationFormPage() {
     setNickname,
     nickHasError,
     nickMessage,
+    setNickServerError,
+    setNicknameCheckMessage,
     checkNicknameDuplicate,
   } = useUserForm();
 
@@ -65,11 +67,9 @@ export default function OrganizationFormPage() {
     ? (isYearEmpty ? '입사연도를 선택해 주세요.' : '유효한 연도를 선택해 주세요.') 
     : undefined;
 
-  const isNickConfirmed = nickMessage === '사용 가능한 닉네임입니다.';
   const canSubmit = 
     nickname && 
     !nickHasError && 
-    isNickConfirmed && 
     !isYearEmpty && 
     !isYearInvalid &&
     memberRole && 
@@ -78,29 +78,28 @@ export default function OrganizationFormPage() {
   const handleComplete = async () => {
     const orgId = organization?.id || organization?.orgId;
 
-    const payload = {
-      nickname: nickname,
-      memberRole: memberRole,
-      memberType: memberType,
-    };
-
-    if (!orgId) {
-      toastError("모임 정보가 없습니다. 다시 시도해 주세요.");
-      return;
-    }
+    const payload = { nickname, memberRole, memberType }
 
     try {
       const response = await api.post(`/api/orgs/${orgId}`, payload);
 
-      if (response.status === 200) {
+      if (response.status === 200) {      
+        // 기존 저장된 정보 초기화
+        localStorage.removeItem('userProfiles');
         localStorage.removeItem('activeProfileId');
-        localStorage.removeItem('currentProfile');
-
-        navigate('/organization/complete', { state: { type, mode: 'JOIN', orgName: organization?.name || organization?.orgName } });
+        
+        navigate('/organization/complete', { state: { type, mode: 'JOIN', orgName: organization?.name } });
       }
     } catch (error: any) {
+      // 서버에서 닉네임 중복 에러가 발생한 경우
       const serverMessage = error.response?.data?.status?.message;
-      toastError(serverMessage || "참여 신청에 실패했습니다. 다시 시도해 주세요.");
+      
+      if (serverMessage === "이미 존재하는 닉네임입니다.") { // 서버 에러 메시지 확인 필요
+        setNicknameCheckMessage(''); // 성공 메시지 초기화
+        setNickServerError('해당 모임에 이미 사용 중인 닉네임입니다.');
+      } else {
+        toastError(serverMessage || "참여 신청에 실패했습니다.");
+      }
     }
   };
 
