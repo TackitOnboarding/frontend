@@ -1,4 +1,4 @@
-type StatusType = 'ACTIVE' | 'PENDING' | 'INACTIVE' | 'PAID' | 'UNPAID';
+type StatusType = 'ACTIVE' | 'PENDING' | 'INACTIVE' | 'PAID' | 'UNPAID' | 'REPORT';
 
 type StatusBadgeProps = {
   status: StatusType | string;
@@ -29,6 +29,10 @@ export default function StatusBadge({
       label: '미납',
       styles: 'bg-background-neutral text-label-normal',
     },
+    REPORT: {
+      label:'신고',
+      styles: 'bg-background-red text-line-negative',
+    }
   };
   const config = statusConfig[status] || statusConfig['INACTIVE'];
 

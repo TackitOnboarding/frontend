@@ -3,7 +3,7 @@ import Footer from "../../components/layouts/Footer";
 import { useState } from "react";
 import MemberManageSection from "./MemberManageSection";
 import ExecutiveManageSection from "./ExecutiveManageSection";
-import ErrorManageSection from "./ErrorManageSection";
+import ReportManageSection from "./ReportManageSection";
 
 type ManagementTab = 'MEMBER' | 'EXECUTIVE' | 'REPORT';
 
@@ -48,7 +48,7 @@ export default function ManagementPage() {
           {{
             MEMBER: < MemberManageSection />,
             EXECUTIVE: <ExecutiveManageSection />,
-            REPORT: <ErrorManageSection />,
+            REPORT: <ReportManageSection />,
           }[activeTab]}
         </div>
       </main>
