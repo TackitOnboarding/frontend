@@ -10,6 +10,7 @@ type Profile = {
   memberOrgId: number
   orgName: string
   orgType: string
+  universityName: string | null;
   nickname: string
   profileImage: string | null
   memberType: string
@@ -104,6 +105,7 @@ export default function LoginPage(): JSX.Element {
       localStorage.removeItem('activeProfileId');
 
       // 2. 프로필 리스트 전체 저장 (넷플릭스 프로필 선택창 같은 곳에서 쓰기 위함)
+      localStorage.setItem('userEmail', email);
       localStorage.setItem('userProfiles', JSON.stringify(profiles));
       
       navigate('/profiles');

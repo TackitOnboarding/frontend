@@ -154,10 +154,23 @@ export default function MyPageHome() {
 
                           {/* 닉네임 아래 소속 + 이메일 */}
                           {!loading && (
-                            <div className="mt-[8px] flex items-center">
+                            <div className="mt-[8px] flex items-center">                        
+                              {/* 교내-연합동아리의 경우 학교 이름 노출 */}
+                              {me?.universityName && (
+                                <>
+                                  <span>{me.universityName}</span>
+                                  <span
+                                    className="inline-block w-px h-[12px] bg-line-normal mx-[12px]"
+                                    aria-hidden="true"
+                                  />
+                                </>
+                              )}
+
+                              {/* 모임 이름 */}
                               <span className="text-body1-regular text-label-neutral mr-[16px]">
                                 {me?.organization ?? '-'}
                               </span>
+
                               <span
                                 className="inline-block w-px h-[16px] bg-[var(--line-normal)] mr-[16px]"
                                 aria-hidden="true"
@@ -225,7 +238,7 @@ export default function MyPageHome() {
                     className="text-body-1 text-label-neutral"
                     onClick={() => setWithdrawOpen(true)}
                   >
-                    모임 탈퇴하기
+                    서비스 탈퇴하기
                   </button>
                 </div>
 

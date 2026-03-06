@@ -4,6 +4,7 @@ import api from '../../api/api'
 export type MyInfoData = {
   nickname: string
   email: string
+  universityName: string;
   organization: string
   memberRole: 'ADMIN' | 'GENERAL' | string
   memberType: 'NEWBIE' | 'SENIOR' | string
@@ -30,6 +31,7 @@ const MyInfo: React.FC<MyInfoProps> = ({ children }) => {
         nickname: profile.nickname,
         email: userEmail || '-',
         organization: profile.orgName,
+        universityName: profile.universityName,
         memberRole: profile.memberRole, // ADMIN | GENERAL
         memberType: profile.memberType, // NEWBIE | SENIOR
         profileImageUrl: profile.profileImage
