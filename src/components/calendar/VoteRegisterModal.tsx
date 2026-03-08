@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { CalendarColorType, Participant } from '../../types/calendar';
+import { calendarApi } from '../../api/calendar';
 import { RegisterModal } from "../modals/RegisterModal";
 import { Button } from '../ui/Button';
 import { MiniCalendar } from './MiniCalendar';
@@ -6,22 +8,20 @@ import { TimePicker } from './TimePicker';
 
 type VoteType = 'TEXT' | 'DATE';
 
-interface OrgMember {
-  orgMemberId: number;
-  profileImage: string;
-  nickname: string;
-}
-
 interface VoteRegisterModalProps {
   isOpen: boolean;
   onClose: () => void;
-  inEdit?: boolean;      // 수정 모드 여부
-  initialData?: any;     // 수정 시 전달받을 데이터
+  inEdit?: boolean;
+  initialData?: any;
+  onSuccess?: () => void;   // 수정 시 전달받을 데이터
 }
 
-export const VoteRegisterModal = ({ isOpen, onClose, inEdit, initialData }: VoteRegisterModalProps) => {
-  const [members] = useState<OrgMember[]>([]);
+export const VoteRegisterModal = ({ isOpen, onClose, inEdit, initialData, onSuccess }: VoteRegisterModalProps) => {
+  const [members, setMembers] = useState<Participant[]>([]);
   const [isMemberOpen, setIsMemberOpen] = useState(false);
+  const [hasDeadline, setHasDeadline] = useState(false);
+
+  const activeProfileId = localStorage.getItem('activeProfileId');
 
   // 드롭다운 상태
   const [openDropdown, setOpenDropdown] = useState<'deadlineDay' | 'deadlineAMPM' | 'deadlineHour' | 'itemDate' | null>(null);
@@ -36,41 +36,65 @@ export const VoteRegisterModal = ({ isOpen, onClose, inEdit, initialData }: Vote
   // 초기 시간 설정
   const getInitialTime = () => {
     const now = new Date();
-    now.setMinutes(0, 0, 0); // 정시로 맞춤
-    const formatted = formatKSTISO(now);
-    return { startsAt: formatted, endsAt: formatted };
+    now.setHours(23, 59, 0, 0);
+    return formatKSTISO(now);
   };
 
   const [formData, setFormData] = useState({
-    orgId: 10, // 예시값, 실제론 props 등으로 받아와야 함
     title: "",
-    endsAt: getInitialTime().endsAt,
+    endsAt: getInitialTime(),
     optionType: "TEXT" as VoteType,
     options: ["", "", ""],
     isMulti: false,
     isAnonymous: false,
-    voteScope: "PARTIAL" as "ALL" | "PARTIAL",
+    colorChip: "gray" as CalendarColorType,
     participants: [] as number[],
   });
 
-  const [hasDeadline, setHasDeadline] = useState(false);
+  // 모임 회원 조회
+  useEffect(() => {
+    if (isOpen && activeProfileId) {
+      const fetchMembers = async () => {
+        try {
+          const data = await calendarApi.getOrgMembers(Number(activeProfileId));
+          setMembers(data);
+        } catch (error) {
+          console.error("멤버 로드 실패:", error);
+        }
+      };
+      fetchMembers();
+    }
+  }, [isOpen, activeProfileId]);
 
+  // 수정
   useEffect(() => {
     if (isOpen && inEdit && initialData) {
       setFormData({
-        orgId: initialData.orgId || 10,
         title: initialData.title || "",
-        endsAt: initialData.endsAt ? initialData.endsAt.slice(0, 16) : getInitialTime().endsAt,
+        endsAt: initialData.endsAt?.slice(0, 16) || getInitialTime(),
         optionType: initialData.optionType || "TEXT",
         options: initialData.options?.map((opt: any) => opt.content) || ["", "", ""],
         isMulti: initialData.isMulti || false,
         isAnonymous: initialData.isAnonymous || false,
-        voteScope: initialData.voteScope || "PARTIAL",
-        participants: initialData.participants || [],
+        colorChip: initialData.colorChip || "gray",
+        participants: initialData.participants?.map((p: any) => p.orgMemberId) || [],
       });
       setHasDeadline(!!initialData.endsAt);
+    } else if (!isOpen) {
+      setFormData({
+        title: "",
+        endsAt: getInitialTime(),
+        optionType: "TEXT",
+        options: ["", "", ""],
+        isMulti: false,
+        isAnonymous: false,
+        colorChip: "gray",
+        participants: [],
+      });
+      setIsMemberOpen(false);
     }
   }, [isOpen, inEdit, initialData]);
+
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -111,49 +135,36 @@ export const VoteRegisterModal = ({ isOpen, onClose, inEdit, initialData }: Vote
   const handleRegister = async () => {
     if (formData.title.trim().length === 0) return;
 
-    // 1. 공통 데이터 가공 (KST 기준 ISO 형식)
-    const commonData = {
-      title: formData.title,
-      endsAt: formData.endsAt + ":00", // 초 단위 포함
-      isMulti: formData.isMulti,
-    };
+    const validOptions = formData.options.filter(opt => opt.trim() !== "");
 
     try {
       if (inEdit && initialData) {
-        // 2. 투표 수정 (PUT) - 명세서에 따라 NULL 허용되는 필드들 위주로 구성
-        const updatePayload = {
-          ...commonData,
-          isAnonymous: formData.isAnonymous,
-          // 논의가 필요한 필드들은 필요 시 포함 (options, voteScope 등)
-        };
-
-        console.log(`투표 수정 요청 [PUT] /api/polls/${initialData.pollId}`, updatePayload);
-        // await axios.put(`/api/polls/${initialData.pollId}`, updatePayload);
-        
+        // 1. 투표 수정 (PATCH)
+        await calendarApi.updatePoll(initialData.pollId, {
+          title: formData.title,
+          endsAt: hasDeadline ? `${formData.endsAt}:00` : null,
+          isMulti: formData.isMulti,
+          // 💡 수정 시 항목 변경 로직이 필요하다면 여기에 추가
+        });
       } else {
-        // 3. 투표 생성 (POST)
-        const createPayload = {
-          ...commonData,
-          orgId: 10, // 현재 조직 ID
+        // 2. 투표 생성 (POST) 💡 에러 해결을 위해 명세서 필드명으로 직접 매핑
+        await calendarApi.createPoll({
+          orgId: Number(activeProfileId),
+          title: formData.title,
+          endsAt: hasDeadline ? `${formData.endsAt}:00` : "2099-12-31T23:59:59", // 💡 string 필수일 경우 먼 미래값 혹은 null 처리(API 타입 확인)
           optionType: formData.optionType,
-          options: formData.options, //
+          pollOptions: validOptions, // 💡 options -> pollOptions로 변경
+          isMulti: formData.isMulti,
           isAnonymous: formData.isAnonymous,
-          voteScope: formData.voteScope,
+          colorChip: "gray", // 💡 고정값이라도 명세에 있으면 포함
+          pollScope: formData.participants.length === 0 ? "ALL" : "PARTIAL", // 💡 voteScope -> pollScope로 변경
           participants: formData.participants,
-        };
-
-        console.log("투표 생성 요청 [POST]:", createPayload);
-        // await axios.post(`/api/polls`, createPayload);
+        });
       }
-      
+      onSuccess?.();
       onClose();
-    } catch (error: any) {
-      // 4. 에러 처리 (운영자 권한 403 등)
-      if (error.response?.status === 403) {
-        alert(error.response.data.status.message); // "해당 조직의 운영자가 아닙니다."
-      } else if (error.response?.status === 404) {
-        alert("존재하지 않는 투표입니다.");
-      }
+    } catch (error) {
+      console.error("투표 저장 실패:", error);
     }
   };
 

@@ -7,8 +7,8 @@ interface ScheduleCardProps {
 
 export const ScheduleCard = ({ data }: ScheduleCardProps) => {
   const now = new Date();
-  const startDate = new Date(data.starts_at);
-  const endDate = new Date(data.ends_at);
+  const startDate = new Date(data.startsAt);
+  const endDate = new Date(data.endsAt);
   
   // 1. 당일 일정 여부 확인
   const isSingleDay = CalendarUtils.isSameDay(startDate, endDate);
@@ -17,12 +17,12 @@ export const ScheduleCard = ({ data }: ScheduleCardProps) => {
   const renderDateLabel = () => {
     if (isSingleDay) {
       // 하루짜리 일정: 2026.02.02(월) 17:00
-      return CalendarUtils.formatDetailDate(data.starts_at);
+      return CalendarUtils.formatDetailDate(data.startsAt);
     } else {
       // 며칠에 걸친 일정: 시작일 - 종료일 (시간 제외)
       // starts_at과 ends_at에서 "T" 이전의 날짜 부분만 추출하여 포맷팅
-      const startFormatted = CalendarUtils.formatDetailDate(data.starts_at).split(' ')[0];
-      const endFormatted = CalendarUtils.formatDetailDate(data.ends_at).split(' ')[0];
+      const startFormatted = CalendarUtils.formatDetailDate(data.startsAt).split(' ')[0];
+      const endFormatted = CalendarUtils.formatDetailDate(data.endsAt).split(' ')[0];
       
       return (
         <span className="block leading-tight">
@@ -33,7 +33,7 @@ export const ScheduleCard = ({ data }: ScheduleCardProps) => {
     }
   };
 
-  const dDay = CalendarUtils.getDiffDays(data.starts_at, now);
+  const dDay = CalendarUtils.getDiffDays(data.startsAt, now);
   const isToday = CalendarUtils.isSameDay(startDate, now);
   const status = isToday ? "today" : "default";
 
@@ -44,7 +44,7 @@ export const ScheduleCard = ({ data }: ScheduleCardProps) => {
     pink: "bg-chip-pink",
     orange: "bg-chip-orange",
     green: "bg-chip-green",
-  }[data.color_chip] || "bg-label-disable"; // 기본값 설정
+  }[data.colorChip as string] || "bg-label-disable"; // 기본값 설정
 
   return (
     <div className={CardVariant({ status })}>

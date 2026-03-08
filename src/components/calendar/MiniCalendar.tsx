@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { CalendarUtils } from '../../types/calendar';
 
 interface MiniCalendarProps {
   currentDate: string; // "YYYY-MM-DDTHH:mm" 형식
@@ -14,25 +15,7 @@ export const MiniCalendar = ({ currentDate, onSelect }: MiniCalendarProps) => {
   const year = viewDate.getFullYear();
   const month = viewDate.getMonth();
 
-  const firstDayOfMonth = new Date(year, month, 1).getDay();
-  const lastDateOfMonth = new Date(year, month + 1, 0).getDate();
-  const lastDateOfPrevMonth = new Date(year, month, 0).getDate();
-
-  const days = [];
-
-  // 이전 달 날짜
-  for (let i = firstDayOfMonth - 1; i >= 0; i--) {
-    days.push({ day: lastDateOfPrevMonth - i, currentMonth: false });
-  }
-  // 이번 달 날짜
-  for (let i = 1; i <= lastDateOfMonth; i++) {
-    days.push({ day: i, currentMonth: true });
-  }
-  // 다음 달 날짜 (6주 42칸 채우기)
-  const remaining = days.length % 7 === 0 ? 0 : 7 - (days.length % 7);
-  for (let i = 1; i <= remaining; i++) {
-    days.push({ day: i, currentMonth: false });
-  }
+  const days = CalendarUtils.getCalendarDays(year, month);
 
   const handleMonthChange = (offset: number) => {
     setViewDate(new Date(year, month + offset, 1));
@@ -61,13 +44,13 @@ export const MiniCalendar = ({ currentDate, onSelect }: MiniCalendarProps) => {
       {/* 날짜 그리드 */}
       <div className="grid grid-cols-7 gap-y-1">
         {days.map((item, idx) => {
-          const cellDate = new Date(year, month, item.day);
-          const isSelected = item.currentMonth && 
+          const cellDate = new Date(item.year, item.month, item.day);
+          const isSelected = item.isCurrentMonth && 
             selectedDate.getFullYear() === year &&
             selectedDate.getMonth() === month &&
             selectedDate.getDate() === item.day;
           
-          const isToday = item.currentMonth && 
+          const isToday = item.isCurrentMonth && 
             new Date().toDateString() === cellDate.toDateString();
 
           return (
@@ -75,13 +58,13 @@ export const MiniCalendar = ({ currentDate, onSelect }: MiniCalendarProps) => {
               key={idx}
               className={`
                 flex items-center justify-center w-9 h-9 cursor-pointer rounded-full text-caption-regular transition-all
-                ${!item.currentMonth ? 'text-label-disable' : 'text-label-normal'}
+                ${!item.isCurrentMonth ? 'text-label-disable' : 'text-label-normal'}
                 ${isSelected 
                   ? 'bg-interaction-normal text-white font-bold' 
                   : 'hover:bg-background-secondary'}
                 ${isToday && !isSelected ? 'text-interaction-normal font-bold' : ''}
               `}
-              onClick={() => item.currentMonth && onSelect(cellDate)}
+              onClick={() => item.isCurrentMonth && onSelect(cellDate)}
             >
               {item.day}
             </div>

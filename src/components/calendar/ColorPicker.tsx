@@ -2,7 +2,7 @@ import { useState } from "react"
 import { CALENDAR_COLORS, CalendarColorType } from "../../types/calendar";
 
 interface ColorPickerProps {
-  selectedColor: string;
+  selectedColor: CalendarColorType;
   onSelect: (color: CalendarColorType) => void;
 }
 
@@ -33,8 +33,9 @@ export const ColorPicker = ({ selectedColor, onSelect }: ColorPickerProps) => {
           {CALENDAR_COLORS.map(color => (
             <button
               key={color.id}
+              type="button"
               onClick={() => {
-                onSelect(color.id as CalendarColorType);
+                onSelect(color.id);
                 setIsOpen(false)
               }}
               className={`w-6 h-6 rounded-full ${color.class} flex items-center justify-center transition-transform hover:scale-110 `}

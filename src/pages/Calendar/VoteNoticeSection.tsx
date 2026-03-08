@@ -1,33 +1,38 @@
 import { VoteCard } from "../../components/calendar/VoteCard";
 import { CalendarUtils, type Vote } from "../../types/calendar";
+import { calendarApi } from "../../api/calendar";
+import { useEffect, useState } from "react";
 
-const mockVotes: Vote[] = [
-  {
-    vote_id: 1,
-    title: "회식 메뉴 투표",
-    starts_at: "2026-01-30T09:00:00",
-    ends_at: "2026-02-04T23:59:59", // 오늘(2/2) 기준 D-2 (임박)
-    color_chip: "gray",
-    responses: [] // 미참여 상태
-  }
-];
+
 
 export default function VoteNoticeSection() {
-  const now = new Date();
+  const [urgentVotes, setUrgentVotes] = useState<Vote[]>([]);
+  const [loading, setLoading] = useState(true);
+
   const currentUserId = 123; // 실제 로그인한 유저 ID
   const totalMemberCount = 50; // 모임의 총 인원수
 
-  // 1. 마감 3일 이내 + 미참여 투표 필터링
-  const urgentVotes = mockVotes.filter((vote) => {
-    const dDayToEnd = CalendarUtils.getDiffDays(vote.ends_at, now);
-    const isVoted = vote.responses?.some((r: any) => r.voter_id === currentUserId);
-    
-    // 마감 기한이 오늘 포함 0~3일 남았고, 아직 투표하지 않은 경우
-    return dDayToEnd >= 0 && dDayToEnd <= 3 && !isVoted;
-  });
+  useEffect(() => {
+    const fetchUrgentPolls = async () => {
+      try {
+        setLoading(true);
+        // 마감 임박 및 진행 중인 투표 목록 조회 API 호출
+        const data = await calendarApi.getActivePolls();
+        
+        // 💡 서버가 'urgentVotes' 필드에 마감 임박 데이터를 담아줍니다.
+        // 데이터가 null로 올 수 있으므로 빈 배열 처리를 해줍니다.
+        setUrgentVotes(data.urgentVotes || []);
+      } catch (error) {
+        console.error("마감 임박 투표 로드 실패:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // 임박한 투표가 없으면 섹션 자체를 숨기거나 안내 문구를 바꿀 수 있습니다.
-  if (urgentVotes.length === 0) return null;
+    fetchUrgentPolls();
+  }, []);
+
+  if (loading || urgentVotes.length === 0) return null;
 
   return (
     <div className="flex flex-col gap-3 px-6 pb-6">
@@ -46,7 +51,7 @@ export default function VoteNoticeSection() {
       <div>
         {urgentVotes.map((vote) => (
           <VoteCard 
-            key={vote.vote_id}
+            key={vote.pollId}
             data={vote}
             currentUserId={currentUserId}
             totalMemberCount={totalMemberCount}

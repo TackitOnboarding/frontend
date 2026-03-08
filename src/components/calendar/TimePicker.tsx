@@ -21,6 +21,7 @@ export const TimePicker = ({ type, onSelect, onClose }: TimePickerProps) => {
         {list.map((item) => (
           <button
             key={item}
+            type="button"
             className={`px-5 py-2 text-body-2 text-label-normal hover:bg-background-secondary transition-colors text-center whitespace-nowrap`}
             onClick={(e) => {
               e.stopPropagation();

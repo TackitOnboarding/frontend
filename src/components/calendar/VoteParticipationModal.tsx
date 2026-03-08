@@ -1,8 +1,19 @@
 import { useState, useEffect,  useRef } from 'react';
+import { calendarApi } from '../../api/calendar';
+import { type Vote } from '../../types/calendar';
 import { RegisterModal } from "../modals/RegisterModal";
 import { Button } from '../ui/Button';
 
-export const VoteParticipationModal = ({ isOpen, onClose, data, onEdit, onDelete }: any) => {
+interface VoteParticipationModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  data: Vote | null;
+  onEdit: (id: number) => void;
+  onDelete: (id: number) => void;
+  onSuccess?: () => void;
+}
+
+export const VoteParticipationModal = ({ isOpen, onClose, data, onEdit, onDelete, onSuccess }: VoteParticipationModalProps) => {
   // 내가 투표한 옵션 아이디들을 초기값으로 설정
   const [selectedOptionIds, setSelectedOptionIds] = useState<number[]>([]);
   const [isMenuOpen, setIsMenuOpen] = useState(false); // 수정/삭제 드롭다운 상태
@@ -26,15 +37,6 @@ export const VoteParticipationModal = ({ isOpen, onClose, data, onEdit, onDelete
 
   if (!isOpen || !data || !data.options) return null;
 
-  // 날짜 포맷팅 함수 추가 (예: 2026년 1월 10일 (토))
-  const formatDate = (dateString: string) => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    const days = ['일', '월', '화', '수', '목', '금', '토'];
-    
-    return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일 (${days[date.getDay()]})`;
-  };
-
   // 마감 임박 알림 계산 (KST 기준)
   const getDeadlineBanner = () => {
     const now = new Date();
@@ -53,10 +55,14 @@ export const VoteParticipationModal = ({ isOpen, onClose, data, onEdit, onDelete
 
   // 투표하기 / 재투표하기 핸들러
   const handleVoteSubmit = async () => {
-    const payload = { optionIds: selectedOptionIds }; // 단일 투표도 리스트로 전달
-    console.log("투표 API 호출 [POST]:", payload);
-    // 성공 시 로직 및 모달 닫기
-    onClose();
+    if (selectedOptionIds.length === 0) return;
+    try {
+      await calendarApi.vote(data.pollId, selectedOptionIds);
+      onSuccess?.(); // 데이터 갱신
+      onClose();
+    } catch (error) {
+      console.error("투표 실패:", error);
+    }
   };
 
   return (
@@ -85,13 +91,13 @@ export const VoteParticipationModal = ({ isOpen, onClose, data, onEdit, onDelete
               {isMenuOpen && (
                 <div className="absolute right-0 top-8 z-10 w-[65px] bg-white border border-line-normal rounded-lg px-5 py-2 gap-1">
                   <button 
-                    onClick={() => { onEdit(); setIsMenuOpen(false); }}
+                    onClick={() => { onEdit(data.pollId); setIsMenuOpen(false); }}
                     className="w-full px-4 py-2 text-left text-body-2 text-label-normal hover:bg-background-secondary border-b border-line-normal"
                   >
                     수정
                   </button>
                   <button 
-                    onClick={() => { onDelete(); setIsMenuOpen(false); }}
+                    onClick={() => { onDelete(data.pollId); setIsMenuOpen(false); }}
                     className="w-full px-4 py-2 text-left text-body-2 text-status-error hover:bg-background-secondary"
                   >
                     삭제
@@ -135,22 +141,16 @@ export const VoteParticipationModal = ({ isOpen, onClose, data, onEdit, onDelete
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     {/* 1. 투표 참여 모드 (isVoted가 false일 때) */}
-                    {!data.isVoted ? (
-                      isSelected ? (
-                        /* 시안: 누르면 파란 배경에 흰색 체크 아이콘 */
-                        <img src="/icons/check-circle-blue.svg" alt="selected" className="w-6 h-6" />
-                      ) : (
-                        /* 시안: 기본 회색 원 테두리 */
-                        <div className="w-6 h-6 rounded-full border-2 border-line-normal bg-white" />
-                      )
+                    {isSelected ? (
+                      <img src="/icons/check-circle-blue.svg" alt="selected" className="w-6 h-6" />
                     ) : (
-                      /* 2. 투표 결과 모드 (isVoted가 true일 때) */
-                      isMyPick && <img src="/icons/blue-check.svg" alt="my pick" className="w-5 h-5" />
+                      <div className="w-6 h-6 rounded-full border-2 border-line-normal bg-white" />
                     )}
                     
-                    <span className={`text-body-1 ${isMyPick || isSelected ? 'text-label-normal' : 'text-label-neutral'}`}>
-                      {data.optionType === 'DATETIME' ? formatDate(option.content) : option.content}
+                    <span className={`text-body-1 ${isSelected ? 'text-label-normal font-bold' : 'text-label-neutral'}`}>
+                      {option.content}
                     </span>
+                    
                   </div>
                   {/* 결과 모드일 때만 우측에 표 수 노출 */}
                   {data.isVoted && (
@@ -180,14 +180,14 @@ export const VoteParticipationModal = ({ isOpen, onClose, data, onEdit, onDelete
         </div>
 
         <div className="flex gap-2 mt-2">
-          {data.isVoted ? (
-            <>
-              <Button variant="outlined" className="flex-1" onClick={handleVoteSubmit}>다시 투표하기</Button>
-              <Button variant="outlined" className="flex-1" onClick={onEdit}>수정</Button>
-            </>
-          ) : (
-            <Button variant="primary" className="w-full" onClick={handleVoteSubmit} disabled={selectedOptionIds.length === 0}>완료</Button>
-          )}
+          <Button 
+            variant={data.isVoted ? "outlined" : "primary"} 
+            className="w-full h-12" 
+            onClick={handleVoteSubmit}
+            disabled={selectedOptionIds.length === 0 || data.isEnded}
+          >
+            {data.isVoted ? "다시 투표하기" : "투표 완료"}
+          </Button>
         </div>
       </div>
     </RegisterModal>

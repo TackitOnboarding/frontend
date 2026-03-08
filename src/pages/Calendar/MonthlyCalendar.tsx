@@ -1,5 +1,6 @@
-import { useState } from "react"
-import { CalendarUtils } from "../../types/calendar";
+import { useState, useEffect } from "react"
+import { CalendarUtils, type Schedule, type Vote } from "../../types/calendar";
+import { calendarApi } from "../../api/calendar";
 import { CalendarChip } from "../../components/calendar/CalendarChip";
 import { ScheduleRegisterModal } from "../../components/calendar/ScheduleRegisterModal";
 import { VoteRegisterModal } from "../../components/calendar/VoteRegisterModal";
@@ -7,114 +8,14 @@ import { ScheduleDetailModal } from "../../components/calendar/ScheduleDetailMod
 import { VoteParticipationModal } from "../../components/calendar/VoteParticipationModal";
 import Modal from "../../components/modals/Modal";
 
-const mockSchedules = [
-    {
-    schedule_id: 1,
-    title: "1주차 전체 회의",
-    starts_at: "2026-02-02T10:00:00",
-    ends_at: "2026-02-02T12:00:00",
-    color_chip: "blue",
-  },
-  {
-    schedule_id: 2,
-    title: "동아리 워크샵",
-    starts_at: "2026-02-03T09:00:00",
-    ends_at: "2026-02-05T18:00:00",
-    color_chip: "pink",
-  },
-  {
-    schedule_id: 3,
-    title: "줄바꿈 테스트",
-    starts_at: "2026-02-02T09:00:00",
-    ends_at: "2026-02-04T18:00:00",
-    color_chip: "green",
-  },
-  {
-    schedule_id: 4,
-    title: "겹침 테스트",
-    starts_at: "2026-02-07T09:00:00",
-    ends_at: "2026-02-09T18:00:00",
-    color_chip: "green",
-  },
-];
-
-const mockVotes = [
-  {
-    vote_id: 1,
-    title: "회식 메뉴 투표",
-    starts_at: "2026-02-01T09:00:00",
-    ends_at: "2026-02-03T23:59:59",
-    color_chip: "gray",
-  },
-  {
-    vote_id: 2,
-    title: "투표 테스트",
-    starts_at: "2026-02-08T09:00:00",
-    ends_at: "2026-02-09T23:59:59",
-    color_chip: "gray",
-  },
-  {
-    vote_id: 3,
-    title: "투표",
-    starts_at: "2026-02-17T09:00:00",
-    ends_at: "2026-02-17T23:59:59",
-    color_chip: "gray",
-  },
-];
-
-// 달력 날짜 계산 로직
-const getCalendarDays = (year: number, month: number) => {
-  const firstDayOfWeek = new Date(year, month, 1).getDay();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const prevLastDate = new Date(year, month, 0).getDate();
-
-  const days = [];
-
-  // 1. 지난 달 날짜 채우기 (연한 회색 숫자들)
-  for (let i = firstDayOfWeek - 1; i >= 0; i--) {
-    days.push({
-      year: month === 0 ? year - 1 : year,
-      month: month === 0 ? 11 : month - 1,
-      day: prevLastDate - i,
-      isCurrentMonth: false,
-    });
-  }
-
-  // 2. 이번 달 날짜 채우기
-  for (let i = 1; i <= daysInMonth; i++) {
-    days.push({ year, month, day: i, isCurrentMonth: true });
-  }
-
-  // 3. 다음 달 날짜 채우기 (42칸 정방형 유지)
-  let totalSlots;
-  if (days.length <= 28) {
-    totalSlots = 28;
-  } else if (days.length <= 35) {
-    totalSlots = 35;
-  } else {
-    totalSlots = 42;
-  }
-
-  const remainingSlots = totalSlots - days.length;
-  for (let i = 1; i <= remainingSlots; i++) {
-    days.push({ year, month: month + 1, day: i, isCurrentMonth: false });
-  }
-
-  return days;
-};
-
-const getRemainingDays = (dateStr: string, endsAt: string) => {
-  const start = new Date(dateStr).setHours(0, 0, 0, 0);
-  const end = new Date(endsAt.split('T')[0]).setHours(0, 0, 0, 0);
-  
-  // 밀리초 단위를 일 단위로 변환: (1000ms * 60s * 60m * 24h)
-  const diffTime = end - start;
-  return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-};
-
 export default function MonthlyCalendar() {
   // 화면에 보여줄 기준 날짜 상태(기본값: 오늘
   const [viewDate, setViewDate] = useState(new Date());
+
+  // 서버에서 받아올 데이터 상태
+  const [schedules, setSchedules] = useState<Schedule[]>([]);
+  const [votes, setVotes] = useState<Vote[]>([]);
+  const [loading, setLoading] = useState(true);
 
   // 모달 상태 관리 State
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
@@ -125,21 +26,40 @@ export default function MonthlyCalendar() {
   const [isVoteDetailOpen, setIsVoteDetailOpen] = useState(false);
   const [isVoteDeleteModalOpen, setIsVoteDeleteModalOpen] = useState(false);
 
-
   // 데이터 및 모드 관리
   const [selectedSchedule, setSelectedSchedule] = useState<any>(null);
   const [isEditMode, setIsEditMode] = useState(false);
-
   const [selectedVote, setSelectedVote] = useState<any>(null);
   const [isVoteEditMode, setIsVoteEditMode] = useState(false);
 
   const year = viewDate.getFullYear();
   const month = viewDate.getMonth();
 
+  // 월간 데이터 로드
+  const fetchMonthlyData = async () => {
+    try {
+      setLoading(true);
+      const [scheduleRes, voteRes] = await Promise.all([
+        calendarApi.getMonthlyEvents(year, month + 1),
+        calendarApi.getMonthlyPolls(year, month + 1)
+      ]);
+      setSchedules(scheduleRes);
+      setVotes(voteRes);
+    } catch (error) {
+      console.error("데이터 로드 실패:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  useEffect(() => {
+    fetchMonthlyData();
+  }, [year, month]);
+
   const handlePrevMonth = () => setViewDate(new Date(year, month - 1, 1));
   const handleNextMonth = () => setViewDate(new Date(year, month + 1, 1));
 
-  const calendarDays = getCalendarDays(year, month);
+  const calendarDays = CalendarUtils.getCalendarDays(year, month);
 
   // Schedule POST
   const handleNewScheduleClick = () => {
@@ -157,91 +77,83 @@ export default function MonthlyCalendar() {
 
   // Vote POST
   const handleNewVoteClick = () => {
-    setIsVoteEditMode(false);   // 수정 모드 해제
-    setSelectedVote(null);      // 선택된 투표 데이터 초기화
-    setIsVoteModalOpen(true);   // 등록 모달 열기
+    setIsVoteEditMode(false); 
+    setSelectedVote(null); 
+    setIsVoteModalOpen(true);  
   };
 
   // Vote PATCH
   const handleVoteEdit = () => {
-    setIsVoteDetailOpen(false); // 상세창 닫기
-    setIsVoteEditMode(true);    // 수정 모드 활성화
-    setIsVoteModalOpen(true);   // 등록 모달 열기
+    setIsVoteDetailOpen(false);
+    setIsVoteEditMode(true);
+    setIsVoteModalOpen(true); 
   };
 
   // 칩 클릭 핸들러
-  const handleChipClick = (item: any) => {
-    if ('schedule_id' in item) {
-      setSelectedSchedule({
-        eventId: item.schedule_id,
-        title: item.title,
-        startsAt: item.starts_at,
-        endsAt: item.ends_at,
-        description: item.description || "설명이 없습니다.",
-        colorChip: item.color_chip,
-        participants: item.participants || [] // 백엔드 상세 조회 API 연동 시 데이터
-      });
-      setIsDetailModalOpen(true);
-    } else if ('vote_id' in item) {
-        setSelectedVote({
-        pollId: item.vote_id,
-        title: item.title,
-        endsAt: item.ends_at,
-        // API에서 받아올 추가 필드들 (초기값 세팅)
-        ...item 
-      });
-      setIsVoteDetailOpen(true);
+  const handleChipClick = async (item: any) => {
+    try {
+      if ('eventId' in item) {
+        const detail = await calendarApi.getEventDetail(item.eventId);
+        setSelectedSchedule(detail);
+        setIsDetailModalOpen(true);
+      } else if ('pollId' in item) {
+        const detail = await calendarApi.getPollDetail(item.pollId);
+        setSelectedVote(detail);
+        setIsVoteDetailOpen(true);
+      }
+    } catch (error) {
+      console.error("상세 정보 로드 실패:", error);
     }
   };
 
   // 삭제 확인 함수
   const handleDeleteConfirm = async () => {
+    if (!selectedSchedule) return;
     try {
-      const eventId = selectedSchedule?.eventId;
-      console.log(`API 호출: [DELETE] /api/events/${eventId}`);
-      // await axios.delete(`/api/events/${eventId}`);
-      
-      // 성공 시 처리
+      await calendarApi.deleteEvent(selectedSchedule.eventId);
       setIsDeleteModalOpen(false);
       setIsDetailModalOpen(false);
-      // 데이터 새로고침 로직 필요 (예: fetchSchedules())
+      fetchMonthlyData(); // 데이터 새로고침
     } catch (error) {
       console.error("삭제 실패", error);
     }
   };
 
   const handleVoteDeleteConfirm = async () => {
-  try {
-    const pollId = selectedVote?.pollId;
-    console.log(`투표 삭제 API 호출: [DELETE] /api/polls/${pollId}`);
-    // await axios.delete(`/api/polls/${pollId}`);
-    
-    setIsVoteDeleteModalOpen(false);
-    setIsVoteDetailOpen(false);
-    // 리스트 새로고침 로직
-  } catch (error) {
-    console.error("삭제 실패", error);
-  }
+    if (!selectedVote) return;
+    try {
+      await calendarApi.deletePoll(selectedVote.pollId);
+      setIsVoteDeleteModalOpen(false);
+      setIsVoteDetailOpen(false);
+      fetchMonthlyData(); // 데이터 새로고침
+    } catch (error) {
+      console.error("투표 삭제 실패", error);
+    }
 };
 
   // 현재 날짜 칸에서 렌더링해야 할 아이템들의 순서를 계산하는 함수
   const getRenderItems = (dateStr: string, index: number) => {
     // 1. 해당 날짜에 "걸쳐 있는" 모든 데이터 (줄 번호 고정용)
     const allOngoing = [
-      ...mockSchedules.filter(s => CalendarUtils.isDateInRange(dateStr, s.starts_at, s.ends_at)),
-      ...mockVotes.filter(v => CalendarUtils.isDateInRange(dateStr, v.starts_at, v.ends_at))
-    ].sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime());
+      ...schedules.filter(s => CalendarUtils.isDateInRange(dateStr, s.startsAt, s.endsAt)),
+      ...votes.filter(v => CalendarUtils.isDateInRange(dateStr, v.endsAt, v.endsAt)) // 투표는 마감일 기준
+    ].sort((a, b) => {
+      const startA = 'startsAt' in a ? a.startsAt : a.endsAt;
+      const startB = 'startsAt' in b ? b.startsAt : b.endsAt;
+      return new Date(startA).getTime() - new Date(startB).getTime();
+    });
 
     return allOngoing.map((item) => {
       // 2. 이 아이템이 전체 목록에서 몇 번째 줄(Row)인지 확인
-      const rowIdx = allOngoing.findIndex(i => 
-        ('schedule_id' in i && 'schedule_id' in item && i.schedule_id === item.schedule_id) ||
-        ('vote_id' in i && 'vote_id' in item && i.vote_id === item.vote_id)
+     const rowIdx = allOngoing.findIndex(i => 
+        ('eventId' in i && 'eventId' in item && i.eventId === item.eventId) ||
+        ('pollId' in i && 'pollId' in item && i.pollId === item.pollId)
       );
 
       // 3. 실제로 이 칸에서 "그려야 하는지" 여부 (시작일이거나 일요일인 경우)
       const isSunday = index % 7 === 0;
-      const isStartDay = item.starts_at.startsWith(dateStr);
+      const startVal = 'startsAt' in item ? item.startsAt : item.endsAt;
+      const isStartDay = startVal.startsWith(dateStr);
       const shouldRender = isStartDay || (isSunday && !isStartDay);
 
       return { item, rowIdx, shouldRender };
@@ -314,16 +226,16 @@ export default function MonthlyCalendar() {
                     if (!shouldRender) return null;
 
                     const daysLeftInWeek = 7 - (index % 7);
-                    const remainingDays = getRemainingDays(dateStr, item.ends_at);
+                    const remainingDays = CalendarUtils.getRemainingDays(dateStr, item.endsAt);
                     const displayDays = Math.min(daysLeftInWeek, remainingDays);
 
                     return (
                       <CalendarChip
-                       key={'schedule_id' in item ? `s-${item.schedule_id}` : `v-${item.vote_id}`}
+                       key={'eventId' in item ? `s-${item.eventId}` : `v-${item.pollId}`}
                         title={item.title}
-                        color={item.color_chip as any}
-                        type={'schedule_id' in item ? 'schedule' : 'vote'}
-                        isStart={item.starts_at.startsWith(dateStr)}
+                        color={item.colorChip as any}
+                        type={'eventId' in item ? 'schedule' : 'vote'}
+                        isStart={'startsAt' in item ? item.startsAt.startsWith(dateStr) : item.endsAt.startsWith(dateStr)}
                         isEnd={remainingDays <= daysLeftInWeek}
                         style={{
                           width: `${CalendarUtils.calculateWidth(displayDays)}px`,

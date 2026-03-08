@@ -1,28 +1,11 @@
 import { RegisterModal } from "../modals/RegisterModal";
 import { Button } from "../ui/Button";
-import { CALENDAR_COLORS } from "../../types/calendar"
-
-// 백엔드 API 응답 구조에 맞춘 인터페이스
-interface Participant {
-  orgMemberId: number;
-  profileImageUrl: string;
-  nickname: string;
-}
-
-interface ScheduleDetailData {
-  eventId: number;
-  title: string;
-  startsAt: string;
-  endsAt: string;
-  description: string;
-  colorChip: string;
-  participants: Participant[];
-}
+import { CALENDAR_COLORS, type Schedule } from "../../types/calendar"
 
 interface ScheduleDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
-  data: ScheduleDetailData | null;
+  data: Schedule | null; 
   onDelete?: (id: number) => void;
   onEdit?: (id: number) => void;
 }
@@ -97,7 +80,7 @@ export const ScheduleDetailModal = ({
                 <img src="/icons/Person.svg" className="w-6 h-6" alt="참여자" />
                 <div className="flex items-center gap-2 text-body-1 text-label-normal">
                   <span>참석 인원</span>
-                  <span className="text-body-1sb">{data.participants.length}명</span>
+                  <span className="text-body-1sb">{data.participants.length || 0}명</span>
                 </div>
               </div>
               

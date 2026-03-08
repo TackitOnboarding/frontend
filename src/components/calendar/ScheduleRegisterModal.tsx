@@ -1,30 +1,28 @@
 import { useState, useEffect } from 'react';
 import { RegisterModal } from "../modals/RegisterModal";
-import { CalendarColorType } from '@/types/calendar';
+import { CalendarColorType, Participant } from '@/types/calendar';
+import { calendarApi } from '../../api/calendar';
 import { Button } from '../ui/Button';
 import { ColorPicker } from './ColorPicker';
 import { MiniCalendar } from './MiniCalendar';
 import { TimePicker } from './TimePicker';
 
-interface OrgMember {
-  orgMemberId: number;
-  profileImage: string;
-  nickname: string;
-}
 
 interface ScheduleRegisterModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialData?: any; // 수정 시 전달받을 데이터
   inEdit?: boolean; // 수정 모드인지 여부
-  orgId?: number;
+  onSuccess?: () => void;
 }
 
-export const ScheduleRegisterModal = ({ isOpen, onClose, initialData, inEdit = false, orgId = 10 }: ScheduleRegisterModalProps) => {
-  const [members] = useState<OrgMember[]>([])
+export const ScheduleRegisterModal = ({ isOpen, onClose, initialData, inEdit = false, onSuccess}: ScheduleRegisterModalProps) => {
+  const [members, setMembers] = useState<Participant[]>([]);
   const [isMemberOpen, setIsMemberOpen] = useState(false)
   const [isAllDay, setIsAllDay] = useState(false); // "하루종일" 상태
   const [openDropdown, setOpenDropdown] = useState<'startDay' | 'startAMPM' |'startHour' | 'endDay' | 'endAMPM' |'endHour' | null>(null);
+
+  const activeProfileId = localStorage.getItem('activeProfileId');
 
   // 한국 기준 시간 변환 함수
   const formatKSTISO = (date: Date) => {
@@ -36,9 +34,8 @@ export const ScheduleRegisterModal = ({ isOpen, onClose, initialData, inEdit = f
   // 초기 시간 설정
   const getInitialTime = () => {
     const now = new Date();
-    now.setMinutes(0, 0, 0); // 정시로 맞춤
-    const formatted = formatKSTISO(now);
-    return { startsAt: formatted, endsAt: formatted };
+    now.setMinutes(0, 0, 0);
+    return { startsAt: formatKSTISO(now), endsAt: formatKSTISO(now) };
   };
 
   const [formData, setFormData] = useState({
@@ -51,30 +48,41 @@ export const ScheduleRegisterModal = ({ isOpen, onClose, initialData, inEdit = f
     scope: "PARTIAL" as "PARTIAL" | "ALL" | "SELECT"
   });
 
+  // 모임 소속 인원 조회
+  useEffect(() => {
+    if (isOpen && activeProfileId) {
+      const fetchMembers = async () => {
+        try {
+          // 서버가 activeProfileId 헤더를 통해 조직을 식별하므로 프로필 ID를 넘깁니다.
+          const data = await calendarApi.getOrgMembers(Number(activeProfileId));
+          setMembers(data);
+        } catch (error) {
+          console.error("멤버 로드 실패:", error);
+        }
+      };
+      fetchMembers();
+    }
+  }, [isOpen, activeProfileId]);
+
   // 수정 모드일 경우 데이터 채워넣기
   useEffect(() => {
     if (isOpen && inEdit && initialData) {
+      // "하루종일" 여부 판단 (00:00:00 ~ 23:59:59 인지 확인)
+      const isFullDay = initialData.startsAt.endsWith("00:00:00") && initialData.endsAt.endsWith("23:59:59");
+      setIsAllDay(isFullDay);
+
       setFormData({
         title: initialData.title || "",
-        startsAt: initialData.startsAt ? initialData.startsAt.slice(0, 16) : getInitialTime().startsAt,
-        endsAt: initialData.endsAt ? initialData.endsAt.slice(0, 16) : getInitialTime().endsAt,
+        startsAt: initialData.startsAt.slice(0, 16),
+        endsAt: initialData.endsAt.slice(0, 16),
         description: initialData.description || "",
-        colorChip: (initialData.colorChip as CalendarColorType) || "blue",
+        colorChip: initialData.colorChip || "blue",
         participants: initialData.participants?.map((p: any) => p.orgMemberId) || [],
         scope: initialData.targetType === "SELECT" ? "PARTIAL" : (initialData.targetType || "PARTIAL")
       });
     } else if (!isOpen) {
-      // 닫힐 때 초기화
       const reset = getInitialTime();
-      setFormData({
-        title: "",
-        startsAt: reset.startsAt,
-        endsAt: reset.endsAt,
-        description: "",
-        participants: [],
-        colorChip: "blue",
-        scope: "PARTIAL"
-      });
+      setFormData({ title: "", startsAt: reset.startsAt, endsAt: reset.endsAt, description: "", participants: [], colorChip: "blue", scope: "PARTIAL"});
       setIsMemberOpen(false);
       setIsAllDay(false);
     }
@@ -118,33 +126,37 @@ export const ScheduleRegisterModal = ({ isOpen, onClose, initialData, inEdit = f
   const handleAction = async () => {
     if (formData.title.trim().length === 0) return;
 
+    const finalStartsAt = isAllDay ? `${formData.startsAt.split('T')[0]}T00:00:00` : `${formData.startsAt}:00`;
+    const finalEndsAt = isAllDay ? `${formData.endsAt.split('T')[0]}T23:59:59` : `${formData.endsAt}:00`;
+
     // 초 단위(:00)를 포함한 최종 데이터 가공
     const basePayload = {
       title: formData.title,
-      startsAt: formData.startsAt + ":00",
-      endsAt: formData.endsAt + ":00",
+      startsAt: finalStartsAt,
+      endsAt: finalEndsAt,
       description: formData.description,
       participants: formData.participants,
       colorChip: formData.colorChip,
     };
 
-    if (inEdit) {
-      // 수정(PUT) Request Body
-      const updateReq = {
-        ...basePayload,
-        targetType: formData.scope === "PARTIAL" ? "SELECT" : "ALL"
-      };
-      console.log("수정 API 호출 [PUT]:", updateReq);
-    } else {
-      // 생성(POST) Request Body
-      const createReq = {
-        ...basePayload,
-        orgId: orgId,
-        eventScope: formData.scope === "SELECT" ? "PARTIAL" : formData.scope
-      };
-      console.log("생성 API 호출 [POST]:", createReq);
+    try {
+      if (inEdit) {
+        await calendarApi.updateEvent(initialData.eventId, {
+          ...basePayload,
+          targetType: formData.participants.length === 0 ? "ALL" : "SELECT"
+        });
+      } else {
+        await calendarApi.createEvent({
+          ...basePayload,
+          orgId: Number(activeProfileId), // activeProfileId를 orgId 대용으로 사용하거나 서버 로직에 맞춰 전달
+          eventScope: formData.participants.length === 0 ? "ALL" : "PARTIAL"
+        });
+      }
+      onSuccess?.();
+      onClose();
+    } catch (error) {
+      console.error("일정 저장 실패:", error);
     }
-    onClose();
   };
 
   const toggleParticipant = (id: number) => {
@@ -175,18 +187,6 @@ export const ScheduleRegisterModal = ({ isOpen, onClose, initialData, inEdit = f
 
   // 등록 버튼 활성화 조건 (제목이 공백이 아닐 때)
   const isFormValid = formData.title.trim().length > 0
-
-  // 멤버 데이터 로드 (API 연결 시점)
-  // useEffect(() => {
-  //   if (isOpen) {
-  //     // 실제 API: /api/orgs/{orgId}/members 호출
-  //     setMembers(Array.from({ length: 11 }, (_, i) => ({
-  //       orgMemberId: i + 1,
-  //       profileImageUrl: "",
-  //       nickname: `닉네임${i + 1}`
-  //     })));
-  //   }
-  // }, [isOpen]);
 
   return (
     <RegisterModal isOpen={isOpen} onClose={onClose}>
