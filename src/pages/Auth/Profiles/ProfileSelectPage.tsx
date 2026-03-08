@@ -1,25 +1,28 @@
 import React, { useState, useEffect } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import AuthLayout from '../../../components/layouts/AuthLayout'
+import api from '../../../api/api'
 
 interface Profile {
-  memberOrgId: number
+  profileId: number
   orgName: string
   orgType: string
+  universityName: string | null
   nickname: string
-  profileImage: string | null
+  imageUrl: string | null
   memberType: string
   memberRole: string
+  orgStatus: string
 }
 
 const BADGE_ICONS = {
-  ADMIN: '/icons/executive.svg',   // 운영진
+  EXECUTIVE: '/icons/executive.svg',   // 운영진
   SENIOR: '/icons/senior.svg', // 선배
   NEWBIE: '/icons/newbie.svg', // 신입
 } as const;
 
 const getBadgeInfo = (role: string, type: string) => {
-  if (role === 'ADMIN') return { src: BADGE_ICONS.ADMIN, label: '운영진' };
+  if (role === 'EXECUTIVE') return { src: BADGE_ICONS.EXECUTIVE, label: '운영진' };
   if (type === 'SENIOR') return { src: BADGE_ICONS.SENIOR, label: '선배' };
   if (type === 'NEWBIE') return { src: BADGE_ICONS.NEWBIE, label: '신입' };
   return null;
@@ -27,34 +30,36 @@ const getBadgeInfo = (role: string, type: string) => {
 
 
 export default function ProfileSelectPage() {
-  const location = useLocation();
   const [profiles, setProfiles] = useState<Profile[]>([])
+  const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
 
   useEffect(() => {
-    const loadInitialData = () => {
+    const fetchProfiles = async () => {
       try {
-        const stored = localStorage.getItem('userProfiles');
-        if (stored) {
-          const parsedProfiles = JSON.parse(stored);
-          // 데이터가 배열인지 한 번 더 확인하면 안전합니다.
-          if (Array.isArray(parsedProfiles)) {
-            setProfiles(parsedProfiles);
-          }
-        }
-      } catch (e) {
-        console.error("프로필 데이터 로드 중 오류:", e);
+        setLoading(true)
+        const res = await api.get('/api/members/me')
+        
+        setProfiles(res.data.profiles)
+        
+      } catch (err) {
+        console.error("프로필 로드 실패:", err)
+      } finally {
+        setLoading(false)
       }
-    };
+    }
 
-    loadInitialData();
-  }, [location.pathname]);
+    fetchProfiles()
+  }, [])
 
   const handleProfileClick = (profile: Profile) => {
-    localStorage.setItem('currentProfile', JSON.stringify(profile));
+    if (profile.orgStatus === 'PENDING') {
+      alert('승인 대기 중인 모임입니다. 관리자의 승인을 기다려주세요.')
+      return
+    }
 
-    localStorage.setItem('activeProfileId', String(profile.memberOrgId));
-
+    // 새로고침 시 세션 유지 및 API 헤더 전송을 위한 ID값 보관
+    localStorage.setItem('activeProfileId', String(profile.profileId));
     navigate('/main');
   };
 
@@ -69,6 +74,12 @@ export default function ProfileSelectPage() {
       state: {mode: 'CREATE'}
     })
   }
+
+  if (loading) return (
+    <AuthLayout showCornerLogo={true}>
+      <div className="flex items-center justify-center min-h-[400px]">최신 프로필 정보를 가져오는 중...</div>
+    </AuthLayout>
+  )
 
 
   return (
@@ -93,7 +104,7 @@ export default function ProfileSelectPage() {
               const badge = getBadgeInfo(profile.memberRole, profile.memberType);
               return (
                 <div
-                  key={profile.memberOrgId}
+                  key={profile.profileId}
                   className="flex flex-col items-center cursor-pointer group gap-6"
                   onClick={() => handleProfileClick(profile)}
                 >

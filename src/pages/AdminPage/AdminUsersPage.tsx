@@ -116,10 +116,10 @@ export default function UserManagementPage() {
           <TagChips
             includeAllItem
             value={filterToId}
-            fallbackTags={[
-              { id: 1, name: '사용중' },
-              { id: 2, name: '탈퇴' },
-            ]}
+            // fallbackTags={[
+            //   { id: 1, name: '사용중' },
+            //   { id: 2, name: '탈퇴' },
+            // ]}
             onChange={(v) => {
               if (v === 0) setFilter('전체')
               else if (v === 1) setFilter('사용중')

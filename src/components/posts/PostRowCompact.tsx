@@ -5,12 +5,14 @@
  * - density=compact 인 경우 내부 메타(PostMeta)는 compact variant로 맞춰 렌더링됨
  */
 
+import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import PostMeta from './PostMeta'
 import PostPreview from './PostPreview'
 
 export type PostRowProps = {
   id?: number
+  postType: string
   title: string
   content: string
   writer?: string
@@ -47,6 +49,7 @@ const ReplyIcon = ({ className = '' }: { className?: string }) => (
 
 export default function PostRowCompact({
   id,
+  postType,
   title,
   content,
   writer = '',
@@ -68,9 +71,21 @@ export default function PostRowCompact({
   isLast = false,
   variant = 'default',
 }: PostRowProps) {
+  const navigate = useNavigate()
+
   const handleClick = () => {
-    if (id == null) return toast.error('잘못된 게시글 ID입니다.')
-    onClick?.()
+    if (!id) return toast.error('잘못된 게시글 ID입니다.')
+    
+    // postType에 따른 경로 매핑 (BoardList 설정과 동기화)
+    const pathMap: Record<string, string> = {
+      TIP: 'tip',
+      QNA: 'qna',
+      FREE: 'free',
+      NOTICE: 'notice',
+      ACTIVITY: 'activity'
+    }
+    const boardPath = pathMap[postType] || 'free'
+    navigate(`/board/${boardPath}/${id}`)
   }
 
   const containerPadding = density === 'compact' ? 12 : 16
@@ -123,7 +138,7 @@ export default function PostRowCompact({
             <PostMeta
               writer={hideWriter ? '' : writer}
               createdAt={showDate ? createdAt : ''}
-              tags={showTags ? tags : []}
+              tags={tags}
               profileImageUrl={profileImageUrl ?? undefined}
               variant={effectiveVariant}
             />

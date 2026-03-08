@@ -193,12 +193,12 @@ export default function Bookmarked() {
           </div>
 
           <TagChips
-            endpoint="/__ignore__"
+            // endpoint="/__ignore__"
             mode="single"
             includeAllItem={false}
             value={activeTab}
             onChange={onChangeTab}
-            fallbackTags={TAB_TAGS as any}
+            // fallbackTags={TAB_TAGS as any}
             className="ml-[20px] mb-6"
             gapPx={8}
           />

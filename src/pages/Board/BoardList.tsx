@@ -15,35 +15,47 @@ export default function BoardList() {
     tip: {
       title:'선배가 알려줘요',
       banner: '/banners/tip-banner.svg',
-      endpoint: '/api/tip-posts',
-      tagEndpoint: '/api/tip-tags/list',
-      tagPostUrl: (id: number) => `/api/tip-tags/${id}/posts`,
+      postType: 'TIP',
       writePath: `/board/write/tip`,
       detailPath: `/board/tip`,
-      role: 'SENIOR',
-      fallbackTags: [{ id: 1, name: '업무팁' }, { id: 2, name: '협업' }, { id: 3, name: '툴' }, { id: 4, name: '커리어' }]
+      allowedType: 'SENIOR',
+      categories: [
+        { label: '경험담 공유', value: 'EXPERIENCE' },
+        { label: '교육&멘토링', value: 'MENTORING' },
+        { label: '온보딩', value: 'ONBOARDING' },
+        { label: '유용한 팁', value: 'USEFUL_TIP' },
+        { label: '팀 문화', value: 'TEAM_CULTURE' },
+      ]
     },
     qna: {
       title: '신입이 질문해요',
       banner: '/banners/qna-banner.svg',
-      endpoint: '/api/qna-posts',
-      tagEndpoint: '/api/qna-tags/list',
-      tagPostUrl: (id: number) => `/api/qna-tags/${id}/posts`,
+      postType: 'QNA',
       writePath: `/board/write/qna`,
       detailPath: `/board/qna`,
-      role: 'NEWBIE',
-      fallbackTags: [{ id: 1, name: '도움요청' }, { id: 2, name: '실수했어요' }, { id: 3, name: '조언구해요' }, { id: 4, name: '추천해주세요' }, { id: 5, name:"프로세스"}]
+      allowedType: 'NEWBIE',
+      categories: [
+          { label: '문화적응', value: 'CULTURE_ADAPT' },
+          { label: '소통고민', value: 'COMMUNICATION' },
+          { label: '신입고민', value: 'JUNIOR_CONCERN' },
+          { label: '운영&제도', value: 'SYSTEM' },
+          { label: '활동질문', value: 'ACTIVITY_QUESTION' },
+        ]
     },
     free: {
       title: '다같이 얘기해요',
       banner: '/banners/free-banner.svg',
-      endpoint: '/api/free-posts',
-      tagEndpoint: '/api/free_tags',
-      tagPostUrl: (id: number) => `/api/free_tags/${id}/posts`,
+      postType: 'FREE',
       writePath: `/board/write/free`,
       detailPath: `/board/free`,
-      role: 'ALL',
-      fallbackTags: [{ id: 1, name: '업무팁' }, { id: 2, name: '인수인계' }, { id: 3, name: '조직문화' }]
+      allowedType: 'ALL',
+      categories: [
+        { label: '맛집추천', value: 'TASTY_RESTAURANT' },
+        { label: '자료공유', value: 'RESOURCE_SHARE' },
+        { label: '자유토론', value: 'DISCUSSION' },
+        { label: '취미생활', value: 'HOBBY' },
+        { label: '활동일상', value: 'DAILY_ACTIVITY' },
+      ]
     }
   }
   const currentBoard = boardConfigs[activeTab]

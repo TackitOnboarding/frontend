@@ -5,53 +5,27 @@
  * - 랭킹 순위 및 작성자 메타 정보 표시
  */
 
-import PostAuthorMeta from './PostAuthorMeta'
+import PostAuthorMeta from '../posts/PostAuthorMeta'
 import { useNavigate } from 'react-router-dom'
 
-type PostType = 'FREE_POST' | 'QNA_POST' | 'TIP_POST' | string
-
-export type PopularPost = {
-  id: number
-  writer: string
-  profileImageUrl?: string | null
-  title: string
-  content: string
-  createdAt: string
-  type: PostType
-  viewCount?: number | null
-  scrapCount?: number | null
+const TYPE_BADGE: Record<string, { label: string; path: string }> = {
+  TIP: { label: '선배가 알려줘요', path: '/board/tip' },
+  QNA: { label: '신입이 질문해요', path: '/board/qna' },
+  FREE: { label: '다같이 얘기해요', path: '/board/free' },
+  NOTICE: { label: '공지사항', path: '/board/notice' },
+  ACTIVITY: { label: '활동일지', path: '/board/activity'},
 }
 
-const TYPE_BADGE: Record<PostType, { label: string }> = {
-  FREE_POST: { label: '다같이 얘기해요' },
-  QNA_POST: { label: '신입이 질문해요' },
-  TIP_POST: { label: '선배가 알려줘요' },
-}
-
-const typeToPath = (t: PostType) => {
-  if (t === 'FREE_POST') return '/free'
-  if (t === 'QNA_POST') return '/qna'
-  if (t === 'TIP_POST') return '/tip'
-  return '/free'
-}
-
-export default function PopularPostCard({
-  post,
-  rank,
-  className,
-}: {
-  post: PopularPost
-  rank: number
-  className?: string
-}) {
+export default function PopularPostCard({ post, rank, className }: any) {
   const navigate = useNavigate()
-  const badge = TYPE_BADGE[post.type] ?? { label: '자유롭게 얘기해요' }
-  const content = (post.content ?? '').replace(/\r\n/g, '\n')
+  const badge = TYPE_BADGE[post.postType] || TYPE_BADGE.FREE
+
+  const rawContent = post.contentSummary || post.content || ''
+  const content = rawContent.replace(/\r\n/g, '\n')
   const contentLines = content.split('\n')
 
   const handleClick = () => {
-    const boardPath = typeToPath(post.type)
-    navigate(`${boardPath}/${post.id}`)
+    navigate(`${badge.path}/${post.id}`)
   }
 
   return (
@@ -110,17 +84,17 @@ export default function PopularPostCard({
       {/* 본문 요약 */}
       <p
         className="
-    text-body-1 text-[var(--label-neutral)] mb-[12px]
-    overflow-hidden
-    [display:-webkit-box]
-    [-webkit-box-orient:vertical]
-    [-webkit-line-clamp:2]
-    leading-[1.5]
-    min-h-[3em]
-  "
+          text-body-1 text-[var(--label-neutral)] mb-[12px]
+          overflow-hidden
+          [display:-webkit-box]
+          [-webkit-box-orient:vertical]
+          [-webkit-line-clamp:2]
+          leading-[1.5]
+          min-h-[3em]
+        "
         title={content}
       >
-        {contentLines.map((line, i) => (
+        {contentLines.map((line: string, i: number) => (
           <span key={i}>
             {line}
             {i < contentLines.length - 1 && <br />}
@@ -130,9 +104,10 @@ export default function PopularPostCard({
 
       {/* 작성자/날짜 */}
       <PostAuthorMeta
-        writer={post.writer}
+        writer={post.writer?.nickname ?? '익명'} 
         createdAt={post.createdAt}
-        profileImageUrl={post.profileImageUrl ?? undefined}
+        profileImageUrl={post.writer?.profileImageUrl ?? undefined}
+        role={post.writer?.memberType} // NEWBIE / SENIOR
         variant="compact"
       />
     </div>

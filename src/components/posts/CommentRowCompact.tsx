@@ -5,13 +5,15 @@
  * - 작성자/날짜 메타(PostAuthorMeta) 표시 (옵션: 작성자 숨김, 날짜 숨김)
  * - 답글 아이콘 표시 옵션 지원
  */
-
+import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import PostPreview from './PostPreview'
 import PostAuthorMeta from './PostAuthorMeta'
 
 export type CommentRowProps = {
   id?: number
+  postId: number;
+  postType: string
   title: string
   content: string
   writer?: string
@@ -41,6 +43,8 @@ const ReplyIcon = ({ className = '' }) => (
 
 export default function CommentRowCompact({
   id,
+  postId,
+  postType,
   title,
   content,
   writer = '',
@@ -54,9 +58,18 @@ export default function CommentRowCompact({
   hideWriter = false,
   showDate = true,
 }: CommentRowProps) {
+  const navigate = useNavigate()
+
   const handleClick = () => {
-    if (id == null) return toast.error('잘못된 게시글 ID입니다.')
-    onClick?.()
+   if (!postId) return toast.error('게시글 정보를 찾을 수 없습니다.')
+    const pathMap: Record<string, string> = {
+      TIP: 'tip',
+      QNA: 'qna',
+      FREE: 'free',
+      NOTICE: 'notice'
+    }
+    const boardPath = pathMap[postType] || 'free'
+    navigate(`/board/${boardPath}/${postId}`)
   }
 
   // 닉네임 없으면 빈 문자열로 -> PostAuthorMeta가 날짜만 렌더링하도록
@@ -93,6 +106,7 @@ export default function CommentRowCompact({
             writer={hideWriter ? '' : safeWriter}
             createdAt={showDate ? createdAt : ''}
             profileImageUrl={imageUrl ?? undefined}
+            variant="compact"
           />
 
           <PostPreview

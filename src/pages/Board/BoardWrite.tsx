@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
+import React, { useState, useEffect, useMemo, useRef} from 'react'
 import './BoardWrite.css'
 import { useNavigate, useParams } from 'react-router-dom'
 import HomeBar from '../../components/HomeBar'
@@ -10,162 +10,126 @@ import RichTextEditor, {
   type RichTextEditorHandle,
 } from '../../components/editor/RichTextEditor'
 import { toastError, toastSuccess } from '../../utils/toast'
-import { PostCreateRes } from '../../types/post'
 import { replaceFirstDataUrlImgWithToken } from '../../utils/coverToken'
 import LeaveModal from '../../components/modals/LeaveModal'
-
-type Tag = { id: number; tagName: string }
 
 // 게시판별 설정 데이터
 const BOARD_CONFIG = {
   tip: {
-    tagApi: '/api/tip-tags/list',
-    postApi: '/api/tip-posts',
+    postType: 'TIP',
     placeholder: '후배가 더 빨리 적응할 수 있도록 경험을 나눠주세요.',
-    dtoKey: 'dto', // Tip 게시판은 dto 사용
+    categories: [
+      { label: '경험담 공유', value: 'EXPERIENCE' },
+      { label: '교육&멘토링', value: 'MENTORING' },
+      { label: '온보딩', value: 'ONBOARDING' },
+      { label: '유용한 팁', value: 'USEFUL_TIP' },
+      { label: '팀 문화', value: 'TEAM_CULTURE' },
+    ]
   },
   qna: {
-    tagApi: '/api/qna-tags/list',
-    postApi: '/api/qna-posts',
+    postType: 'QNA',
     placeholder: '궁금한 점을 자유롭게 질문해 주세요.',
-    dtoKey: 'request', // Qna 게시판은 request 사용
+    categories: [
+      { label: '문화적응', value: 'CULTURE_ADAPT' },
+      { label: '소통고민', value: 'COMMUNICATION' },
+      { label: '신입고민', value: 'JUNIOR_CONCERN' },
+      { label: '운영&제도', value: 'SYSTEM' },
+      { label: '활동질문', value: 'ACTIVITY_QUESTION' },
+    ]
   },
   free: {
-    tagApi: '/api/free_tags',
-    postApi: '/api/free-posts',
+    postType: 'FREE',
     placeholder: '자유롭게 작성해 주세요.',
-    dtoKey: 'dto', // Free 게시판은 dto 사용
+    categories: [
+      { label: '맛집추천', value: 'TASTY_RESTAURANT' },
+      { label: '자료공유', value: 'RESOURCE_SHARE' },
+      { label: '자유토론', value: 'DISCUSSION' },
+      { label: '취미생활', value: 'HOBBY' },
+      { label: '활동일상', value: 'DAILY_ACTIVITY' },
+    ]
   },
   notice: {
-    tagApi: '/api/notice-tags/list',
-    postApi: '/api/notice-posts',
+    postType: 'NOTICE',
     placeholder: '공지사항을 입력해 주세요.',
-    dtoKey: 'dto',
+    categories: [] 
   },
   activity: {
-    tagApi: '/api/activity-tags/list',
-    postApi: '/api/activity-posts',
+    postType: "ACTIVITY",
     placeholder: '활동 내용을 기록해 주세요.',
-    dtoKey: 'dto',
+    categories: [] 
   }
 }
 
 function BoardWrite() {
-  // 익명 상태 추가
-  const [isAnonymous, setIsAnonymous] = useState(false);
-
-  // URL에서 어떤 게시판인지 받아옴 (예: /write/tip)
   const { boardType } = useParams<{ boardType: string }>();
-
-  const config = BOARD_CONFIG[boardType as keyof typeof BOARD_CONFIG] || BOARD_CONFIG.free;
 
   const navigate = useNavigate();
   const editorRef = useRef<RichTextEditorHandle | null>(null);
 
+  const activeProfileId = localStorage.getItem('activeProfileId');
+
+  const config = BOARD_CONFIG[boardType as keyof typeof BOARD_CONFIG] || BOARD_CONFIG.free;
+
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
-  const [selectedTagIds, setSelectedTagIds] = useState<number[]>([])
-  const [tagList, setTagList] = useState<Tag[]>([])
-  const [loadingTags, setLoadingTags] = useState(false)
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null) // 단일 선택 ENUM
+  const [isAnonymous, setIsAnonymous] = useState(false);
   const [submitting, setSubmitting] = useState(false)
   const [pickedImage, setPickedImage] = useState<File | null>(null)
   const [pickedPreviewUrl, setPickedPreviewUrl] = useState<string | null>(null)
   const [showLeaveModal, setShowLeaveModal] = useState(false);
 
   useEffect(() => {
-    return () => {
-      if (pickedPreviewUrl && pickedPreviewUrl.startsWith('blob:')) {
-        URL.revokeObjectURL(pickedPreviewUrl)
+      return () => {
+        if (pickedPreviewUrl && pickedPreviewUrl.startsWith('blob:')) {
+          URL.revokeObjectURL(pickedPreviewUrl)
+        }
       }
-    }
-  }, [pickedPreviewUrl])
-
-  // 해당 게시판의 태그 목록 가져오기
-  useEffect(() => {
-    const fetchTags = async () => {
-      setLoadingTags(true)
-      try {
-        const res = await api.get(config.tagApi)
-        const normalized = (res.data ?? []).map((t: any) => ({
-          id: Number(t.id),
-          tagName: String(t.tagName ?? t.name ?? ''),
-        }))
-        setTagList(normalized)
-      } catch {
-        setTagList([{ id: 1, tagName: '공통' }])
-      } finally {
-        setLoadingTags(false)
-      }
-    }
-    fetchTags()
-  }, [config.tagApi])
-
-  const handleTagToggle = (id: number) => {
-    setSelectedTagIds((prev) =>
-      prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id]
-    )
-  }
-
-  const handlePickImageFile = useCallback((file: File, previewUrl: string) => {
-    if (pickedPreviewUrl && pickedPreviewUrl.startsWith('blob:')) {
-      URL.revokeObjectURL(pickedPreviewUrl)
-    }
-    setPickedImage(file)
-    setPickedPreviewUrl(previewUrl)
-  }, [pickedPreviewUrl])
+    }, [pickedPreviewUrl])
 
   const isReadyToSubmit = useMemo(() => {
     const textOnly = content.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
     const hasTitleAndContent = title.trim().length > 0 && textOnly.length > 0;
-    
-    // 분류가 존재하는 게시판 리스트
-    const needsTags = ['tip', 'qna', 'free'].includes(boardType || '');
+    const needsCategory = config.categories.length > 0;
 
-    if (needsTags) {
-      // 태그가 있는 게시판은 제목 + 내용 + 태그가 모두 있어야 함
-      return hasTitleAndContent && selectedTagIds.length > 0;
-    }
-    
-    // 공지, 활동일지는 제목과 내용만 있으면 됨
-    return hasTitleAndContent;
-  }, [title, content, selectedTagIds, boardType]);
+    return needsCategory ? (hasTitleAndContent && selectedCategory !== null) : hasTitleAndContent;
+  }, [title, content, selectedCategory, config]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    if (submitting || loadingTags || !isReadyToSubmit) return
+    if (submitting || !isReadyToSubmit) return
 
     setSubmitting(true)
     try {
       const contentForServer = replaceFirstDataUrlImgWithToken(content)
 
-      const isTagBoard = ['tip', 'qna', 'free'].includes(boardType || '');
-
-      const payload: any = {
+      // 명세서 규격에 맞춘 Payload 생성
+      const payload = {
+        postType: config.postType, // TIP, QNA 등
+        postCategory: selectedCategory, // ENUM value
         title: title.trim(),
         content: contentForServer,
-        isAnonymous: isAnonymous, // 명세 필수 필드
+        isAnonymous: isAnonymous,
+        commentEnabled: true // 기본값
       };
 
-      if (isTagBoard) {
-        payload.tagIds = selectedTagIds; // 태그 게시판일 때만 포함
-      }
-
       const form = new FormData()
-      if (pickedImage) {form.append('image', pickedImage)}
+      if (pickedImage) form.append('image', pickedImage)
       
-      // 게시판별로 다른 dtoKey(dto 또는 request) 사용
+      // 통합 DTO 키 사용
       form.append(
-        config.dtoKey,
+        'dto', 
         new Blob([JSON.stringify(payload)], { type: 'application/json' })
       )
 
-      const { data } = await api.post<PostCreateRes>(config.postApi, form)
-      const newId = (data as any)?.id ?? (data as any)?.postId
+      const res = await api.post('/api/posts', form, {
+        headers: { 'Active-Profile-Id': activeProfileId } // 필수 헤더
+      })
+
+      const newId = res.data.content[0].postId; // 응답 구조 반영
 
       toastSuccess('작성이 완료되었습니다.')
-      // 작성 후 해당 게시판 상세 페이지로 이동
-      const currentPath = boardType?.toLowerCase() || 'free'
-      navigate(`/board/${currentPath}/${newId}`)
+      navigate(`/board/${boardType}/${newId}`)
 
     } catch (err: any) {
       toastError(err?.response?.data?.message || '글 작성에 실패했습니다.')
@@ -205,29 +169,29 @@ function BoardWrite() {
           />
 
           {/* 분류(태그) */}
-          {['tip', 'qna', 'free'].includes(boardType || '') && (
+          {config.categories.length > 0 && (
             <div>
               <p className="mt-4 write-label">
                 분류 <span className="text-system-red">*</span>
               </p>
               <div className="flex flex-wrap gap-2">
-                {tagList.map((tag) => {
-                  const selected = selectedTagIds.includes(tag.id)
+                {config.categories.map((cat) => {
+                  const selected = selectedCategory === cat.value
                   return (
                     <Button
-                      key={tag.id}
+                      key={cat.value}
                       type="button"
                       variant="outlined"
                       size="outlinedS"
                       aria-pressed={selected}
-                      onClick={() => handleTagToggle(tag.id)}
+                      onClick={() => setSelectedCategory(cat.value)}
                       className={clsx(
                         selected
                           ? '!border-line-active text-label-primary bg-background-blue'
                           : 'border-line-normal text-label-normal'
                       )}
                     >
-                      #{tag.tagName}
+                      #{cat.label}
                     </Button>
                   )
                 })}
@@ -246,7 +210,10 @@ function BoardWrite() {
             placeholder="후배가 더 빨리 적응할 수 있도록 경험을 나눠주세요."
             minHeight={300}
             variant="post"
-            onPickImageFile={handlePickImageFile}
+            onPickImageFile={(file, url) => {
+              setPickedImage(file);
+              setPickedPreviewUrl(url);
+            }}
           />
 
           {/* 등록 버튼 */}
@@ -294,10 +261,10 @@ function BoardWrite() {
                 type="submit"
                 variant="primary"
                 size="outlinedM"
-                disabled={submitting || loadingTags || !isReadyToSubmit}
+                disabled={submitting || !isReadyToSubmit}
                 className={clsx(
                   'w-[120px] h-11',
-                  (!isReadyToSubmit || submitting || loadingTags) &&
+                  (!isReadyToSubmit || submitting) &&
                     'opacity-50 cursor-not-allowed'
                 )}
               >

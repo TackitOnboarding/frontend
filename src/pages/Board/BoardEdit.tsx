@@ -16,51 +16,66 @@ import {
 } from '../../utils/coverToken'
 import LeaveModal from '../../components/modals/LeaveModal'
 
-type BoardType = 'tip' | 'qna' | 'free'
-type Tag = { id: number; tagName: string }
-
-// 게시판별 설정 데이터
+// 게시판별 설정 및 카테고리 데이터 통합
 const BOARD_CONFIG = {
   tip: {
-    tagApi: '/api/tip-tags/list',
-    postApi: (id: string) => `/api/tip-posts/${id}`,
+    postType: 'TIP',
     placeholder: '경험을 나눠주세요.',
-    dtoKey: 'dto',
+    categories: [
+      { label: '경험담 공유', value: 'EXPERIENCE' },
+      { label: '교육&멘토링', value: 'MENTORING' },
+      { label: '온보딩', value: 'ONBOARDING' },
+      { label: '유용한 팁', value: 'USEFUL_TIP' },
+      { label: '팀 문화', value: 'TEAM_CULTURE' },
+    ]
   },
   qna: {
-    tagApi: '/api/qna-tags/list',
-    postApi: (id: string) => `/api/qna-posts/${id}`,
+    postType: 'QNA',
     placeholder: '궁금한 점을 질문해 주세요.',
-    dtoKey: 'request',
+    categories: [
+      { label: '문화적응', value: 'CULTURE_ADAPT' },
+      { label: '소통고민', value: 'COMMUNICATION' },
+      { label: '신입고민', value: 'JUNIOR_CONCERN' },
+      { label: '운영&제도', value: 'SYSTEM' },
+      { label: '활동질문', value: 'ACTIVITY_QUESTION' },
+    ]
   },
   free: {
-    tagApi: '/api/free_tags',
-    postApi: (id: string) => `/api/free-posts/${id}`,
+    postType: 'FREE',
     placeholder: '자유롭게 이야기를 나눠주세요.',
-    dtoKey: 'req',
+    categories: [
+      { label: '맛집추천', value: 'TASTY_RESTAURANT' },
+      { label: '자료공유', value: 'RESOURCE_SHARE' },
+      { label: '자유토론', value: 'DISCUSSION' },
+      { label: '취미생활', value: 'HOBBY' },
+      { label: '활동일상', value: 'DAILY_ACTIVITY' },
+    ]
   },
   notice: {
-    postApi: (id: string) => `/api/notice-posts/${id}`,
+    postType: 'NOTICE',
     placeholder: '공지할 내용을 작성해 주세요.',
-    dtoKey: 'dto',
+    categories: []
   },
+  activity: {
+    postType: "ACTIVITY",
+    placeholder: '활동 내용을 기록해 주세요.',
+    categories: [] 
+  }
 }
 
+
 function BoardEdit() {
-  // 익명 상태 추가
-  const [isAnonymous, setIsAnonymous] = useState(false);
 
   const { boardType, id } = useParams<{ boardType: string; id: string }>()
   const navigate = useNavigate()
 
-  const type = (boardType?.toLowerCase() as BoardType) || 'free'
-  const config = BOARD_CONFIG[type]
-  const targetId = id || '' // URL 파라미터 통합 사용
+  const activeProfileId = localStorage.getItem('activeProfileId')
+  const config = BOARD_CONFIG[boardType as keyof typeof BOARD_CONFIG] || BOARD_CONFIG.free;
 
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
-  const [selectedTagIds, setSelectedTagIds] = useState<number[]>([])
-  const [tagList, setTagList] = useState<Tag[]>([])
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [isAnonymous, setIsAnonymous] = useState(false);
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [pickedImage, setPickedImage] = useState<File | null>(null)
@@ -80,44 +95,32 @@ function BoardEdit() {
 
   // 데이터 로드
   useEffect(() => {
-    if (!targetId || !config) return
-    const fetchAll = async () => {
+    if (!id) return
+    const fetchPost = async () => {
       setLoading(true)
       try {
-        // 1) 태그 목록 조회
-        const tagRes = await api.get(config.tagApi)
-        const tagNormalized: Tag[] = (tagRes.data ?? []).map((t: any) => ({
-          id: Number(t.id),
-          tagName: String(t.tagName ?? t.name ?? ''),
-        }))
-        setTagList(tagNormalized)
-
-        // 2) 게시글 상세 조회
-        const postRes = await api.get(config.postApi(targetId))
-        const p = postRes.data
+        const res = await api.get(`/api/posts/${id}`, {
+          headers: { 'Active-Member-Id': activeProfileId }
+        })
+        const p = res.data.content.post // 상세 조회 응답 구조 반영
         
         setTitle(p.title ?? '')
         setContent(hydrateCoverToken(String(p.content ?? ''), p.imageUrl ?? null))
-        setIsAnonymous(!!p.anonymous)
-
-        const matched = tagNormalized.filter((t) =>
-          (p.tags ?? []).includes(t.tagName)
-        )
-        setSelectedTagIds(matched.map((t) => t.id))
+        setIsAnonymous(!!p.isAnonymous)
+        // 서버에서 내려온 카테고리 key값을 상태에 매핑
+        if (p.postCategory) {
+          setSelectedCategory(p.postCategory.key || p.postCategory)
+        }
       } catch {
         toastError('정보를 불러오지 못했습니다.')
+        navigate(-1)
       } finally {
         setLoading(false)
       }
     }
-    fetchAll()
-  }, [targetId, config])
+    fetchPost()
+  }, [id, activeProfileId, navigate])
 
-  const handleTagToggle = (tid: number) => {
-    setSelectedTagIds((prev) =>
-      prev.includes(tid) ? prev.filter((v) => v !== tid) : [...prev, tid]
-    )
-  }
 
   const handlePickImageFile = useCallback((file: File, previewUrl: string) => {
     if (pickedPreviewUrl && pickedPreviewUrl.startsWith('blob:')) {
@@ -130,47 +133,42 @@ function BoardEdit() {
   const isReadyToSubmit = useMemo(() => {
     const textOnly = content.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
     const hasTitleAndContent = title.trim().length > 0 && textOnly.length > 0;
-    
-    // 분류가 존재하는 게시판 리스트
-    const needsTags = ['tip', 'qna', 'free'].includes(boardType || '');
+    const needsCategory = config.categories.length > 0;
 
-    if (needsTags) {
-      // 태그가 있는 게시판은 제목 + 내용 + 태그가 모두 있어야 함
-      return hasTitleAndContent && selectedTagIds.length > 0;
-    }
-    
-    // 공지, 활동일지는 제목과 내용만 있으면 됨
-    return hasTitleAndContent;
-  }, [title, content, selectedTagIds, boardType]);
+    return needsCategory ? (hasTitleAndContent && selectedCategory !== null) : hasTitleAndContent;
+  }, [title, content, selectedCategory, config]);
 
-
+  // 수정
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!targetId || !isReadyToSubmit) return
+    if (!id || !isReadyToSubmit || saving) return
 
     setSaving(true)
     try {
       const contentForServer = replaceFirstDataUrlImgWithToken(content)
+      
       const payload = {
+        postCategory: selectedCategory, // 필수
         title: title.trim(),
         content: contentForServer,
-        tagIds: selectedTagIds,
-        removeImage,
+        isAnonymous: isAnonymous,
+        commentEnabled: true
       }
 
       const form = new FormData()
-      // 게시판별 맞춤 DTO 키 적용 (dto, request, req)
       form.append(
-        config.dtoKey,
+        'dto', // 통합 DTO 키
         new Blob([JSON.stringify(payload)], { type: 'application/json' })
       )
       if (pickedImage) form.append('image', pickedImage)
 
-      await api.put(config.postApi(targetId), form)
-      toastSuccess('게시글이 수정되었습니다.')
+      // PUT 메서드 사용
+      await api.put(`/api/posts/${id}`, form, {
+        headers: { 'Active-Profile-Id': activeProfileId }
+      })
       
-      const currentPath = boardType?.toLowerCase() || 'free'
-      navigate(`/board/${currentPath}/${targetId}`)
+      toastSuccess('게시글 수정 성공')
+      navigate(`/board/${boardType}/${id}`)
     } catch (err: any) {
       toastError(err?.response?.data?.message || '수정에 실패했습니다.')
     } finally {
@@ -184,8 +182,11 @@ function BoardEdit() {
     } else {
       navigate(-1);
     }
-};
+  };
 
+  if (loading) return (
+    <><HomeBar /><div className="board-write-container max-w-[1200px] pt-10">정보를 불러오는 중...</div></>
+  )
 
   return (
     <>
@@ -213,22 +214,22 @@ function BoardEdit() {
           />
 
           {/* 분류(태그) */}
-          {['tip', 'qna', 'free'].includes(boardType || '') && (
+          {config.categories.length > 0 && (
             <div>
               <p className="mt-4 text-label-normal text-body-1sb">
                 분류 <span className="text-system-red">*</span>
               </p>
               <div className="flex flex-wrap gap-2">
-                {tagList.map((tag) => {
-                  const selected = selectedTagIds.includes(tag.id)
+                {config.categories.map((cat) => {
+                  const selected = selectedCategory === cat.value
                   return (
                     <Button
-                      key={tag.id}
+                      key={cat.value}
                       type="button"
                       variant="outlined"
                       size="outlinedS"
                       aria-pressed={selected}
-                      onClick={() => handleTagToggle(tag.id)}
+                      onClick={() => setSelectedCategory(cat.value)}
                       className={clsx(
                         selected
                           ? '!border-line-active text-label-primary bg-background-blue'
@@ -236,7 +237,7 @@ function BoardEdit() {
                       )}
                       disabled={loading}
                     >
-                      #{tag.tagName}
+                      #{cat.label}
                     </Button>
                   )
                 })}

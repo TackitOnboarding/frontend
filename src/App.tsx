@@ -22,7 +22,7 @@ import BoardDetail from './pages/Board/BoardDetail'
 import CalendarPage from './pages/Calendar/CalendarPage'
 
 // 운영진 페이지
-import ExecutivePage from './pages/Executive/ExecutivePage'
+import AccountPage from './pages/Account/AccountPage'
 
 import MainPage from './pages/Main/MainPage'
 import MyPage from './pages/MyPage/MyPage'
@@ -76,7 +76,7 @@ function App(): JSX.Element {
         <Route path="/calendar" element={<CalendarPage />} />
 
         {/* 회비함 */}
-        <Route path="/executive" element={<ExecutivePage />} />
+        <Route path="/account" element={<AccountPage />} />
 
         {/* 운영진 관리 */}
         <Route path="/management" element={<ManagementPage />} />

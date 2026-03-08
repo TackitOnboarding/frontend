@@ -23,67 +23,65 @@ type Post = {
 
 export default function BoardSection({ config, myInfo, loading}: any) {
   const navigate = useNavigate()
-  const [tagId, setTagId] = useState<number | null>(0)
+  const [activeCategory, setActiveCategory] = useState<string | null>(null)
+
   const [posts, setPosts] = useState<Post[]>([])
   const [totalPages, setTotalPages] = useState<number>(1)
   const [currentPage, setCurrentPage] = useState<number>(1)
-  const size = 5
+
+  const activeProfileId = localStorage.getItem('activeProfileId')
 
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const isAll = tagId === 0 || tagId === null
-        const url = isAll ? config.endpoint : config.tagPostUrl(tagId)
-
-        const res = await api.get(url, {
-          params: { page: currentPage - 1, size, sort: 'createdAt,desc' }
+        const res = await api.get('/api/posts', {
+          params: {
+            type: config.postType, // 필수값
+            category: activeCategory || undefined, // 없으면 전체
+            page: currentPage - 1,
+            size: 5
+          },
+          headers: {
+            'Active-Profile-Id': activeProfileId // 명세 필수 헤더
+          }
         })
 
-        const data = res.data
-        const contentArr = Array.isArray(data?.content) ? data.content : []
+        const { posts: postList, pageInfo } = res.data.content;
         
-        // 통합 매핑 로직 (id와 postId가 혼용되는 문제 해결)
-        const normalized: Post[] = contentArr.map((p: any) => ({
-          id: p.postId ?? p.id,
-          writer: p.writer ?? '',
-          title: p.title ?? '',
-          content: p.content ?? '',
-          tags: Array.isArray(p.tags) ? p.tags : [],
-          createdAt: p.createdAt ?? '',
-          imageUrl: p.imageUrl ?? null,
-          profileImageUrl: p.profileImageUrl ?? null,
-        }))
-
-        setPosts(normalized)
-        setTotalPages(Math.max(1, Number(data?.totalPages ?? 1)))
+        setPosts(postList.map((p: any) => ({
+          id: p.id,
+          writer: p.writer.nickname,
+          title: p.title,
+          content: p.contentSummary, // 목록에서는 요약본 사용
+          tags: [p.postCategory.label], // 카테고리 라벨을 태그로 활용
+          createdAt: p.createdAt,
+          imageUrl: p.thumbnail,
+          profileImageUrl: p.writer.profileImageUrl
+        })))
+        setTotalPages(pageInfo.totalPages)
       } catch (error) {
-        console.error(`${config.title} 조회 실패:`, error)
-        setPosts([])
-        setTotalPages(1)
+        console.error("로딩 실패", error)
       }
     }
     fetchPosts()
-  }, [currentPage, tagId, config])
+  }, [currentPage, activeCategory, config])
 
   return (
     <div className="board-section-container">
       {/* 상단바: 태그칩 + 글쓰기 버튼 */}
       <div className="flex justify-between items-center mb-6">
-        <TagChips
-          endpoint={config.tagEndpoint}
-          mode="single"
-          value={tagId}
-          onChange={(v) => {
-            setTagId(v as number | null)
-            setCurrentPage(1)
-          }}
+        <TagChips 
           includeAllItem
-          gapPx={10}
-          fallbackTags={config.fallbackTags}
+          categories={config.categories} // BoardList의 categories를 주입
+          value={activeCategory} 
+          onChange={(v) => {
+            setActiveCategory(v); // '전체' 클릭 시 null이 전달됨
+            setCurrentPage(1); // 카테고리 변경 시 첫 페이지로
+          }}
         />
 
         {/* 권한 체크 후 글쓰기 버튼 표시 */}
-        {!loading && (config.role === 'ALL' || myInfo?.role === config.role) && (
+        {!loading && (config.allowedType === 'ALL' || myInfo?.memberType === config.allowedType) && (
           <WriteButton onClick={() => navigate(config.writePath)} />
         )}
       </div>

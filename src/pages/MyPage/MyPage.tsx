@@ -35,7 +35,6 @@ export default function MyPageHome() {
     localStorage.removeItem('accessTokenExpiresIn')
     localStorage.removeItem('grantType')
     localStorage.removeItem('activeProfileId');
-    localStorage.removeItem('currentProfile');
 
     navigate('/login')
   }
@@ -95,7 +94,7 @@ export default function MyPageHome() {
                         <div className="relative w-[80px] h-[80px]">
                           <img
                             src={
-                              me?.profileImageUrl ?? '/icons/mypage-icon.svg'
+                              me?.imageUrl ?? '/icons/mypage-icon.svg'
                             }
                             alt="프로필 이미지"
                             className="w-full h-full rounded-full object-cover bg-[#f5f5f5] cursor-pointer hover:opacity-80 transition"

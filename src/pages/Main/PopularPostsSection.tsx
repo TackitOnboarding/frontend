@@ -5,28 +5,30 @@
  */
 
 import { useEffect, useState } from 'react'
-import PopularPostCard, {
-  type PopularPost,
-} from '../../components/posts/PopularPostCard'
+import PopularPostCard from '../../components/posts/PopularPostCard'
 import api from '../../api/api'
 import { stripHtml } from '../../utils/stripHtml'
 
 type ApiPopularPost = {
   id: number
-  writer: string
+  postType: 'FREE' | 'QNA' | 'TIP' | string
   profileImageUrl: string | null
   title: string
   content: string | null
+  contentSummary: string | null
   createdAt: string
-  type: 'FREE_POST' | 'QNA_POST' | 'TIP_POST' | string
+  writer: { // 작성자 정보가 객체로 옴
+    nickname: string
+    profileImageUrl: string | null
+    memberType: 'NEWBIE' | 'SENIOR'
+  }
   viewCount: number | null
   scrapCount: number | null
 }
 
-const toPopularPost = (x: ApiPopularPost): PopularPost => ({
+const toPopularPost = (x: ApiPopularPost) => ({
   ...x,
-  profileImageUrl: x.profileImageUrl ?? undefined,
-  content: x.content ? stripHtml(x.content) : '',
+  content: stripHtml(x.contentSummary || x.content || ''),
   viewCount: x.viewCount ?? 0,
   scrapCount: x.scrapCount ?? 0,
 })
@@ -34,7 +36,7 @@ const toPopularPost = (x: ApiPopularPost): PopularPost => ({
 function dedupe(arr: ApiPopularPost[]) {
   const seen = new Set<string>()
   return arr.filter((x) => {
-    const key = `${x.type}:${x.id}`
+    const key = `${x.postType}:${x.id}`
     if (seen.has(key)) return false
     seen.add(key)
     return true
@@ -42,7 +44,8 @@ function dedupe(arr: ApiPopularPost[]) {
 }
 
 export default function PopularPostsSection() {
-  const [items, setItems] = useState<PopularPost[]>([])
+  const [items, setItems] = useState<any[]>([])
+  const activeProfileId = localStorage.getItem('activeProfileId') // 필수 헤더
 
   useEffect(() => {
     let mounted = true
@@ -76,7 +79,7 @@ export default function PopularPostsSection() {
       <div className="mt-[24px] flex gap-[25px] flex-wrap">
         {items.map((post, i) => (
           <PopularPostCard
-            key={`${post.type}-${post.id}`}
+            key={`${post.postType}-${post.id}`}
             post={post}
             rank={i + 1}
           />

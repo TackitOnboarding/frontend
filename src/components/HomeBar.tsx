@@ -37,7 +37,7 @@ const HomeBar: React.FC = () => {
                 <NavLink to={'/calendar'} className={linkClass}>
                   캘린더
                 </NavLink>
-                <NavLink to={'/executive'} className={linkClass}>
+                <NavLink to={'/account'} className={linkClass}>
                   회비함
                 </NavLink>
                 {/* 운영진 전용 메뉴 */}
@@ -59,8 +59,8 @@ const HomeBar: React.FC = () => {
               >
                 <img
                   src={
-                    myInfo?.profileImageUrl
-                      ? myInfo.profileImageUrl
+                    myInfo?.imageUrl
+                      ? myInfo.imageUrl
                       : '/icons/mypage-icon.svg'
                   }
                   alt="마이페이지"

@@ -7,105 +7,82 @@
  * - value / onChange를 통한 제어 컴포넌트
  */
 
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import Chip from './Chip'
 import api from '../api/api'
 
 type Mode = 'single' | 'multiple'
-type TagItem = { id: number | string; name: string }
+type CategoryItem = { label: string; value: string | number }
+
 type Props = {
-  endpoint?: string
   mode?: Mode
   value?: number | string | (number | string)[] | null
   onChange?: (v: any) => void
   includeAllItem?: boolean
   className?: string
   gapPx?: number
-  fallbackTags?: TagItem[]
+  categories?: CategoryItem[]
 }
 
 export default function TagChips({
-  endpoint = '/api/tags/list',
   mode = 'single',
-  value = mode === 'single' ? null : [],
+  value = null,
   onChange,
   includeAllItem = false,
   className = '',
   gapPx = 10,
-  fallbackTags = [],
+  categories = [],
 }: Props) {
-  const [tags, setTags] = useState<TagItem[]>([])
-  const [loading, setLoading] = useState(true)
-
-  const normalize = (arr: any[]): TagItem[] =>
-    (arr ?? []).map((t) => ({ id: t.id, name: t.tagName ?? t.name }))
-
-  useEffect(() => {
-    let mounted = true
-    ;(async () => {
-      try {
-        const res = await api.get(endpoint)
-        const raw = Array.isArray(res.data?.content)
-          ? res.data.content
-          : res.data
-        const data = normalize(Array.isArray(raw) ? raw : [])
-
-        if (!mounted) return
-
-        const base = data.length > 0 ? data : fallbackTags
-        setTags(includeAllItem ? [{ id: 0, name: '전체' }, ...base] : base)
-      } catch {
-        if (!mounted) return
-        const base = fallbackTags
-        setTags(includeAllItem ? [{ id: 0, name: '전체' }, ...base] : base)
-      } finally {
-        if (mounted) setLoading(false)
-      }
-    })()
-    return () => {
-      mounted = false
-    }
-  }, [endpoint, includeAllItem, fallbackTags])
+  const items = useMemo(() => {
+    const base = categories.map(cat => ({
+      id: cat.value, // ENUM 값 (예: EXPERIENCE)
+      name: cat.label // UI 표시용 (예: 경험담 공유)
+    }));
+    // 전체 항목 추가 시 ID를 'ALL'로 지정하여 null 값과 구분합니다.
+    return includeAllItem ? [{ id: 'ALL', name: '전체' }, ...base] : base;
+  }, [includeAllItem, categories]);
 
   const selectedSet = useMemo(() => {
     if (mode === 'single') {
-      const hasValue = value !== null && value !== undefined
-      return new Set(hasValue ? [String(value)] : [])
+      // 값이 null이거나 'ALL'이면 '전체' 칩을 활성화합니다.
+      const hasValue = value !== null && value !== undefined && value !== 'ALL';
+      return new Set(hasValue ? [String(value)] : ['ALL']);
     }
-    const arr = Array.isArray(value) ? (value as any[]) : []
-    return new Set(arr.map(String))
-  }, [value, mode])
+    const arr = Array.isArray(value) ? (value as any[]) : [];
+    return new Set(arr.map(String));
+  }, [value, mode]);
 
   const toggle = (id: number | string) => {
-    if (!onChange) return
-    const key = String(id)
+    if (!onChange) return;
+    const key = String(id);
 
     if (mode === 'single') {
-      if (key === '0') {
-        onChange(0)
-        return
+      // '전체'를 누르면 부모에게 null을 전달하여 카테고리 필터링을 해제합니다.
+      if (key === 'ALL') {
+        onChange(null);
+        return;
       }
-      onChange(selectedSet.has(key) ? 0 : id)
+      // 이미 선택된 항목을 다시 누르면 '전체'(null)로 돌아갑니다.
+      onChange(selectedSet.has(key) ? null : id);
     } else {
-      const next = new Set(selectedSet)
-      next.has(key) ? next.delete(key) : next.add(key)
-      onChange(Array.from(next))
+      const next = new Set(selectedSet);
+      next.has(key) ? next.delete(key) : next.add(key);
+      onChange(Array.from(next));
     }
-  }
+  };
 
-  if (loading) return <div className="h-10" />
 
   return (
     <div
       className={`flex flex-wrap ${className}`}
       style={{ gap: `${gapPx}px` }}
     >
-      {tags.map((t) => (
+      {items.map((item) => (
         <Chip
-          key={t.id}
-          label={t.name}
-          selected={selectedSet.has(String(t.id))}
-          onClick={() => toggle(t.id)}
+          key={item.id}
+          label={item.name}
+          selected={selectedSet.has(String(item.id))}
+          onClick={() => toggle(item.id)}
         />
       ))}
     </div>

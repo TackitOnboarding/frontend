@@ -9,7 +9,7 @@ import { useUserForm } from '../../../hooks/useUserForm';
 import api from '../../../api/api'
 import { toastError } from '../../../utils/toast';
 
-type MemberRole = 'ADMIN' | 'GENERAL';
+type MemberRole = 'EXECUTIVE' | 'GENERAL' | 'ADMIN';
 type MemberType = 'NEWBIE' | 'SENIOR';
 
 const TYPE_ICONS: Record<MemberType, { src: string; alt: string }> = {
@@ -54,7 +54,6 @@ export default function OrganizationFormPage() {
   const [joinedYear, setJoinedYear] = useState<number | ''>('')
   const [memberRole, setMemberRole] = useState<MemberRole | ''>('');
   const [memberType, setMemberType] = useState<MemberType | ''>('');
-  // const [joinedYearTouched, setJoinedYearTouched] = useState(false)
   const [submitted, setSubmitted] = useState(false)
 
   // 3. 가입 연도 유효성 검사 (기존 로직 유지 및 최적화)
@@ -76,6 +75,9 @@ export default function OrganizationFormPage() {
     memberType;
 
   const handleComplete = async () => {
+    setSubmitted(true);
+    if (!canSubmit) return;
+
     const orgId = organization?.id || organization?.orgId;
 
     const payload = { nickname, memberRole, memberType }
@@ -104,7 +106,7 @@ export default function OrganizationFormPage() {
   };
 
   const roleOptions: [SelectOption<MemberRole>, SelectOption<MemberRole>] = [
-    { value: 'ADMIN', label: '운영진' },
+    { value: 'EXECUTIVE', label: '운영진' },
     { value: 'GENERAL', label: '일반회원' },
   ];
 

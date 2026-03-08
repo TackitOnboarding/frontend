@@ -6,13 +6,13 @@ import api from "../../api/api";
 import DepositSection from "./DepositSection";
 import PaymentSection from "./PaymentSection";
 
-type ExecutiveTab = 'DEPOSIT' | 'PAYMENT';
+type AccountTab = 'DEPOSIT' | 'PAYMENT';
 
-export default function ExecutivePage() {
+export default function AccountPage() {
   const { orgId } = useParams<{ orgId: string }>();
   const numericOrgId = Number(orgId);
 
-  const [activeTab, setActiveTab] = useState<ExecutiveTab>('DEPOSIT');
+  const [activeTab, setActiveTab] = useState<AccountTab>('DEPOSIT');
 
   const tabConfigs = {
     DEPOSIT: { title: '입출금 내역' },
@@ -59,7 +59,7 @@ export default function ExecutivePage() {
 
         {/* 메뉴 바 */}
         <div className="flex gap-5">
-          {(Object.keys(tabConfigs) as ExecutiveTab[]).map((type) => (
+          {(Object.keys(tabConfigs) as AccountTab[]).map((type) => (
             <button
               key={type}
               onClick={() => setActiveTab(type)}

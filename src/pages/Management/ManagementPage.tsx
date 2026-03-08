@@ -2,17 +2,17 @@ import HomeBar from "../../components/HomeBar";
 import Footer from "../../components/layouts/Footer";
 import { useState } from "react";
 import MemberManageSection from "./MemberManageSection";
-import ExecutiveManageSection from "./ExecutiveManageSection";
+import AccountManageSection from "./AccountManageSection";
 import ReportManageSection from "./ReportManageSection";
 
-type ManagementTab = 'MEMBER' | 'EXECUTIVE' | 'REPORT';
+type ManagementTab = 'MEMBER' | 'ACCOUNT' | 'REPORT';
 
 export default function ManagementPage() {
   const [activeTab, setActiveTab] = useState<ManagementTab>('MEMBER');
   
   const tabConfigs: Record<ManagementTab, { title: string; iconName: string }> = {
     MEMBER: {title: "회원 관리", iconName: "Person"},
-    EXECUTIVE: {title: "회비 관리", iconName: "inventory"},
+    ACCOUNT: {title: "회비 관리", iconName: "inventory"},
     REPORT: {title: "신고 관리", iconName: "error"},
   }
 
@@ -47,7 +47,7 @@ export default function ManagementPage() {
         <div className="w-full">
           {{
             MEMBER: < MemberManageSection />,
-            EXECUTIVE: <ExecutiveManageSection />,
+            ACCOUNT: <AccountManageSection />,
             REPORT: <ReportManageSection />,
           }[activeTab]}
         </div>

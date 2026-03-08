@@ -156,12 +156,12 @@ export default function MyCommentList() {
 
           {/* 탭 */}
           <TagChips
-            endpoint="/__ignore__"
+            // endpoint="/__ignore__"
             mode="single"
             includeAllItem={false}
             value={activeTab}
             onChange={onChangeTab}
-            fallbackTags={TAB_TAGS}
+            // fallbackTags={TAB_TAGS}
             className="ml-[20px] mb-6"
             gapPx={8}
           />
@@ -192,6 +192,8 @@ export default function MyCommentList() {
                   <CommentRowCompact
                     key={c.commentId}
                     id={c.postId}
+                    postId={c.postId} 
+                    postType={c.type}
                     title={s?.title ?? '제목'}
                     content={c.content ?? ''}
                     createdAt={c.createdAt}

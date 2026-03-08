@@ -179,11 +179,11 @@ export default function AdminReportStatusPage() {
           <TagChips
             includeAllItem={false}
             value={filterToId(filter)}
-            fallbackTags={[
-              { id: 0, name: '전체' },
-              { id: 1, name: '신고 접수' },
-              { id: 2, name: '비활성화' },
-            ]}
+            // fallbackTags={[
+            //   { id: 0, name: '전체' },
+            //   { id: 1, name: '신고 접수' },
+            //   { id: 2, name: '비활성화' },
+            // ]}
             onChange={(v) => {
               if (v === 0) setFilter('전체')
               else if (v === 1) setFilter('신고 접수')

@@ -17,7 +17,7 @@ interface MonthlyDues {
 }
 
 
-export default function ExecutiveManageSection () {
+export default function AccountManageSection () {
   const [viewDate, setViewDate] = useState(new Date());
   const [duesList, setDuesList] = useState<MonthlyDues[]>([]);
   const [isDuesModalOpen, setIsDuesModalOpen] = useState(false);
