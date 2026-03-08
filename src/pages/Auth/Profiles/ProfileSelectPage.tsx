@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import AuthLayout from '../../../components/layouts/AuthLayout'
 import api from '../../../api/api'
 
@@ -30,6 +30,7 @@ const getBadgeInfo = (role: string, type: string) => {
 
 
 export default function ProfileSelectPage() {
+  const location = useLocation()
   const [profiles, setProfiles] = useState<Profile[]>([])
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
@@ -39,8 +40,8 @@ export default function ProfileSelectPage() {
       try {
         setLoading(true)
         const res = await api.get('/api/members/me')
-        
-        setProfiles(res.data.profiles)
+        console.log("받아온 프로필 데이터:", res.data.profiles)
+        setProfiles(res.data.profiles || [])
         
       } catch (err) {
         console.error("프로필 로드 실패:", err)
@@ -50,7 +51,7 @@ export default function ProfileSelectPage() {
     }
 
     fetchProfiles()
-  }, [])
+  }, [location.key])
 
   const handleProfileClick = (profile: Profile) => {
     if (profile.orgStatus === 'PENDING') {

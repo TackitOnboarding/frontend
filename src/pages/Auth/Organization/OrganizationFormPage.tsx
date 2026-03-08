@@ -80,7 +80,7 @@ export default function OrganizationFormPage() {
 
     const orgId = organization?.id || organization?.orgId;
 
-    const payload = { nickname, memberRole, memberType }
+    const payload = { nickname, memberRole: memberRole === 'EXECUTIVE' ? 'ADMIN' : memberRole, memberType }
 
     try {
       const response = await api.post(`/api/orgs/${orgId}`, payload);

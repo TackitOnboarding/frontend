@@ -465,7 +465,7 @@ export default function EditInfoPage() {
                   return (
                     <>
                       {/* 프로필 이미지 영역 (업로드/삭제 포함) */}
-                      <ProfileImageBox imageUrl={myInfo.profileImageUrl} />
+                      <ProfileImageBox imageUrl={myInfo.imageUrl} />
 
                       {/* 정보 수정 폼 */}
                       <EditInfoForm myInfo={myInfo} />
