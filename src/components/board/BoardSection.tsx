@@ -105,7 +105,7 @@ export default function BoardSection({ config, myInfo, loading}: any) {
               tags={post.tags}
               imageUrl={post.imageUrl}
               profileImageUrl={post.profileImageUrl}
-              onClick={() => navigate(`${config.detailPath}/${post.id}`)}
+              onClick={() => navigate(`/board/${config.detailPath}/${post.id}`)}
             />
           ))
         )}

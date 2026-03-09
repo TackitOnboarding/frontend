@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import api from "../../api/api";
 import Chip from "../../components/Chip";
-import SummaryCard from "../../components/executive/SummaryCard"
-import { PayModal } from "../../components/executive/PayModal";
+import SummaryCard from "../../components/account/SummaryCard"
+import { PayModal } from "../../components/account/PayModal";
 
-export default function DepositSection({ orgId }: { orgId: number }) {
+export default function DepositSection() {
 
   const categoryMap: any = {
     FOOD: { label: "식비", color: "bg-chip-blue" },
@@ -18,6 +18,8 @@ export default function DepositSection({ orgId }: { orgId: number }) {
   const [viewDate, setViewDate] = useState(new Date());
   const [isPayModalOpen, setIsPayModalOpen] = useState(false);
 
+  const activeProfileId = localStorage.getItem('activeProfileId');
+
   const year = viewDate.getFullYear();
   const month = viewDate.getMonth();
 
@@ -25,17 +27,20 @@ export default function DepositSection({ orgId }: { orgId: number }) {
   const handleNextMonth = () => setViewDate(new Date(year, month + 1, 1));
 
   const fetchMonthlyStatus = async () => {
+    if (!activeProfileId) return;
     const apiMonth = viewDate.getMonth() + 1;
 
     try {
       // 1. 월별 현황 및 지출 통계 조회
       const statusRes = await api.get('/accountings/monthly/status', {
-        params: { orgId, year, month: apiMonth}
+        params: { year, month: apiMonth },
+        headers: { 'Active-Profile-Id': activeProfileId }
       });
 
       // 2. 상세 내역 리스트 조회
       const listRes = await api.get('/api/accountings/monthly', {
-        params: { orgId, year, month: apiMonth }
+        params: { year, month: apiMonth },
+        headers: { 'Active-Profile-Id': activeProfileId }
       });
       
       setData(statusRes.data.content); 
@@ -48,8 +53,8 @@ export default function DepositSection({ orgId }: { orgId: number }) {
   };
 
   useEffect(() => {
-    if (orgId) fetchMonthlyStatus();
-  }, [orgId, viewDate]);
+    fetchMonthlyStatus();
+  }, [viewDate, activeProfileId]);
 
   const totalExpense = data?.totalExpense || 0;
 
@@ -215,8 +220,8 @@ export default function DepositSection({ orgId }: { orgId: number }) {
         isOpen={isPayModalOpen} 
         onClose={() => {
           setIsPayModalOpen(false);
+          fetchMonthlyStatus();
         }} 
-        orgId={orgId} 
       />
     </div>
   )

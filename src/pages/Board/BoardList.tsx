@@ -17,7 +17,7 @@ export default function BoardList() {
       banner: '/banners/tip-banner.svg',
       postType: 'TIP',
       writePath: `/board/write/tip`,
-      detailPath: `/board/tip`,
+      detailPath: `tip`,
       allowedType: 'SENIOR',
       categories: [
         { label: '경험담 공유', value: 'EXPERIENCE' },
@@ -32,7 +32,7 @@ export default function BoardList() {
       banner: '/banners/qna-banner.svg',
       postType: 'QNA',
       writePath: `/board/write/qna`,
-      detailPath: `/board/qna`,
+      detailPath: `qna`,
       allowedType: 'NEWBIE',
       categories: [
           { label: '문화적응', value: 'CULTURE_ADAPT' },
@@ -47,7 +47,7 @@ export default function BoardList() {
       banner: '/banners/free-banner.svg',
       postType: 'FREE',
       writePath: `/board/write/free`,
-      detailPath: `/board/free`,
+      detailPath: `free`,
       allowedType: 'ALL',
       categories: [
         { label: '맛집추천', value: 'TASTY_RESTAURANT' },

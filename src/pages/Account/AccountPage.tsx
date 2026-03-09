@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
 import HomeBar from "../../components/HomeBar"
 import MainFooter from "../../components/layouts/MainFooter";
 import api from "../../api/api";
@@ -9,8 +8,6 @@ import PaymentSection from "./PaymentSection";
 type AccountTab = 'DEPOSIT' | 'PAYMENT';
 
 export default function AccountPage() {
-  const { orgId } = useParams<{ orgId: string }>();
-  const numericOrgId = Number(orgId);
 
   const [activeTab, setActiveTab] = useState<AccountTab>('DEPOSIT');
 
@@ -23,33 +20,42 @@ export default function AccountPage() {
   const [yearlyStats, setYearlyStats] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchPaymentData = async () => {
-    setLoading(true);
-    try {
-      // 1. 현재 회비 납부 현황
-      const duesRes = await api.get('/api/accountings/dues', {
-        params: { orgId: numericOrgId }
-      });
-      setCurrentDues(duesRes.data.content); // .content 추가
+  const activeProfileId = localStorage.getItem('activeProfileId');
 
-      // 2. 연도별 회비 납부 통계
-      const statsRes = await api.get('/api/accountings/yearly', {
-        params: { 
-          orgId: numericOrgId, 
-          year: new Date().getFullYear() 
-        }
+  const fetchInitialData = async () => {
+    if (!activeProfileId) return;
+    try {
+      setLoading(true);
+      const duesRes = await api.get('/api/accountings/dues', {
+        headers: { 'Active-Profile-Id': activeProfileId }
       });
-      setYearlyStats(statsRes.data.content); // .content 추가
+      setCurrentDues(duesRes.data.content);
+
+      // 초기 진입 시 올해 통계도 함께 로드
+      await fetchYearlyStats(new Date().getFullYear());
     } catch (err) {
-      console.error("납부 데이터 로딩 실패", err);
+      console.error("초기 데이터 로드 실패", err);
     } finally {
       setLoading(false);
     }
   };
 
+  const fetchYearlyStats = async (year: number) => {
+    if (!activeProfileId) return;
+    try {
+      const statsRes = await api.get('/api/accountings/yearly', {
+        params: { year },
+        headers: { 'Active-Profile-Id': activeProfileId }
+      });
+      setYearlyStats(statsRes.data.content || []);
+    } catch (err) {
+      console.error(`${year}년 통계 로드 실패`, err);
+    }
+  };
+
   useEffect(() => {
-    if (numericOrgId) fetchPaymentData();
-  }, [numericOrgId]);
+    fetchInitialData();
+  }, [activeProfileId]);
 
   return (
     <>
@@ -77,14 +83,14 @@ export default function AccountPage() {
         <div className="w-full flex justify-center items-center">
           {activeTab === 'DEPOSIT' ? (
             <div className="w-full">
-              <DepositSection orgId={numericOrgId} />
+              <DepositSection />
             </div>
           ) : (
             <div className="w-full">
               <PaymentSection 
-                orgId={numericOrgId} 
                 currentDues={currentDues} 
                 yearlyAmount={yearlyStats}
+                onYearChange={fetchYearlyStats}
               />
             </div>
           )}

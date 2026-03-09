@@ -8,106 +8,20 @@ import PaginationGroup from '../../components/Pagination'
 import api from '../../api/api'
 import './MyPageContainer.css'
 
-type Tab = 'tip' | 'qna' | 'free'
+type Tab = 'TIP' | 'QNA' | 'FREE'
 
-type TipItem = {
-  tipId: number
-  title: string
-  contentPreview?: string
-  writer: string
-  createdAt: string
-  imageUrl?: string | null
-  tags?: string[]
-  profileImageUrl?: string | null
-}
+const DETAIL_PATH_MAP: Record<Tab, string> = {
+  TIP: 'tip',   // BoardSection의 config.detailPath와 일치해야 함
+  QNA: 'qna',
+  FREE: 'free'
+};
 
-type FreeItem = {
-  freeId: number
-  title: string
-  content?: string
-  contentPreview?: string
-  writer: string
-  createdAt: string
-  imageUrl?: string | null
-  tags?: string[]
-  profileImageUrl?: string | null
-}
-
-type QnaItem = {
-  postId: number
-  title: string
-  content?: string
-  contentPreview?: string
-  writer: string
-  createdAt: string
-  imageUrl?: string | null
-  tags?: string[]
-  profileImageUrl?: string | null
-}
-
-type AnyItem = TipItem | FreeItem | QnaItem
-
-type Row = {
-  id: number
-  title: string
-  content: string
-  writer: string
-  createdAt: string
-  tags: string[]
-  imageUrl: string | null
-  profileImageUrl?: string | null
-}
-
-const TAB_TAGS = [
-  { id: 'tip', name: '선배가 알려줘요' },
-  { id: 'qna', name: '신입이 질문해요' },
-  { id: 'free', name: '다같이 얘기해요' },
-] as const
-
-const toRow = (p: AnyItem): Row => {
-  if ('tipId' in p) {
-    return {
-      id: p.tipId,
-      title: p.title,
-      content: p.contentPreview ?? '',
-      writer: p.writer,
-      createdAt: p.createdAt,
-      tags: p.tags ?? [],
-      imageUrl: p.imageUrl ?? null,
-      profileImageUrl: p.profileImageUrl ?? null,
-    }
-  }
-
-  if ('freeId' in p) {
-    return {
-      id: p.freeId,
-      title: p.title,
-      content: p.content ?? p.contentPreview ?? '',
-      writer: p.writer,
-      createdAt: p.createdAt,
-      tags: p.tags ?? [],
-      imageUrl: p.imageUrl ?? null,
-      profileImageUrl: p.profileImageUrl ?? null,
-    }
-  }
-
-  return {
-    id: p.postId,
-    title: p.title,
-    content: p.content ?? p.contentPreview ?? '',
-    writer: p.writer,
-    createdAt: p.createdAt,
-    tags: p.tags ?? [],
-    imageUrl: p.imageUrl ?? null,
-    profileImageUrl: p.profileImageUrl ?? null,
-  }
-}
 
 export default function Bookmarked() {
   const navigate = useNavigate()
 
-  const [activeTab, setActiveTab] = useState<Tab>('tip')
-  const [posts, setPosts] = useState<AnyItem[]>([])
+  const [activeTab, setActiveTab] = useState<Tab>('TIP')
+  const [posts, setPosts] = useState<any[]>([])
   const [currentPage, setCurrentPage] = useState(1) // 1-base
   const [totalPages, setTotalPages] = useState(1)
 
@@ -123,12 +37,7 @@ export default function Bookmarked() {
         setError(null)
 
         const pageParam = currentPage - 1 // 서버 0-base
-        const url =
-          activeTab === 'tip'
-            ? `/api/mypage/tip-scraps?page=${pageParam}`
-            : activeTab === 'free'
-            ? `/api/mypage/free-scraps?page=${pageParam}`
-            : `/api/qna-posts/scrap?page=${pageParam}`
+        const url = `/api/posts/scraps?postType=${activeTab}&page=${pageParam}`
 
         const res = await api.get(url)
         if (!mounted) return
@@ -193,12 +102,10 @@ export default function Bookmarked() {
           </div>
 
           <TagChips
-            // endpoint="/__ignore__"
             mode="single"
             includeAllItem={false}
             value={activeTab}
             onChange={onChangeTab}
-            // fallbackTags={TAB_TAGS as any}
             className="ml-[20px] mb-6"
             gapPx={8}
           />
@@ -229,35 +136,25 @@ export default function Bookmarked() {
                 </p>
               </div>
             ) : (
-              posts.map((raw, index) => {
-                const row = toRow(raw)
-                const isLast = index === posts.length - 1
-
-                const detailPath = `/${activeTab}/${row.id}`
-
+              posts.map((post, index) => {
+                const detailPath = DETAIL_PATH_MAP[activeTab];
                 return (
                   <Link
-                    key={row.id}
-                    to={detailPath}
+                    key={post.postId}
+                    to={`/board/${detailPath}/${post.postId}`}
                     className="block"
-                    style={{ textDecoration: 'none' }}
                   >
                     <PostCard
-                      id={row.id}
-                      title={row.title}
-                      content={row.content}
-                      writer={row.writer}
-                      createdAt={row.createdAt}
-                      tags={row.tags}
-                      imageUrl={row.imageUrl}
-                      profileImageUrl={
-                        row.profileImageUrl ?? '/icons/mypage-icon.svg'
-                      }
+                      id={post.postId}
+                      title={post.title}
+                      content={post.contentPreview || post.content}
+                      writer={post.writer}
+                      createdAt={post.createdAt}
+                      tags={post.tags || []}
+                      imageUrl={post.imageUrl || null}
+                      profileImageUrl={post.profileImageUrl || '/icons/mypage-icon.svg'}
                       previewLines={1}
-                      borderColor={
-                        isLast ? 'transparent' : 'var(--line-normal)'
-                      }
-                      className="bg-white"
+                      borderColor={index === posts.length - 1 ? 'transparent' : 'var(--line-normal)'}
                     />
                   </Link>
                 )

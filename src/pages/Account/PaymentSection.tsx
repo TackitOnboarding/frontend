@@ -1,20 +1,32 @@
 import { useState } from "react";
 
 interface PaymentSectionProps {
-  orgId: number;
   currentDues: any;
   yearlyAmount: any[];
+  onYearChange: (year: number) => void;
 }
 
-export default function PaymentSection({ orgId, currentDues, yearlyAmount }: PaymentSectionProps) {
+export default function PaymentSection({ currentDues, yearlyAmount, onYearChange }: PaymentSectionProps) {
   const [viewYear, setViewYear] = useState(new Date().getFullYear());
 
   const isUnpaid = currentDues?.myPaymentStatus === "UNPAID";
   const rate = currentDues?.participationRate || 0;
 
+  const handlePrevYear = () => {
+    const nextYear = viewYear - 1;
+    setViewYear(nextYear);
+    onYearChange(nextYear);
+  };
 
-  const handlePrevYear = () => setViewYear(prev => prev - 1);
-  const handleNextYear = () => setViewYear(prev => prev + 1);
+  const handleNextYear = () => {
+    const nextYear = viewYear + 1;
+    setViewYear(nextYear);
+    onYearChange(nextYear);
+  };
+
+  const maxVal = yearlyAmount && yearlyAmount.length > 0 
+    ? Math.max(...yearlyAmount.map(d => Math.max(d.collectedAmount, d.targetAmount, 60000)))
+    : 60000;
 
   return (
     <div className="flex flex-col gap-5 w-[1100px]">
@@ -37,7 +49,7 @@ export default function PaymentSection({ orgId, currentDues, yearlyAmount }: Pay
           <div className="flex flex-col gap-3 items-start justify-center w-full">
             <div className="flex items-center justify-between w-full">
               <div className="flex gap-3 items-center">
-                <span className="text-title-2b text-label-normal">{currentDues?.title}월 회비</span>
+                <span className="text-title-2b text-label-normal">{currentDues?.title}</span>
                 <p className="text-body-1 text-label-neutral">{currentDues?.startDate?.replace(/-/g, '.')} - {currentDues?.endDate?.split('-')[2]}</p>
               </div>
 
@@ -133,9 +145,6 @@ export default function PaymentSection({ orgId, currentDues, yearlyAmount }: Pay
                 <div className="absolute inset-0 flex justify-between items-end">
                   {[1, 3, 5, 7, 9, 11].map((m) => {
                     const monthData = yearlyAmount?.find((s: any) => s.month === m);
-                    const maxVal = 60000;
-                    
-                    // 높이를 px 단위로 직접 계산 (전체 296px 기준)
                     const collectedH = monthData ? (monthData.collectedAmount / maxVal) * 296 : 0;
                     const targetH = monthData ? (monthData.targetAmount / maxVal) * 296 : 0;
 

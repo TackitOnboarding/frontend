@@ -12,7 +12,6 @@ interface PayModalProps {
   onClose: () => void;
   inEdit?: boolean;      // 수정 모드 여부
   initialData?: any;     // 수정 시 전달받을 데이터
-  orgId: number;
 }
 
 const CATEGORIES = [
@@ -22,9 +21,11 @@ const CATEGORIES = [
   { id: 'ETC', label: '기타' },
 ];
 
-export const PayModal = ({isOpen, onClose, inEdit, initialData, orgId} : PayModalProps) => {
+export const PayModal = ({isOpen, onClose, inEdit, initialData} : PayModalProps) => {
   const [openCalendar, setOpenCalendar] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const activeProfileId = localStorage.getItem('activeProfileId');
 
   const [formData, setFormData] = useState({
     transactionDate: new Date().toISOString().split('T')[0],
@@ -39,7 +40,7 @@ export const PayModal = ({isOpen, onClose, inEdit, initialData, orgId} : PayModa
     if (isOpen && inEdit && initialData) {
       setFormData({
         transactionDate: initialData.transactionDate || new Date().toISOString().split('T')[0],
-        category: initialData.category || 'FOOD',
+        category: initialData.category?.code || 'FOOD',
         storeName: initialData.storeName || '',
         amount: String(initialData.amount || ''),
         transactionType: initialData.transactionType || 'EXPENSE',
@@ -65,7 +66,6 @@ export const PayModal = ({isOpen, onClose, inEdit, initialData, orgId} : PayModa
 
     // 명세서 규격에 맞춘 Payload 가공
     const payload = {
-      orgId: Number(orgId),
       transactionDate: formData.transactionDate,
       category: formData.category,
       storeName: formData.storeName,
@@ -76,11 +76,15 @@ export const PayModal = ({isOpen, onClose, inEdit, initialData, orgId} : PayModa
 
     try {
       if (inEdit) {
-        await api.put(`/api/accountings/${initialData.transactionId}`, payload);
+        await api.put(`/api/accountings/${initialData.transactionId}`, payload, {
+          headers: { 'Active-Profile-Id': activeProfileId }
+        });
         toastSuccess("수정되었습니다.");
       } else {
-        await api.post('/api/accountings', payload); // Path: /api/accountings
-        toastSuccess("거래 내역이 생성되었습니다.");
+        await api.post('/api/accountings', payload, {
+          headers: { 'Active-Profile-Id': activeProfileId }
+        }); // Path: /api/accountings
+        toastSuccess("거래 내역이 등록되었습니다.");
       }
       onClose();
     } catch (error: any) {
@@ -168,7 +172,7 @@ export const PayModal = ({isOpen, onClose, inEdit, initialData, orgId} : PayModa
               required
               placeholder="금액을 입력해주세요."
               className="mb-0"
-              value={formData.amount}
+              value={Number(formData.amount).toLocaleString()}
               onChange={(e) => {
                 const val = e.target.value.replace(/[^0-9]/g, '');
                 setFormData({ ...formData, amount: val });
