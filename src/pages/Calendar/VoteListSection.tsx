@@ -1,15 +1,14 @@
 import { VoteCard } from "../../components/calendar/VoteCard";
-import { CalendarUtils, type Vote} from "../../types/calendar";
+import { type Vote} from "../../types/calendar";
 import { calendarApi } from "../../api/calendar";
 import { useEffect, useState } from "react";
-import "./Calendar.css";
+// import "./Calendar.css";
 
 
 export default function VoteListSection() {
   const [upcomingVotes, setUpcomingVotes] = useState<Vote[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const currentUserId = 123; 
   const totalMemberCount = 50;
 
   useEffect(() => {
@@ -45,7 +44,7 @@ export default function VoteListSection() {
             <VoteCard
               key={vote.pollId}
               data={vote}
-              currentUserId={currentUserId}
+              // currentUserId={currentUserId}
               totalMemberCount={totalMemberCount}
             />
           ))}

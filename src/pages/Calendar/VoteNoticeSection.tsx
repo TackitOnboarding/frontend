@@ -1,5 +1,5 @@
 import { VoteCard } from "../../components/calendar/VoteCard";
-import { CalendarUtils, type Vote } from "../../types/calendar";
+import { type Vote } from "../../types/calendar";
 import { calendarApi } from "../../api/calendar";
 import { useEffect, useState } from "react";
 
@@ -9,7 +9,7 @@ export default function VoteNoticeSection() {
   const [urgentVotes, setUrgentVotes] = useState<Vote[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const currentUserId = 123; // 실제 로그인한 유저 ID
+  // const currentUserId = 123; // 실제 로그인한 유저 ID
   const totalMemberCount = 50; // 모임의 총 인원수
 
   useEffect(() => {
@@ -53,7 +53,7 @@ export default function VoteNoticeSection() {
           <VoteCard 
             key={vote.pollId}
             data={vote}
-            currentUserId={currentUserId}
+            // currentUserId={currentUserId}
             totalMemberCount={totalMemberCount}
           />
         ))}

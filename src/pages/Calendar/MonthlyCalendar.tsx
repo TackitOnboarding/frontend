@@ -39,12 +39,19 @@ export default function MonthlyCalendar() {
   const fetchMonthlyData = async () => {
     try {
       setLoading(true);
-      const [scheduleRes, voteRes] = await Promise.all([
+      const [scheduleRes, voteRes]: [any, any] = await Promise.all([
         calendarApi.getMonthlyEvents(year, month + 1),
         calendarApi.getMonthlyPolls(year, month + 1)
       ]);
-      setSchedules(scheduleRes);
-      setVotes(voteRes);
+      const scheduleData = scheduleRes.content || [];
+      setSchedules(scheduleData);
+
+      const voteData = (voteRes.content || []).map((v: any) => ({
+        ...v,
+        pollId: v.id, // 서버 id -> 프론트 pollId 매핑
+        colorChip: v.colorChip || "gray" 
+      }));
+      setVotes(voteData);
     } catch (error) {
       console.error("데이터 로드 실패:", error);
     } finally {
@@ -262,6 +269,7 @@ export default function MonthlyCalendar() {
         }}
         inEdit={isEditMode}
         initialData={selectedSchedule}
+        onSuccess={fetchMonthlyData}
       />
       <VoteRegisterModal
         isOpen={isVoteModalOpen}
@@ -271,6 +279,7 @@ export default function MonthlyCalendar() {
         }}
         inEdit={isVoteEditMode}
         initialData={selectedVote}
+        onSuccess={fetchMonthlyData}
       />
       <ScheduleDetailModal
         isOpen={isDetailModalOpen}

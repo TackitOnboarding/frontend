@@ -127,7 +127,7 @@ api.interceptors.request.use(
     }
 
     const activeProfileId = localStorage.getItem('activeProfileId');
-    const isHeaderFree = pathname === '/api/orgs' || pathname === '/orgs';
+    const isHeaderFree = pathname === '/api/orgs' || pathname === '/orgs' || pathname === '/api/members/me';
 
     if (activeProfileId && !isHeaderFree && !isAuthFree) {
       config.headers = config.headers || {};

@@ -106,37 +106,47 @@ function BoardWrite() {
       // 명세서 규격에 맞춘 Payload 생성
       const payload = {
         postType: config.postType, // TIP, QNA 등
-        postCategory: selectedCategory, // ENUM value
+        postCategory: selectedCategory || null, // ENUM value
         title: title.trim(),
         content: contentForServer,
         isAnonymous: isAnonymous,
         commentEnabled: true // 기본값
       };
 
-      const form = new FormData()
-      if (pickedImage) form.append('image', pickedImage)
-      
-      // 통합 DTO 키 사용
-      form.append(
-        'dto', 
-        new Blob([JSON.stringify(payload)], { type: 'application/json' })
-      )
+      let res;
+      if (pickedImage) {
+        // 이미지가 있는 경우 Multipart 전송
+        const form = new FormData();
+        form.append('image', pickedImage);
+        form.append('dto', new Blob([JSON.stringify(payload)], { type: 'application/json' }));
+        
+        res = await api.post('/api/posts', form, {
+          headers: { 
+            'Active-Profile-Id': activeProfileId,
+            'Content-Type': 'multipart/form-data' 
+          }
+        });
+      } else {
+        // 이미지가 없는 경우 순수 JSON 전송 (서버 컨트롤러 설정에 따라 시도)
+        res = await api.post('/api/posts', payload, {
+          headers: { 'Active-Profile-Id': activeProfileId }
+        });
+      }
 
-      const res = await api.post('/api/posts', form, {
-        headers: { 'Active-Profile-Id': activeProfileId } // 필수 헤더
-      })
+      // 명세서 응답 구조 반영: content[0].postId 또는 content.postId 확인 필요
+      const newId = res.data.content[0]?.postId || res.data.content.postId; 
 
-      const newId = res.data.content[0].postId; // 응답 구조 반영
-
-      toastSuccess('작성이 완료되었습니다.')
-      navigate(`/board/${boardType}/${newId}`)
+      toastSuccess('작성이 완료되었습니다.');
+      navigate(`/board/${boardType}/${newId}`);
 
     } catch (err: any) {
-      toastError(err?.response?.data?.message || '글 작성에 실패했습니다.')
+      // 500 에러 시 서버에서 보내주는 상세 메시지 출력 유도
+      const serverMessage = err?.response?.data?.status?.message || err?.response?.data?.message;
+      toastError(serverMessage || '글 작성에 실패했습니다.');
     } finally {
-      setSubmitting(false)
+      setSubmitting(false);
     }
-  }
+  };
 
   const handleCancelClick = () => {
   // 내용이 있을 때만 모달을 띄우고 싶다면 조건 추가 가능

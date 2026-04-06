@@ -5,6 +5,7 @@ import api from '../../../api/api'
 
 interface Profile {
   profileId: number
+  orgId: number   
   orgName: string
   orgType: string
   universityName: string | null

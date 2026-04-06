@@ -102,7 +102,7 @@ function BoardEdit() {
         const res = await api.get(`/api/posts/${id}`, {
           headers: { 'Active-Member-Id': activeProfileId }
         })
-        const p = res.data.content.post // 상세 조회 응답 구조 반영
+        const p = res.data.content.post;
         
         setTitle(p.title ?? '')
         setContent(hydrateCoverToken(String(p.content ?? ''), p.imageUrl ?? null))
@@ -148,7 +148,8 @@ function BoardEdit() {
       const contentForServer = replaceFirstDataUrlImgWithToken(content)
       
       const payload = {
-        postCategory: selectedCategory, // 필수
+        postType: config.postType,
+        postCategory: selectedCategory,
         title: title.trim(),
         content: contentForServer,
         isAnonymous: isAnonymous,
@@ -164,15 +165,16 @@ function BoardEdit() {
 
       // PUT 메서드 사용
       await api.put(`/api/posts/${id}`, form, {
-        headers: { 'Active-Profile-Id': activeProfileId }
-      })
+        headers: { 
+          'Active-Member-Id': activeProfileId,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
       
-      toastSuccess('게시글 수정 성공')
-      navigate(`/board/${boardType}/${id}`)
+      toastSuccess('게시글 수정 성공');
+      navigate(`/board/${boardType}/${id}`);
     } catch (err: any) {
-      toastError(err?.response?.data?.message || '수정에 실패했습니다.')
-    } finally {
-      setSaving(false)
+      toastError(err?.response?.data?.message || '수정에 실패했습니다.');
     }
   }
 

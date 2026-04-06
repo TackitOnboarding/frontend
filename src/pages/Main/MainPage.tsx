@@ -24,11 +24,11 @@ type BaseItem = {
 const toBase = (x: any): BaseItem => ({
   id: x.id ?? x.postId,
   title: x.title,
-  content: x.content ?? '',
-  writer: x.writer ?? '',
+  content: x.contentSummary || '',
+  writer: x.writer?.nickname || '익명',
   createdAt: x.createdAt,
-  tags: x.tags ?? [],
-  imageUrl: x.imageUrl ?? null,
+  tags: x.postCategory?.label ? [x.postCategory.label] : [],
+  imageUrl: x.thumbnail || null,
   profileImageUrl: x.profileImageUrl ?? '/icons/mypage-icon.svg',
 })
 
@@ -40,22 +40,33 @@ export default function MainPage() {
   const [activityPage, setActivityPage] = useState(1)
 
   // 2. 데이터 페칭 로직
-  const fetchSection = async (url: string, page: number, setter: any) => {
+  const fetchSection = async (postType: string, page: number, setter: any) => {
     try {
       // 백엔드가 0-base라면 page - 1 처리
-      const { data } = await api.get(`${url}?page=${page - 1}&size=3&sort=createdAt,desc`)
+      const activeMemberId = localStorage.getItem('activeProfileId');
+      const url = `/api/posts?type=${postType}&page=${page - 1}&size=3&sort=createdAt,desc`;
+
+      const { data } = await api.get(url, {
+        headers: { 
+          'Active-Member-Id': activeMemberId
+        }
+      });
+
+      const posts = data.content.posts || [];
+      const totalPages = data.content.pageInfo?.totalPages || 1;
+      
       setter({
-        items: (data.content || []).map(toBase),
-        total: data.totalPages || 1
+        items: posts.map(toBase),
+        total: totalPages
       })
     } catch {
-      setter({ items: [], total: 1 })
+      setter({ items: [], total: 1 });
     }
   }
 
   // 페이지 변경 시마다 호출
-  useEffect(() => { fetchSection('/api/notice-posts', noticePage, setNotices) }, [noticePage])
-  useEffect(() => { fetchSection('/api/activity-posts', activityPage, setActivities) }, [activityPage])
+  useEffect(() => { fetchSection('NOTICE', noticePage, setNotices) }, [noticePage]);
+  useEffect(() => { fetchSection('ACTIVITY', activityPage, setActivities) }, [activityPage]);
 
   const { state } = useLocation() as {
     state?: { showOnboarding?: boolean; fromLogin?: boolean }
